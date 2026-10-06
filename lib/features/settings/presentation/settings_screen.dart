@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import '../../../l10n/app_localizations.dart';
 
 class SettingsScreen extends StatelessWidget {
@@ -13,6 +14,16 @@ class SettingsScreen extends StatelessWidget {
       ),
       body: ListView(
         children: [
+          ListTile(
+            leading: const Icon(Icons.people_outline, color: Color(0xFF1F3864)),
+            title: const Text('Suppliers & Customers (Partners)'),
+            subtitle: const Text('Manage supplier contacts & customer records'),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () {
+              context.push('/partners');
+            },
+          ),
+          const Divider(),
           ListTile(
             leading: const Icon(Icons.language, color: Color(0xFF1F3864)),
             title: const Text('Language / Lugha'),
@@ -40,7 +51,7 @@ class SettingsScreen extends StatelessWidget {
           ListTile(
             leading: const Icon(Icons.info_outline, color: Colors.grey),
             title: const Text('About Tzion Stockly'),
-            subtitle: const Text('v0.1.0 (Phase 0 Setup)'),
+            subtitle: const Text('v0.1.0 (Phase 1 Local Core)'),
             onTap: () {},
           ),
         ],
