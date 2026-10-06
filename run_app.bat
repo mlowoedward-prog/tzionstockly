@@ -16,17 +16,27 @@ IF EXIST %FLUTTER_PATH% (
 )
 
 echo Select target platform to launch:
-echo [1] Chrome Web Browser (Recommended - Fast ^& Reliable)
-echo [2] Windows Desktop App
+echo [1] Chrome Web Browser (Recommended - Instant ^& Works Everywhere)
+echo [2] Windows Native Desktop App (Requires Windows Developer Mode)
 echo [3] Microsoft Edge Web Browser
 echo.
 
+SET CHOICE=1
 SET /P CHOICE="Enter choice (1, 2, or 3) [Default is 1]: "
 
 IF "%CHOICE%"=="2" (
     echo.
-    echo Launching Windows Desktop app...
+    echo Launching Windows Native Desktop app...
     call %FLUTTER_CMD% run -d windows
+    IF %ERRORLEVEL% NEQ 0 (
+        echo.
+        echo NOTE: Windows Native build requires Windows Developer Mode for C++ plugin symlinks.
+        echo Opening Windows Developer Settings...
+        start ms-settings:developers
+        echo.
+        echo Fallback: Launching in Chrome Web Browser...
+        call %FLUTTER_CMD% run -d chrome
+    )
 ) ELSE IF "%CHOICE%"=="3" (
     echo.
     echo Launching Edge Web Browser...
