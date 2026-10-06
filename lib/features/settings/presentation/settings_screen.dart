@@ -257,6 +257,14 @@ class SettingsScreen extends ConsumerWidget {
             },
           ),
 
+          ListTile(
+            leading: const Icon(Icons.bug_report_outlined, color: AppTheme.primaryNavy),
+            title: const Text('Diagnostics & Sync Logs'),
+            subtitle: const Text('Inspect local sync status, queue metrics, & system events'),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => context.push('/diagnostics'),
+          ),
+
           const Divider(),
           const _SectionHeader(title: 'ABOUT'),
 
