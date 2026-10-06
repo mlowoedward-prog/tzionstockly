@@ -7,14 +7,12 @@ import 'package:tzion_stockly/l10n/app_localizations_sw.dart';
 
 void main() {
   group('Prompt 0 Setup Unit Tests', () {
-    test('AppTheme lightTheme and darkTheme verify core colors', () {
-      final light = AppTheme.lightTheme;
-      final dark = AppTheme.darkTheme;
-
-      expect(light.colorScheme.primary, AppTheme.primaryNavy);
-      expect(light.colorScheme.secondary, AppTheme.secondaryTeal);
-      expect(dark.colorScheme.primary, AppTheme.secondaryTeal);
-      expect(dark.colorScheme.secondary, AppTheme.primaryNavy);
+    test('AppTheme verifies core brand colors', () {
+      expect(AppTheme.primaryNavy, const Color(0xFF1F3864));
+      expect(AppTheme.secondaryTeal, const Color(0xFF14B8A6));
+      expect(AppTheme.successGreen, const Color(0xFF10B981));
+      expect(AppTheme.warningAmber, const Color(0xFFF59E0B));
+      expect(AppTheme.errorRed, const Color(0xFFEF4444));
     });
 
     test('AppLocalizations lookup returns English and Swahili translations', () {

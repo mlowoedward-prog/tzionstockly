@@ -9,6 +9,7 @@ import '../features/stock/presentation/stock_screen.dart';
 import '../features/partners/presentation/partners_screen.dart';
 import '../features/reports/presentation/reports_screen.dart';
 import '../features/settings/presentation/settings_screen.dart';
+import '../features/auth/presentation/login_screen.dart';
 import 'app_shell.dart';
 
 final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'root');
@@ -17,7 +18,12 @@ final GoRouter appRouter = GoRouter(
   navigatorKey: _rootNavigatorKey,
   initialLocation: '/',
   routes: [
+    GoRoute(
+      path: '/login',
+      builder: (context, state) => const LoginScreen(),
+    ),
     StatefulShellRoute.indexedStack(
+
       builder: (context, state, navigationShell) {
         return AppShell(navigationShell: navigationShell);
       },

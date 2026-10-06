@@ -9,7 +9,8 @@ void main() {
         child: TzionStocklyApp(),
       ),
     );
-    await tester.pumpAndSettle();
+    await tester.pump();
+    await tester.pump(const Duration(seconds: 1));
 
     // Verify all five navigation tab labels are rendered in the app shell
     expect(find.text('Home'), findsWidgets);

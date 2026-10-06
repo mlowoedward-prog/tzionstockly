@@ -1,0 +1,33 @@
+name: Supabase Free Tier Keep-Alive
+
+on:
+  schedule:
+    # Runs every 2 days at midnight UTC
+    - cron: '0 0 */2 * *'
+  workflow_dispatch:
+
+jobs:
+  ping-supabase:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Supabase Health Check Endpoint
+        run: |
+          if [ -z "${{ secrets.SUPABASE_URL }}" ] || [ -z "${{ secrets.SUPABASE_ANON_KEY }}" ]; then
+            echo "::error::SUPABASE_URL or SUPABASE_ANON_KEY secret is missing!"
+            exit 1
+          fi
+
+          RESPONSE=$(curl -s -w "%{http_code}" -o /dev/null \
+            -H "apikey: ${{ secrets.SUPABASE_ANON_KEY }}" \
+            -H "Authorization: Bearer ${{ secrets.SUPABASE_ANON_KEY }}" \
+            "${{ secrets.SUPABASE_URL }}/rest/v1/health_check?select=id&limit=1")
+
+          echo "HTTP Response Status Code: $RESPONSE"
+
+          if [ "$RESPONSE" -eq 200 ]; then
+            echo "Supabase ping successful!"
+            exit 0
+          else
+            echo "::error::Supabase ping failed with status code: $RESPONSE"
+            exit 1
+          fi

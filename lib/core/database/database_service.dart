@@ -412,4 +412,35 @@ class DatabaseService {
     final row = await query.getSingle();
     return row.read(db.syncQueue.id.count()) ?? 0;
   }
+
+  /// Transactionally re-assigns all offline local data created under `defaultBusinessId`
+  /// to [targetBusinessId] so that it pushes to the newly authenticated cloud business account.
+  Future<void> adoptDefaultBusinessData(String targetBusinessId) async {
+    if (targetBusinessId == defaultBusinessId) return;
+
+    await db.transaction(() async {
+      final now = DateTime.now();
+
+      // 1. Categories
+      await (db.update(db.categories)..where((c) => c.businessId.equals(defaultBusinessId))).write(
+        CategoriesCompanion(businessId: Value(targetBusinessId), synced: const Value(false), updatedAt: Value(now)),
+      );
+
+      // 2. Partners
+      await (db.update(db.partners)..where((p) => p.businessId.equals(defaultBusinessId))).write(
+        PartnersCompanion(businessId: Value(targetBusinessId), synced: const Value(false), updatedAt: Value(now)),
+      );
+
+      // 3. Products
+      await (db.update(db.products)..where((p) => p.businessId.equals(defaultBusinessId))).write(
+        ProductsCompanion(businessId: Value(targetBusinessId), synced: const Value(false), updatedAt: Value(now)),
+      );
+
+      // 4. Stock Movements
+      await (db.update(db.stockMovements)..where((m) => m.businessId.equals(defaultBusinessId))).write(
+        StockMovementsCompanion(businessId: Value(targetBusinessId), synced: const Value(false), updatedAt: Value(now)),
+      );
+    });
+  }
 }
+

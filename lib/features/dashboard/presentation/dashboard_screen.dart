@@ -25,7 +25,7 @@ class DashboardScreen extends ConsumerWidget {
           Padding(
             padding: EdgeInsets.only(right: 16.0),
             child: Center(
-              child: SyncStatusChip(state: SyncState.synced),
+              child: ReactiveSyncStatusChip(),
             ),
           ),
         ],

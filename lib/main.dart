@@ -3,11 +3,13 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'l10n/app_localizations.dart';
 
+import 'core/network/supabase_config.dart';
 import 'app/router.dart';
 import 'app/theme.dart';
 
-void main() {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await SupabaseConfig.init();
   runApp(
     const ProviderScope(
       child: TzionStocklyApp(),
