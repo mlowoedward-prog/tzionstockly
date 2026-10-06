@@ -7,6 +7,7 @@ import '../sync/sync_models.dart';
 import '../utils/sync_status_chip.dart';
 import '../../features/auth/domain/auth_models.dart';
 import '../../features/auth/domain/auth_notifier.dart';
+import '../../features/auth/domain/role_permissions.dart';
 import '../../features/stock/domain/stock_service.dart';
 import '../../features/products/domain/product_stock_info.dart';
 import '../../features/reports/domain/reports_service.dart';
@@ -49,6 +50,11 @@ final authNotifierProvider = StateNotifierProvider<AuthNotifier, AuthState>((ref
 final currentBusinessIdProvider = Provider<String>((ref) {
   final authState = ref.watch(authNotifierProvider);
   return authState.userProfile?.businessId ?? DatabaseService.defaultBusinessId;
+});
+
+final userRoleProvider = Provider<UserRole>((ref) {
+  final authState = ref.watch(authNotifierProvider);
+  return authState.userRole;
 });
 
 // ==================== SYNC ENGINE PROVIDER ====================

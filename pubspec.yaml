@@ -30,6 +30,8 @@ dependencies:
   flutter_secure_storage: ^11.2.0
   connectivity_plus: ^7.3.2
   workmanager: ^0.10.10
+  flutter_local_notifications: ^8.2.0
+  local_auth: ^3.0.2
 
 dev_dependencies:
   flutter_test:

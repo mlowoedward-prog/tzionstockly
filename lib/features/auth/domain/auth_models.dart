@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'role_permissions.dart';
 
 @immutable
 class UserProfile {
@@ -13,6 +14,8 @@ class UserProfile {
     required this.businessId,
     this.role = 'owner',
   });
+
+  UserRole get roleEnum => UserRole.fromString(role);
 
   Map<String, dynamic> toJson() => {
         'id': id,
@@ -42,6 +45,8 @@ class AuthState {
     this.userProfile,
     this.errorMessage,
   });
+
+  UserRole get userRole => userProfile?.roleEnum ?? UserRole.owner;
 
   AuthState copyWith({
     bool? isAuthenticated,

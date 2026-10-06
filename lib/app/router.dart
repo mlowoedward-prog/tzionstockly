@@ -10,6 +10,7 @@ import '../features/partners/presentation/partners_screen.dart';
 import '../features/reports/presentation/reports_screen.dart';
 import '../features/settings/presentation/settings_screen.dart';
 import '../features/auth/presentation/login_screen.dart';
+import '../features/auth/presentation/user_management_screen.dart';
 import 'app_shell.dart';
 
 final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'root');
@@ -21,6 +22,10 @@ final GoRouter appRouter = GoRouter(
     GoRoute(
       path: '/login',
       builder: (context, state) => const LoginScreen(),
+    ),
+    GoRoute(
+      path: '/team',
+      builder: (context, state) => const UserManagementScreen(),
     ),
     StatefulShellRoute.indexedStack(
 
