@@ -4,6 +4,8 @@ import 'app_database.dart';
 import 'database_service.dart';
 import '../../features/stock/domain/stock_service.dart';
 import '../../features/products/domain/product_stock_info.dart';
+import '../../features/reports/domain/reports_service.dart';
+import '../utils/export_service.dart';
 
 final appDatabaseProvider = Provider<AppDatabase>((ref) {
   final executor = driftDatabase(name: 'tzion_stockly');
@@ -20,6 +22,16 @@ final databaseServiceProvider = Provider<DatabaseService>((ref) {
 final stockServiceProvider = Provider<StockService>((ref) {
   final dbService = ref.watch(databaseServiceProvider);
   return StockService(dbService: dbService);
+});
+
+final reportsServiceProvider = Provider<ReportsService>((ref) {
+  final dbService = ref.watch(databaseServiceProvider);
+  return ReportsService(dbService);
+});
+
+final exportServiceProvider = Provider<ExportService>((ref) {
+  final dbService = ref.watch(databaseServiceProvider);
+  return ExportService(dbService);
 });
 
 final currentBusinessIdProvider = StateProvider<String>((ref) {
