@@ -1,0 +1,13 @@
+{
+  "@@locale": "sw",
+  "appTitle": "Tzion Stockly",
+  "navHome": "Mwanzo",
+  "navProducts": "Bidhaa",
+  "navStock": "Hisa",
+  "navReports": "Ripoti",
+  "navMore": "Zaidi",
+  "syncStatusSynced": "Imelandanishwa",
+  "syncStatusSyncing": "Inalandanisha",
+  "syncStatusOffline": "Bila Mtandao",
+  "syncStatusPending": "Inasubiri"
+}

@@ -1,0 +1,43 @@
+{
+  "@@locale": "en",
+  "appTitle": "Tzion Stockly",
+  "@appTitle": {
+    "description": "The title of the application"
+  },
+  "navHome": "Home",
+  "@navHome": {
+    "description": "Navigation label for Home"
+  },
+  "navProducts": "Products",
+  "@navProducts": {
+    "description": "Navigation label for Products"
+  },
+  "navStock": "Stock",
+  "@navStock": {
+    "description": "Navigation label for Stock"
+  },
+  "navReports": "Reports",
+  "@navReports": {
+    "description": "Navigation label for Reports"
+  },
+  "navMore": "More",
+  "@navMore": {
+    "description": "Navigation label for More options"
+  },
+  "syncStatusSynced": "Synced",
+  "@syncStatusSynced": {
+    "description": "Sync chip status when synced"
+  },
+  "syncStatusSyncing": "Syncing",
+  "@syncStatusSyncing": {
+    "description": "Sync chip status when syncing"
+  },
+  "syncStatusOffline": "Offline",
+  "@syncStatusOffline": {
+    "description": "Sync chip status when offline"
+  },
+  "syncStatusPending": "Pending",
+  "@syncStatusPending": {
+    "description": "Sync chip status when pending"
+  }
+}
