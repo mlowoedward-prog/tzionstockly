@@ -19,7 +19,6 @@ jobs:
 
           RESPONSE=$(curl -s -w "%{http_code}" -o /dev/null \
             -H "apikey: ${{ secrets.SUPABASE_ANON_KEY }}" \
-            -H "Authorization: Bearer ${{ secrets.SUPABASE_ANON_KEY }}" \
             "${{ secrets.SUPABASE_URL }}/rest/v1/health_check?select=id&limit=1")
 
           echo "HTTP Response Status Code: $RESPONSE"
