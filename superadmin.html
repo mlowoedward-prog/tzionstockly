@@ -603,6 +603,10 @@
               <p class="text-xs text-amber-100/90 mt-0.5">Control tenant access, change renewal dates manually, toggle 1-click payment locks, and monitor MRR.</p>
             </div>
             <div class="flex flex-wrap items-center gap-2">
+              <button onclick="openEditStoreModal(SuperState.stores[0].id)" class="px-4 py-2.5 rounded-xl bg-white text-slate-900 hover:bg-amber-100 text-xs font-black shadow flex items-center gap-1.5 transition-all">
+                <span>✏️</span>
+                <span>Edit Store Details</span>
+              </button>
               <button onclick="openOnboardStoreModal()" class="px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold shadow flex items-center gap-1.5 transition-all">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
                 <span>+ Onboard New Store</span>
@@ -759,11 +763,11 @@
                             <!-- Edit Store Details & Fee -->
                             <button 
                               onclick="openEditStoreModal('${st.id}')"
-                              class="px-2.5 py-1.5 rounded-xl bg-amber-500/15 hover:bg-amber-500/30 text-amber-600 dark:text-amber-400 border border-amber-500/30 font-bold text-xs flex items-center gap-1 transition-all"
+                              class="px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-black text-xs shadow flex items-center gap-1 transition-all"
                               title="Edit Store Name, Owner, Phone & Monthly Fee (TZS)"
                             >
                               <span>✏️</span>
-                              <span>Edit</span>
+                              <span>Edit Store & Fees</span>
                             </button>
 
                             <!-- 1-Click Lock / Unlock -->
