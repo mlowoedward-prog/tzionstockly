@@ -157,8 +157,12 @@
           <div class="flex items-center space-x-2">
             <span class="font-extrabold tracking-tight text-lg text-tzion-purple-700 dark:text-tzion-purple-300">Tzion<span class="text-tzion-orange-500">Stockly</span></span>
             <span id="roleHeaderBadge" class="text-[10px] uppercase font-mono px-2 py-0.5 rounded-full font-bold bg-tzion-purple-100 dark:bg-tzion-purple-900/60 border border-tzion-purple-300 dark:border-tzion-purple-700 text-tzion-purple-700 dark:text-tzion-purple-300">Admin Mode</span>
+            <!-- Store Indicator Pill -->
+            <button id="headerStorePill" onclick="toggleStoreOrPortal()" class="hidden sm:inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-tzion-orange-500/15 border border-tzion-orange-500/30 text-tzion-orange-600 dark:text-tzion-orange-400 hover:bg-tzion-orange-500/25 transition-all">
+              <span id="headerStoreName">🏪 Tzion Main Store</span>
+            </button>
           </div>
-          <p class="text-[10px] text-slate-500 dark:text-purple-300/60 font-mono">Currency: TZS (Tanzanian Shillings) • Supabase Ready</p>
+          <p class="text-[10px] text-slate-500 dark:text-purple-300/60 font-mono">Currency: TZS (Tanzanian Shillings) • Multi-Store SaaS Fleet</p>
         </div>
       </div>
 
@@ -185,6 +189,12 @@
           <svg class="w-3.5 h-3.5 text-tzion-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
           <span class="hidden sm:inline">Outbox</span>
           <span id="queueBadge" class="bg-tzion-orange-500/20 text-tzion-orange-600 dark:text-tzion-orange-400 border border-tzion-orange-500/40 text-[10px] font-mono font-bold px-1.5 py-0.2 rounded-full">0</span>
+        </button>
+
+        <!-- Super Admin Multi-Store Portal Switcher -->
+        <button id="superAdminPortalBtn" onclick="toggleSuperAdminRoute()" title="Super Admin Multi-Store Control" class="hidden px-3 py-1.5 rounded-xl border border-amber-500/40 bg-amber-500/10 hover:bg-amber-500/20 text-amber-600 dark:text-amber-400 text-xs font-bold items-center gap-1.5 transition-all shadow-sm">
+          <span>👑</span>
+          <span class="hidden sm:inline" id="superAdminBtnText">Super Admin Fleet</span>
         </button>
 
         <!-- Supabase Settings Drawer Button -->
@@ -263,14 +273,15 @@
       </div>
 
       <!-- Role Selector Tabs -->
-      <div class="bg-purple-100 dark:bg-tzion-purple-950 p-1 rounded-2xl border border-purple-200 dark:border-purple-900/60 grid grid-cols-2 gap-1 mb-5">
-        <button id="authTabAdmin" onclick="setAuthRoleTab('admin')" class="py-2.5 rounded-xl font-bold text-xs transition-all flex items-center justify-center gap-1.5 bg-tzion-purple-600 text-white shadow-md">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
-          <span>Admin Portal</span>
+      <div class="bg-purple-100 dark:bg-tzion-purple-950 p-1 rounded-2xl border border-purple-200 dark:border-purple-900/60 grid grid-cols-3 gap-1 mb-5">
+        <button id="authTabAdmin" onclick="setAuthRoleTab('admin')" class="py-2 rounded-xl font-bold text-[11px] sm:text-xs transition-all flex items-center justify-center gap-1 bg-tzion-purple-600 text-white shadow-md">
+          <span>Admin</span>
         </button>
-        <button id="authTabStaff" onclick="setAuthRoleTab('staff')" class="py-2.5 rounded-xl font-bold text-xs transition-all flex items-center justify-center gap-1.5 text-slate-600 dark:text-purple-300 hover:text-slate-900 dark:hover:text-white">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
-          <span>Staff Checkout</span>
+        <button id="authTabStaff" onclick="setAuthRoleTab('staff')" class="py-2 rounded-xl font-bold text-[11px] sm:text-xs transition-all flex items-center justify-center gap-1 text-slate-600 dark:text-purple-300 hover:text-slate-900 dark:hover:text-white">
+          <span>Staff</span>
+        </button>
+        <button id="authTabSuperAdmin" onclick="setAuthRoleTab('super_admin')" class="py-2 rounded-xl font-bold text-[11px] sm:text-xs transition-all flex items-center justify-center gap-1 text-slate-600 dark:text-purple-300 hover:text-slate-900 dark:hover:text-white">
+          <span>👑 Super Admin</span>
         </button>
       </div>
 
@@ -298,12 +309,15 @@
       <!-- Instant Demo Shortcuts -->
       <div class="mt-6 pt-4 border-t border-purple-100 dark:border-purple-900/40 text-center">
         <span class="text-[10px] text-slate-400 dark:text-purple-400 font-mono block mb-2">QUICK DEMO ONE-CLICK SIGN IN:</span>
-        <div class="grid grid-cols-2 gap-2">
-          <button onclick="quickLogin('admin')" class="py-2 px-3 rounded-lg bg-purple-100 dark:bg-tzion-purple-900/40 hover:bg-tzion-purple-600 hover:text-white text-tzion-purple-700 dark:text-purple-300 text-[11px] font-semibold border border-purple-200 dark:border-purple-800 transition-all">
-            Login as Admin
+        <div class="grid grid-cols-3 gap-1.5">
+          <button onclick="quickLogin('admin')" class="py-2 px-2 rounded-lg bg-purple-100 dark:bg-tzion-purple-900/40 hover:bg-tzion-purple-600 hover:text-white text-tzion-purple-700 dark:text-purple-300 text-[10px] sm:text-[11px] font-semibold border border-purple-200 dark:border-purple-800 transition-all truncate">
+            Store Admin
           </button>
-          <button onclick="quickLogin('staff')" class="py-2 px-3 rounded-lg bg-tzion-orange-500/10 hover:bg-tzion-orange-500 hover:text-white text-tzion-orange-600 dark:text-tzion-orange-400 text-[11px] font-semibold border border-tzion-orange-500/30 transition-all">
-            Login as Staff
+          <button onclick="quickLogin('staff')" class="py-2 px-2 rounded-lg bg-tzion-orange-500/10 hover:bg-tzion-orange-500 hover:text-white text-tzion-orange-600 dark:text-tzion-orange-400 text-[10px] sm:text-[11px] font-semibold border border-tzion-orange-500/30 transition-all truncate">
+            Cashier Staff
+          </button>
+          <button onclick="quickLogin('super_admin')" class="py-2 px-2 rounded-lg bg-amber-500/15 hover:bg-amber-500 hover:text-white text-amber-600 dark:text-amber-400 text-[10px] sm:text-[11px] font-bold border border-amber-500/30 transition-all truncate">
+            👑 Super Admin
           </button>
         </div>
       </div>
@@ -662,11 +676,67 @@
     const AppState = {
       isDark: true,
       isAuthenticated: false,
-      currentUser: null,   // { email, role, name }
-      authTabRole: 'admin',// tab selector on login screen
+      currentUser: null,   // { email, role, name, is_super_admin }
+      authTabRole: 'admin',// 'admin' | 'staff' | 'super_admin'
       isOnline: true,
       searchQuery: '',
       selectedCategory: 'All',
+
+      // Multi-Store SaaS & Subscription Control
+      currentStoreId: 'store-tz-001',
+      activeSuperAdminPortal: false,
+      storeSearchQuery: '',
+      storeStatusFilter: 'All', // 'All' | 'active' | 'past_due' | 'suspended'
+      stores: [
+        {
+          id: "store-tz-001",
+          name: "Tzion Main Flagship Store",
+          owner_name: "Edward Mlowo",
+          owner_phone: "+255755123456",
+          monthly_fee_tzs: 50000,
+          status: "active",
+          subscription_renews_at: new Date(Date.now() + 18 * 86400000).toISOString(),
+          grace_period_days: 3,
+          is_locked: false,
+          lock_reason: ""
+        },
+        {
+          id: "store-tz-002",
+          name: "Arusha Safari Provisions",
+          owner_name: "Amina Rashid",
+          owner_phone: "+255784992211",
+          monthly_fee_tzs: 65000,
+          status: "active",
+          subscription_renews_at: new Date(Date.now() + 4 * 86400000).toISOString(),
+          grace_period_days: 3,
+          is_locked: false,
+          lock_reason: ""
+        },
+        {
+          id: "store-tz-003",
+          name: "Mwanza Lake Distributors",
+          owner_name: "Juma Baraka",
+          owner_phone: "+255713445566",
+          monthly_fee_tzs: 75000,
+          status: "past_due",
+          subscription_renews_at: new Date(Date.now() - 1 * 86400000).toISOString(),
+          grace_period_days: 3,
+          is_locked: false,
+          lock_reason: "Grace period active (2 days remaining)"
+        },
+        {
+          id: "store-tz-004",
+          name: "Dodoma Capital Wholesale",
+          owner_name: "Neema Mollel",
+          owner_phone: "+255762883344",
+          monthly_fee_tzs: 50000,
+          status: "suspended",
+          subscription_renews_at: new Date(Date.now() - 8 * 86400000).toISOString(),
+          grace_period_days: 3,
+          is_locked: true,
+          lock_reason: "Monthly subscription payment overdue"
+        }
+      ],
 
       // Stock adjustment modal active item
       activeModalItem: null,
@@ -737,25 +807,37 @@
       AppState.authTabRole = role;
       const tabAdmin = document.getElementById('authTabAdmin');
       const tabStaff = document.getElementById('authTabStaff');
+      const tabSuper = document.getElementById('authTabSuperAdmin');
       const notice = document.getElementById('authRoleNotice');
       const emailInput = document.getElementById('loginEmail');
 
+      // Reset base styling
+      const inactiveClass = "py-2 rounded-xl font-bold text-[11px] sm:text-xs transition-all flex items-center justify-center gap-1 text-slate-600 dark:text-purple-300 hover:text-slate-900 dark:hover:text-white";
+      tabAdmin.className = inactiveClass;
+      tabStaff.className = inactiveClass;
+      if (tabSuper) tabSuper.className = inactiveClass;
+
       if (role === 'admin') {
-        tabAdmin.className = "py-2.5 rounded-xl font-bold text-xs transition-all flex items-center justify-center gap-1.5 bg-tzion-purple-600 text-white shadow-md";
-        tabStaff.className = "py-2.5 rounded-xl font-bold text-xs transition-all flex items-center justify-center gap-1.5 text-slate-600 dark:text-purple-300 hover:text-slate-900 dark:hover:text-white";
-        notice.innerHTML = `<strong class="text-tzion-orange-500">Administrator Clearance:</strong> Full control over stock check-in, check-out, valuations in TZS, profit reports, and Excel bulk imports.`;
+        tabAdmin.className = "py-2 rounded-xl font-bold text-[11px] sm:text-xs transition-all flex items-center justify-center gap-1 bg-tzion-purple-600 text-white shadow-md";
+        notice.innerHTML = `<strong class="text-tzion-orange-500">Store Administrator:</strong> Full control over stock check-in, check-out, valuations in TZS, and Excel imports for this store.`;
         emailInput.value = "admin@tzionstockly.com";
-      } else {
-        tabStaff.className = "py-2.5 rounded-xl font-bold text-xs transition-all flex items-center justify-center gap-1.5 bg-tzion-orange-500 text-white shadow-md";
-        tabAdmin.className = "py-2.5 rounded-xl font-bold text-xs transition-all flex items-center justify-center gap-1.5 text-slate-600 dark:text-purple-300 hover:text-slate-900 dark:hover:text-white";
-        notice.innerHTML = `<strong class="text-tzion-purple-600 dark:text-purple-400">Staff Checkout Mode:</strong> High-speed POS dispatch terminal. Staff can <strong>ONLY check out items</strong>. Cost prices and sensitive margins are strictly hidden.`;
+      } else if (role === 'staff') {
+        tabStaff.className = "py-2 rounded-xl font-bold text-[11px] sm:text-xs transition-all flex items-center justify-center gap-1 bg-tzion-orange-500 text-white shadow-md";
+        notice.innerHTML = `<strong class="text-tzion-purple-600 dark:text-purple-400">Staff Checkout Mode:</strong> High-speed POS dispatch terminal. Staff can <strong>ONLY check out items</strong>. Cost prices are hidden.`;
         emailInput.value = "staff@tzionstockly.com";
+      } else if (role === 'super_admin') {
+        if (tabSuper) tabSuper.className = "py-2 rounded-xl font-bold text-[11px] sm:text-xs transition-all flex items-center justify-center gap-1 bg-amber-500 text-white shadow-md";
+        notice.innerHTML = `<strong class="text-amber-500">Super Admin Fleet Authority:</strong> Multi-Store SaaS Control, tenant subscription status, 1-click lockouts, grace period extensions, and MRR metrics.`;
+        emailInput.value = "superadmin@tzionstockly.com";
       }
     }
 
     function quickLogin(role) {
       setAuthRoleTab(role);
-      completeLogin(role === 'admin' ? 'admin@tzionstockly.com' : 'staff@tzionstockly.com', role);
+      let email = "staff@tzionstockly.com";
+      if (role === 'admin') email = "admin@tzionstockly.com";
+      if (role === 'super_admin') email = "superadmin@tzionstockly.com";
+      completeLogin(email, role);
     }
 
     function handleFormLogin(e) {
@@ -766,12 +848,17 @@
     }
 
     function completeLogin(email, role) {
+      const isSuper = (role === 'super_admin' || email.includes('superadmin'));
       AppState.isAuthenticated = true;
+      AppState.activeSuperAdminPortal = isSuper;
       AppState.currentUser = {
-        email: email || (role === 'admin' ? 'admin@tzionstockly.com' : 'cashier@tzionstockly.com'),
+        email: email || (isSuper ? 'superadmin@tzionstockly.com' : (role === 'admin' ? 'admin@tzionstockly.com' : 'cashier@tzionstockly.com')),
         role: role,
-        name: role === 'admin' ? 'Store Manager' : 'Cashier Terminal 1'
+        is_super_admin: isSuper,
+        name: isSuper ? 'Edward Mlowo (Super Admin)' : (role === 'admin' ? 'Store Manager' : 'Cashier Terminal 1')
       };
+
+      initSubscriptionState();
 
       document.getElementById('authPortalScreen').classList.add('hidden');
       document.getElementById('mainAppHeader').classList.remove('hidden');
@@ -779,18 +866,40 @@
 
       // Update Header Identity
       document.getElementById('headerUserName').innerText = AppState.currentUser.name;
-      document.getElementById('headerUserRole').innerText = role === 'admin' ? 'Administrator' : 'Staff Cashier';
+      document.getElementById('headerUserRole').innerText = isSuper ? 'Super Administrator' : (role === 'admin' ? 'Store Administrator' : 'Staff Cashier');
       
       const badge = document.getElementById('roleHeaderBadge');
-      if (role === 'admin') {
+      const superBtn = document.getElementById('superAdminPortalBtn');
+
+      if (isSuper) {
+        badge.innerText = "👑 Super Admin";
+        badge.className = "text-[10px] uppercase font-mono px-2.5 py-0.5 rounded-full font-black bg-amber-500/20 border border-amber-500/40 text-amber-600 dark:text-amber-300 shadow-sm";
+        if (superBtn) {
+          superBtn.classList.remove('hidden');
+          superBtn.classList.add('flex');
+        }
+      } else if (role === 'admin') {
         badge.innerText = "Admin Clearance";
         badge.className = "text-[10px] uppercase font-mono px-2 py-0.5 rounded-full font-bold bg-tzion-purple-100 dark:bg-tzion-purple-900/60 border border-tzion-purple-300 dark:border-tzion-purple-700 text-tzion-purple-700 dark:text-purple-300";
+        if (superBtn) superBtn.classList.add('hidden');
       } else {
         badge.innerText = "Checkout Only";
         badge.className = "text-[10px] uppercase font-mono px-2 py-0.5 rounded-full font-bold bg-tzion-orange-500/15 border border-tzion-orange-500/30 text-tzion-orange-600 dark:text-tzion-orange-400";
+        if (superBtn) superBtn.classList.add('hidden');
       }
 
-      showToast(`Welcome back, ${AppState.currentUser.name} (${role.toUpperCase()})`, "success");
+      updateHeaderStoreDisplay();
+
+      // Check hash route (e.g. #/super-admin)
+      if (window.location.hash.includes('super-admin')) {
+        if (isSuper) {
+          AppState.activeSuperAdminPortal = true;
+        } else {
+          showToast("Access Denied: Super Admin clearance required.", "error");
+        }
+      }
+
+      showToast(`Welcome back, ${AppState.currentUser.name}`, "success");
       renderUI();
     }
 
@@ -1147,6 +1256,12 @@
     function submitStockAdjustment() {
       if (!AppState.activeModalItem) return;
 
+      // Subscription Lock Guard: Block mutations if store is suspended or locked
+      if (!validateStoreSubscription()) {
+        showToast("Transaction Blocked: Store subscription is suspended or past grace period.", "error");
+        return;
+      }
+
       const qty = parseInt(document.getElementById('stockModalQty').value) || 1;
       const reason = document.getElementById('stockModalReason').value;
       const prod = AppState.activeModalItem;
@@ -1268,6 +1383,7 @@
             pContainer.classList.add('hidden');
             bar.style.width = '0%';
             syncBtn.disabled = false;
+            saveSubscriptionStateLocally();
             renderSyncQueueList();
             renderUI();
             showToast("Successfully synchronized batch transactions with Supabase Cloud!", "success");
@@ -1420,13 +1536,621 @@
       return { totalSkus, totalUnits, lowStockCount, totalValuationTZS, totalRetailValuationTZS, projectedProfitTZS };
     }
 
+
+    // =========================================================================
+    // SUBSCRIPTION LEASE, LOCKOUT & SUPER ADMIN PORTAL LOGIC
+    // =========================================================================
+
+    function initSubscriptionState() {
+      const savedStores = localStorage.getItem('tzion_stores');
+      if (savedStores) {
+        try { AppState.stores = JSON.parse(savedStores); } catch(e){}
+      }
+      const savedStoreId = localStorage.getItem('tzion_active_store_id');
+      if (savedStoreId && AppState.stores.some(s => s.id === savedStoreId)) {
+        AppState.currentStoreId = savedStoreId;
+      }
+      saveSubscriptionStateLocally();
+    }
+
+    function saveSubscriptionStateLocally() {
+      const curStore = AppState.stores.find(s => s.id === AppState.currentStoreId) || AppState.stores[0];
+      if (curStore) {
+        const renew = new Date(curStore.subscription_renews_at);
+        const expiresAt = new Date(renew.getTime() + (curStore.grace_period_days * 86400000)).toISOString();
+        localStorage.setItem('tzion_license_expires_at', expiresAt);
+        localStorage.setItem('tzion_is_locked', curStore.is_locked ? 'true' : 'false');
+        localStorage.setItem('tzion_active_store_id', curStore.id);
+      }
+      localStorage.setItem('tzion_stores', JSON.stringify(AppState.stores));
+    }
+
+    function updateHeaderStoreDisplay() {
+      const curStore = AppState.stores.find(s => s.id === AppState.currentStoreId) || AppState.stores[0];
+      const storeNameEl = document.getElementById('headerStoreName');
+      const storePill = document.getElementById('headerStorePill');
+      if (storeNameEl && curStore) {
+        if (AppState.activeSuperAdminPortal) {
+          storeNameEl.innerText = "👑 All Stores (Fleet Portal)";
+          storePill.className = "hidden sm:inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-amber-500/20 border border-amber-500/40 text-amber-600 dark:text-amber-400";
+        } else {
+          storeNameEl.innerText = (curStore.is_locked ? "🔒 " : "🏪 ") + curStore.name;
+          storePill.className = curStore.is_locked 
+            ? "hidden sm:inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-rose-500/20 border border-rose-500/40 text-rose-600 dark:text-rose-400"
+            : "hidden sm:inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-tzion-orange-500/15 border border-tzion-orange-500/30 text-tzion-orange-600 dark:text-tzion-orange-400 hover:bg-tzion-orange-500/25";
+        }
+      }
+    }
+
+    // --- Offline Lease Validation Check ---
+    function validateStoreSubscription() {
+      // Super Admin is never locked out
+      if (AppState.currentUser && (AppState.currentUser.is_super_admin || AppState.currentUser.role === 'super_admin')) {
+        closeSubscriptionLockModal();
+        return true;
+      }
+
+      const curStore = AppState.stores.find(s => s.id === AppState.currentStoreId) || AppState.stores[0];
+      if (!curStore) return true;
+
+      // Offline lease check from local storage & memory:
+      // currentTime > license_expires_at OR is_locked == true
+      const storedExpires = localStorage.getItem('tzion_license_expires_at');
+      const storedLocked = localStorage.getItem('tzion_is_locked');
+
+      const isLocked = (storedLocked === 'true') || curStore.is_locked || (curStore.status === 'suspended');
+
+      let expiresAt = null;
+      if (storedExpires) {
+        expiresAt = new Date(storedExpires);
+      } else {
+        const renew = new Date(curStore.subscription_renews_at);
+        expiresAt = new Date(renew.getTime() + (curStore.grace_period_days * 86400000));
+      }
+
+      const now = new Date();
+      const isExpired = expiresAt && (now > expiresAt);
+
+      if (isLocked || isExpired) {
+        const reason = isExpired 
+          ? "Grace period expired on " + expiresAt.toLocaleDateString() + ". Monthly subscription payment required." 
+          : (curStore.lock_reason || "Monthly subscription payment overdue");
+        openSubscriptionLockModal(curStore, reason);
+        return false;
+      }
+
+      closeSubscriptionLockModal();
+      return true;
+    }
+
+    function openSubscriptionLockModal(store, reason) {
+      const modal = document.getElementById('subscriptionLockModal');
+      if (!modal) return;
+      document.getElementById('lockModalFeeDisplay').innerText = formatTZS(store.monthly_fee_tzs || 50000);
+      document.getElementById('lockModalStoreName').innerText = store.name;
+      document.getElementById('lockModalReasonText').innerText = reason;
+
+      const waBtn = document.getElementById('lockModalWhatsAppBtn');
+      if (waBtn) {
+        const supportPhone = "255755123456";
+        const msg = encodeURIComponent(`Payment confirmation for ${store.name} (Monthly Fee: ${formatTZS(store.monthly_fee_tzs || 50000)})`);
+        waBtn.href = `https://wa.me/${supportPhone}?text=${msg}`;
+      }
+
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
+
+    function closeSubscriptionLockModal() {
+      const modal = document.getElementById('subscriptionLockModal');
+      if (modal) {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+      }
+    }
+
+    function retrySubscriptionSync() {
+      const btn = document.getElementById('lockModalRetryBtn');
+      btn.innerHTML = `<span class="animate-spin inline-block mr-1">🔄</span> Checking Supabase License...`;
+      btn.disabled = true;
+
+      setTimeout(() => {
+        btn.innerHTML = `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg><span>Retry / Sync Payment Status</span>`;
+        btn.disabled = false;
+
+        const curStore = AppState.stores.find(s => s.id === AppState.currentStoreId) || AppState.stores[0];
+        if (curStore && !curStore.is_locked && curStore.status !== 'suspended') {
+          saveSubscriptionStateLocally();
+          closeSubscriptionLockModal();
+          showToast("Subscription verified with Supabase. Access restored!", "success");
+          renderUI();
+        } else {
+          showToast("Payment record not yet confirmed on Supabase. Please complete payment or send proof via WhatsApp.", "warning");
+        }
+      }, 700);
+    }
+
+    function simulateDemoUnlock() {
+      const curStore = AppState.stores.find(s => s.id === AppState.currentStoreId) || AppState.stores[0];
+      if (curStore) {
+        curStore.is_locked = false;
+        curStore.status = 'active';
+        curStore.subscription_renews_at = new Date(Date.now() + 30 * 86400000).toISOString();
+        curStore.lock_reason = "";
+        saveSubscriptionStateLocally();
+        closeSubscriptionLockModal();
+        showToast("Demo Unlock: Granted 30-day subscription leeway!", "success");
+        renderUI();
+      }
+    }
+
+    function toggleSuperAdminRoute() {
+      if (!AppState.currentUser || !AppState.currentUser.is_super_admin) {
+        showToast("Access Denied: Super Admin clearance required.", "error");
+        return;
+      }
+      AppState.activeSuperAdminPortal = !AppState.activeSuperAdminPortal;
+      const btnText = document.getElementById('superAdminBtnText');
+      if (btnText) {
+        btnText.innerText = AppState.activeSuperAdminPortal ? "Store View" : "Super Admin Fleet";
+      }
+      if (AppState.activeSuperAdminPortal) {
+        window.location.hash = '#/super-admin';
+      } else {
+        window.location.hash = '';
+      }
+      updateHeaderStoreDisplay();
+      renderUI();
+    }
+
+    function toggleStoreOrPortal() {
+      if (AppState.currentUser && AppState.currentUser.is_super_admin) {
+        toggleSuperAdminRoute();
+      }
+    }
+
+    // --- Super Admin Actions Per Store ---
+    function toggleStoreLock(storeId) {
+      const st = AppState.stores.find(s => s.id === storeId);
+      if (!st) return;
+
+      st.is_locked = !st.is_locked;
+      st.status = st.is_locked ? 'suspended' : 'active';
+      st.lock_reason = st.is_locked ? 'Monthly subscription payment overdue' : '';
+
+      saveSubscriptionStateLocally();
+
+      // Log outbox mutation for remote sync
+      AppState.syncQueue.unshift({
+        id: `tx-lock-${Date.now().toString().slice(-4)}`,
+        type: 'STORE_LOCK_MUTATION',
+        storeId: st.id,
+        storeName: st.name,
+        is_locked: st.is_locked,
+        status: st.status,
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        user: AppState.currentUser.email
+      });
+
+      showToast(`Store ${st.name} is now ${st.is_locked ? 'LOCKED (Suspended)' : 'UNLOCKED (Active)'}`, st.is_locked ? "warning" : "success");
+      renderUI();
+    }
+
+    function extendStoreGracePeriod(storeId, days) {
+      const st = AppState.stores.find(s => s.id === storeId);
+      if (!st) return;
+
+      const currentRenew = new Date(st.subscription_renews_at);
+      const base = currentRenew > new Date() ? currentRenew : new Date();
+      st.subscription_renews_at = new Date(base.getTime() + (days * 86400000)).toISOString();
+      st.is_locked = false;
+      st.status = 'active';
+      st.lock_reason = '';
+
+      saveSubscriptionStateLocally();
+
+      AppState.syncQueue.unshift({
+        id: `tx-grace-${Date.now().toString().slice(-4)}`,
+        type: 'STORE_GRACE_EXTENSION',
+        storeId: st.id,
+        days: days,
+        new_renewal: st.subscription_renews_at,
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        user: AppState.currentUser.email
+      });
+
+      showToast(`Extended grace period by +${days} days for ${st.name}`, "success");
+      renderUI();
+    }
+
+    function sendWhatsAppPaymentReminder(storeId) {
+      const st = AppState.stores.find(s => s.id === storeId);
+      if (!st) return;
+
+      const renewDate = new Date(st.subscription_renews_at).toLocaleDateString('sw-TZ', { day: 'numeric', month: 'long', year: 'numeric' });
+      const amountStr = formatTZS(st.monthly_fee_tzs || 50000);
+      const cleanPhone = (st.owner_phone || '+255755123456').replace(/[^0-9]/g, '');
+
+      // Exact prompt Swahili text requirement:
+      // "Habari [Owner], malipo ya mwezi ya mfumo wa TzionStockly (TZS [Amount]) yanatakiwa kulipwa kufikia tarehe [Date]. Tafadhali kamilisha malipo ili kuepuka mfumo kusitishwa. Asante!"
+      const text = `Habari ${st.owner_name}, malipo ya mwezi ya mfumo wa TzionStockly (${amountStr}) yanatakiwa kulipwa kufikia tarehe ${renewDate}. Tafadhali kamilisha malipo ili kuepuka mfumo kusitishwa. Asante!`;
+
+      const url = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(text)}`;
+      window.open(url, '_blank');
+      showToast(`Opened WhatsApp reminder for ${st.owner_name}`, "info");
+    }
+
+    function switchStore(storeId) {
+      AppState.currentStoreId = storeId;
+      saveSubscriptionStateLocally();
+      updateHeaderStoreDisplay();
+      showToast(`Switched active store to: ${(AppState.stores.find(s => s.id === storeId) || {}).name}`, "info");
+      AppState.activeSuperAdminPortal = false;
+      renderUI();
+    }
+
+    function setStoreStatusFilter(filter) {
+      AppState.storeStatusFilter = filter;
+      renderUI();
+    }
+
+    function handleStoreSearch(val) {
+      AppState.storeSearchQuery = val.toLowerCase().trim();
+      renderUI();
+    }
+
+    function openOnboardStoreModal() {
+      const m = document.getElementById('onboardStoreModal');
+      if (m) { m.classList.remove('hidden'); m.classList.add('flex'); }
+    }
+
+    function closeOnboardStoreModal() {
+      const m = document.getElementById('onboardStoreModal');
+      if (m) { m.classList.add('hidden'); m.classList.remove('flex'); }
+    }
+
+    function handleCreateStore(e) {
+      e.preventDefault();
+      const name = document.getElementById('newStoreName').value.trim();
+      const owner = document.getElementById('newStoreOwner').value.trim();
+      const phone = document.getElementById('newStorePhone').value.trim();
+      const fee = parseFloat(document.getElementById('newStoreFee').value) || 50000;
+      const grace = parseInt(document.getElementById('newStoreGrace').value) || 3;
+
+      const newStore = {
+        id: `store-tz-${(AppState.stores.length + 1).toString().padStart(3, '0')}`,
+        name: name,
+        owner_name: owner,
+        owner_phone: phone,
+        monthly_fee_tzs: fee,
+        status: 'active',
+        subscription_renews_at: new Date(Date.now() + 30 * 86400000).toISOString(),
+        grace_period_days: grace,
+        is_locked: false,
+        lock_reason: ''
+      };
+
+      AppState.stores.unshift(newStore);
+      saveSubscriptionStateLocally();
+      closeOnboardStoreModal();
+      showToast(`Successfully onboarded new tenant: ${name}`, "success");
+      renderUI();
+    }
+
+    // --- SUPER ADMIN MULTI-STORE DASHBOARD PORTAL ---
+    function renderSuperAdminPortal() {
+      const container = document.getElementById('workspaceContent');
+      if (!container) return;
+
+      const totalStores = AppState.stores.length;
+      const activeStores = AppState.stores.filter(s => s.status === 'active' && !s.is_locked).length;
+      const pastDueStores = AppState.stores.filter(s => s.status === 'past_due' && !s.is_locked).length;
+      const suspendedStores = AppState.stores.filter(s => s.status === 'suspended' || s.is_locked).length;
+      
+      const totalMRR = AppState.stores
+        .filter(s => s.status === 'active' || s.status === 'past_due')
+        .reduce((sum, s) => sum + (s.monthly_fee_tzs || 50000), 0);
+
+      // Filtered stores list
+      let filteredStores = AppState.stores.filter(s => {
+        if (AppState.storeStatusFilter === 'active') return s.status === 'active' && !s.is_locked;
+        if (AppState.storeStatusFilter === 'past_due') return s.status === 'past_due';
+        if (AppState.storeStatusFilter === 'suspended') return s.status === 'suspended' || s.is_locked;
+        return true;
+      });
+
+      if (AppState.storeSearchQuery) {
+        filteredStores = filteredStores.filter(s => 
+          s.name.toLowerCase().includes(AppState.storeSearchQuery) ||
+          s.owner_name.toLowerCase().includes(AppState.storeSearchQuery) ||
+          s.owner_phone.includes(AppState.storeSearchQuery)
+        );
+      }
+
+      container.innerHTML = `
+        <div class="space-y-5 md:space-y-6">
+          
+          <!-- SUPER ADMIN MASTER BANNER -->
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 sm:p-6 bg-gradient-to-r from-amber-600 via-tzion-purple-900 to-[#1e073d] text-white rounded-3xl border border-amber-500/40 shadow-2xl">
+            <div>
+              <span class="text-[10px] font-mono font-black px-2.5 py-0.5 rounded-full bg-amber-500 text-white uppercase tracking-wider shadow">
+                👑 Super Admin Multi-Store SaaS Controller
+              </span>
+              <h2 class="text-xl sm:text-3xl font-black mt-2 text-white">Fleet Subscription & Store Control</h2>
+              <p class="text-xs text-amber-100/90 mt-0.5">Manage tenant payments, 1-click lockouts, WhatsApp reminders, and Monthly Recurring Revenue (MRR).</p>
+            </div>
+            <div class="flex flex-wrap items-center gap-2">
+              <button onclick="openOnboardStoreModal()" class="flex-1 sm:flex-initial px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold shadow flex items-center justify-center gap-1.5 transition-all">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                <span>+ Onboard New Store</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- SUMMARY METRICS CARDS -->
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+            
+            <!-- Card 1: Total Stores Registered -->
+            <div class="bg-white dark:bg-[#1b0c3a] p-4 rounded-3xl border border-purple-200 dark:border-purple-900/60 shadow-sm">
+              <div class="flex justify-between items-start text-slate-500 dark:text-purple-300 mb-1">
+                <span class="text-xs font-semibold">Total Stores Registered</span>
+                <span class="text-xs p-1.5 rounded-xl bg-purple-100 dark:bg-tzion-purple-900 text-tzion-purple-600 dark:text-purple-300">🏪</span>
+              </div>
+              <div class="text-2xl font-black font-mono text-slate-900 dark:text-white">${totalStores} <span class="text-xs font-normal text-slate-400">Stores</span></div>
+              <span class="text-[10px] text-slate-500 dark:text-purple-400 font-mono">100% cloud & local synchronized</span>
+            </div>
+
+            <!-- Card 2: Active vs Overdue / Suspended -->
+            <div class="bg-white dark:bg-[#1b0c3a] p-4 rounded-3xl border border-purple-200 dark:border-purple-900/60 shadow-sm">
+              <div class="flex justify-between items-start text-slate-500 dark:text-purple-300 mb-1">
+                <span class="text-xs font-semibold">Active vs. Overdue / Suspended</span>
+                <span class="text-xs p-1.5 rounded-xl bg-amber-500/10 text-amber-500">⚖️</span>
+              </div>
+              <div class="flex items-baseline space-x-2">
+                <span class="text-2xl font-black font-mono text-emerald-600 dark:text-emerald-400">${activeStores}</span>
+                <span class="text-xs text-slate-400 font-mono">Active</span>
+                <span class="text-slate-300 dark:text-slate-700">•</span>
+                <span class="text-lg font-bold font-mono text-amber-500">${pastDueStores}</span>
+                <span class="text-xs text-slate-400 font-mono">Past Due</span>
+                <span class="text-slate-300 dark:text-slate-700">•</span>
+                <span class="text-lg font-bold font-mono text-rose-500">${suspendedStores}</span>
+                <span class="text-xs text-slate-400 font-mono">Locked</span>
+              </div>
+              <span class="text-[10px] text-slate-500 dark:text-purple-400 font-mono">
+                ${suspendedStores > 0 ? `⚠️ ${suspendedStores} store(s) locked out` : 'All operational stores in good standing'}
+              </span>
+            </div>
+
+            <!-- Card 3: Monthly Recurring Revenue (MRR) -->
+            <div class="bg-white dark:bg-[#1b0c3a] p-4 rounded-3xl border border-purple-200 dark:border-purple-900/60 shadow-sm">
+              <div class="flex justify-between items-start text-slate-500 dark:text-purple-300 mb-1">
+                <span class="text-xs font-semibold">Monthly Recurring Revenue (MRR)</span>
+                <span class="text-xs p-1.5 rounded-xl bg-tzion-orange-500/10 text-tzion-orange-500">💰</span>
+              </div>
+              <div class="text-xl sm:text-2xl font-black font-mono text-tzion-orange-600 dark:text-tzion-orange-400">${formatTZS(totalMRR)}</div>
+              <span class="text-[10px] text-emerald-600 dark:text-emerald-400 font-mono font-medium">Monthly billing in TZS</span>
+            </div>
+
+          </div>
+
+          <!-- SEARCH & STATUS FILTER ROW -->
+          <div class="bg-white dark:bg-[#1b0c3a] p-3 sm:p-4 rounded-3xl border border-purple-200 dark:border-purple-900/60 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-3">
+            <div class="relative flex-1">
+              <input 
+                type="text" 
+                placeholder="Search tenant by store name, owner, or phone..." 
+                value="${AppState.storeSearchQuery}"
+                oninput="handleStoreSearch(this.value)"
+                class="w-full bg-purple-50/50 dark:bg-tzion-purple-950 border border-purple-200 dark:border-purple-800 rounded-2xl pl-10 pr-3 py-2 text-xs text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:border-tzion-orange-500"
+              >
+              <svg class="w-4 h-4 text-tzion-orange-500 absolute left-3.5 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+            </div>
+            
+            <div class="flex items-center space-x-1.5 overflow-x-auto pb-1 md:pb-0">
+              ${['All', 'active', 'past_due', 'suspended'].map(cat => {
+                const label = cat === 'All' ? 'All Stores' : (cat === 'active' ? 'Active' : (cat === 'past_due' ? 'Past Due' : 'Suspended'));
+                const isActive = AppState.storeStatusFilter === cat;
+                return `
+                  <button 
+                    onclick="setStoreStatusFilter('${cat}')" 
+                    class="shrink-0 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all ${isActive ? 'bg-amber-500 text-white shadow' : 'bg-purple-100 dark:bg-tzion-purple-950 text-slate-600 dark:text-purple-300 border border-purple-200 dark:border-purple-800'}"
+                  >
+                    ${label}
+                  </button>
+                `;
+              }).join('')}
+            </div>
+          </div>
+
+          <!-- STORE MANAGEMENT TABLE -->
+          <div class="bg-white dark:bg-[#1b0c3a] rounded-3xl border border-purple-200 dark:border-purple-900/60 overflow-hidden shadow-sm">
+            <div class="p-4 border-b border-purple-100 dark:border-purple-900/60 flex items-center justify-between">
+              <div>
+                <h3 class="font-bold text-slate-900 dark:text-white text-sm">Tenant Store Fleet (${filteredStores.length})</h3>
+                <p class="text-[11px] text-slate-500 dark:text-purple-400">1-click lockouts take effect immediately across online & offline devices.</p>
+              </div>
+            </div>
+
+            <!-- Table for desktop -->
+            <div class="hidden lg:block overflow-x-auto">
+              <table class="w-full text-left border-collapse text-xs">
+                <thead>
+                  <tr class="border-b border-purple-100 dark:border-purple-900/60 text-slate-500 dark:text-purple-300 bg-purple-50/50 dark:bg-tzion-purple-950 uppercase font-mono text-[10px]">
+                    <th class="py-3 px-4">Store Name</th>
+                    <th class="py-3 px-4">Owner & Phone</th>
+                    <th class="py-3 px-4">Monthly Fee (TZS)</th>
+                    <th class="py-3 px-4">Renewal Date & Grace</th>
+                    <th class="py-3 px-4">Status</th>
+                    <th class="py-3 px-4 text-right">Control Actions</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-purple-100 dark:divide-purple-900/60">
+                  ${filteredStores.length === 0 ? `
+                    <tr><td colspan="6" class="text-center py-8 text-slate-400">No stores match the filter.</td></tr>
+                  ` : filteredStores.map(st => {
+                    const renewDate = new Date(st.subscription_renews_at);
+                    const isOverdue = new Date() > renewDate;
+                    const statusPill = st.is_locked || st.status === 'suspended'
+                      ? '<span class="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-rose-500/15 text-rose-600 dark:text-rose-400 border border-rose-500/30">LOCKED (SUSPENDED)</span>'
+                      : (st.status === 'past_due' || isOverdue
+                        ? '<span class="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30">PAST DUE (GRACE)</span>'
+                        : '<span class="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30">ACTIVE</span>');
+                    
+                    return `
+                      <tr class="hover:bg-purple-50/60 dark:hover:bg-tzion-purple-900/30 transition-colors">
+                        <td class="py-3.5 px-4">
+                          <div class="font-bold text-slate-900 dark:text-white text-xs flex items-center gap-1.5">
+                            ${st.is_locked ? '<span class="text-rose-500">🔒</span>' : '<span>🏪</span>'}
+                            <span>${st.name}</span>
+                          </div>
+                          <div class="font-mono text-[10px] text-slate-400">ID: ${st.id}</div>
+                        </td>
+                        <td class="py-3.5 px-4">
+                          <div class="font-semibold text-slate-800 dark:text-purple-200">${st.owner_name}</div>
+                          <div class="font-mono text-[10px] text-tzion-orange-500">${st.owner_phone}</div>
+                        </td>
+                        <td class="py-3.5 px-4 font-mono font-bold text-slate-900 dark:text-white">
+                          ${formatTZS(st.monthly_fee_tzs || 50000)}
+                        </td>
+                        <td class="py-3.5 px-4">
+                          <div class="font-mono text-xs ${isOverdue ? 'text-amber-500 font-bold' : 'text-slate-700 dark:text-purple-200'}">
+                            ${renewDate.toLocaleDateString()}
+                          </div>
+                          <div class="text-[10px] text-slate-400 font-mono">Grace: ${st.grace_period_days} days</div>
+                        </td>
+                        <td class="py-3.5 px-4">
+                          ${statusPill}
+                        </td>
+                        <td class="py-3.5 px-4 text-right">
+                          <div class="inline-flex items-center gap-1.5 flex-wrap justify-end">
+                            <!-- 1-Click Lock / Unlock Toggle -->
+                            <button 
+                              onclick="toggleStoreLock('${st.id}')" 
+                              class="px-2.5 py-1.5 rounded-xl font-bold text-xs transition-all ${st.is_locked ? 'bg-emerald-600 hover:bg-emerald-700 text-white shadow' : 'bg-rose-500/15 hover:bg-rose-500/30 text-rose-600 dark:text-rose-400 border border-rose-500/30'}"
+                              title="${st.is_locked ? 'Unlock Store' : 'Lock Store'}"
+                            >
+                              ${st.is_locked ? '🔓 Unlock' : '🔒 Lock'}
+                            </button>
+
+                            <!-- Extend Grace Period -->
+                            <button 
+                              onclick="extendStoreGracePeriod('${st.id}', 3)" 
+                              class="px-2 py-1.5 rounded-xl bg-purple-100 dark:bg-tzion-purple-900/60 hover:bg-purple-200 text-slate-700 dark:text-purple-200 text-[11px] font-semibold border border-purple-200 dark:border-purple-800"
+                              title="Extend Grace by +3 Days"
+                            >
+                              +3d
+                            </button>
+                            <button 
+                              onclick="extendStoreGracePeriod('${st.id}', 7)" 
+                              class="px-2 py-1.5 rounded-xl bg-purple-100 dark:bg-tzion-purple-900/60 hover:bg-purple-200 text-slate-700 dark:text-purple-200 text-[11px] font-semibold border border-purple-200 dark:border-purple-800"
+                              title="Extend Grace by +7 Days"
+                            >
+                              +7d
+                            </button>
+
+                            <!-- WhatsApp Payment Reminder -->
+                            <button 
+                              onclick="sendWhatsAppPaymentReminder('${st.id}')" 
+                              class="px-2.5 py-1.5 rounded-xl bg-emerald-500/15 hover:bg-emerald-500/30 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 font-bold text-xs flex items-center gap-1"
+                              title="Send Swahili Payment Reminder via WhatsApp"
+                            >
+                              <span>💬</span>
+                              <span class="hidden xl:inline">WhatsApp</span>
+                            </button>
+
+                            <!-- Switch to this store's stock -->
+                            <button 
+                              onclick="switchStore('${st.id}')" 
+                              class="px-2.5 py-1.5 rounded-xl bg-tzion-purple-600/15 hover:bg-tzion-purple-600/30 text-tzion-purple-700 dark:text-purple-300 border border-tzion-purple-600/30 text-xs font-semibold"
+                              title="Switch to Store Inventory View"
+                            >
+                              Stock
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    `;
+                  }).join('')}
+                </tbody>
+              </table>
+            </div>
+
+            <!-- Cards for mobile/tablet screens -->
+            <div class="lg:hidden divide-y divide-purple-100 dark:divide-purple-900/60 p-3 space-y-3">
+              ${filteredStores.length === 0 ? `
+                <div class="text-center py-6 text-slate-400 text-xs">No stores match the filter.</div>
+              ` : filteredStores.map(st => {
+                const renewDate = new Date(st.subscription_renews_at);
+                const isOverdue = new Date() > renewDate;
+                return `
+                  <div class="p-3 bg-purple-50/50 dark:bg-tzion-purple-950/40 rounded-2xl border border-purple-200 dark:border-purple-800/80 space-y-2.5">
+                    <div class="flex justify-between items-start">
+                      <div>
+                        <div class="font-bold text-slate-900 dark:text-white text-sm flex items-center gap-1.5">
+                          ${st.is_locked ? '<span class="text-rose-500">🔒</span>' : '<span>🏪</span>'}
+                          <span>${st.name}</span>
+                        </div>
+                        <div class="text-[11px] text-slate-600 dark:text-purple-300">${st.owner_name} • <span class="font-mono text-tzion-orange-500">${st.owner_phone}</span></div>
+                      </div>
+                      <div>
+                        ${st.is_locked ? '<span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-rose-500/20 text-rose-500">LOCKED</span>' : '<span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-emerald-500/20 text-emerald-500">ACTIVE</span>'}
+                      </div>
+                    </div>
+
+                    <div class="flex justify-between items-center text-xs font-mono pt-1 border-t border-purple-100 dark:border-purple-900/40">
+                      <span class="text-slate-500 dark:text-purple-400">Monthly Fee:</span>
+                      <span class="font-bold text-tzion-orange-600 dark:text-tzion-orange-400">${formatTZS(st.monthly_fee_tzs || 50000)}</span>
+                    </div>
+
+                    <div class="flex justify-between items-center text-xs font-mono">
+                      <span class="text-slate-500 dark:text-purple-400">Renewal Date:</span>
+                      <span class="${isOverdue ? 'text-amber-500 font-bold' : 'text-slate-700 dark:text-purple-200'}">${renewDate.toLocaleDateString()}</span>
+                    </div>
+
+                    <div class="pt-2 flex flex-wrap items-center gap-1.5">
+                      <button onclick="toggleStoreLock('${st.id}')" class="flex-1 py-1.5 rounded-xl font-bold text-xs ${st.is_locked ? 'bg-emerald-600 text-white' : 'bg-rose-500/20 text-rose-500'}">
+                        ${st.is_locked ? '🔓 Unlock' : '🔒 Lock Store'}
+                      </button>
+                      <button onclick="extendStoreGracePeriod('${st.id}', 3)" class="px-2.5 py-1.5 rounded-xl bg-purple-100 dark:bg-tzion-purple-900 text-xs font-semibold">
+                        +3d
+                      </button>
+                      <button onclick="extendStoreGracePeriod('${st.id}', 7)" class="px-2.5 py-1.5 rounded-xl bg-purple-100 dark:bg-tzion-purple-900 text-xs font-semibold">
+                        +7d
+                      </button>
+                      <button onclick="sendWhatsAppPaymentReminder('${st.id}')" class="px-3 py-1.5 rounded-xl bg-emerald-500/20 text-emerald-500 text-xs font-bold">
+                        💬 WhatsApp
+                      </button>
+                      <button onclick="switchStore('${st.id}')" class="px-3 py-1.5 rounded-xl bg-tzion-purple-600/20 text-tzion-purple-600 dark:text-purple-300 text-xs font-semibold">
+                        Stock
+                      </button>
+                    </div>
+                  </div>
+                `;
+              }).join('')}
+            </div>
+
+          </div>
+
+        </div>
+      `;
+    }
+
     function renderUI() {
       if (!AppState.isAuthenticated) return;
 
       document.getElementById('queueBadge').innerText = AppState.syncQueue.length;
+      updateHeaderStoreDisplay();
 
-      renderAppView();
-      setTimeout(renderCharts, 40);
+      if (AppState.activeSuperAdminPortal) {
+        renderSuperAdminPortal();
+      } else {
+        // Enforce Offline Lease & Subscription Lockout
+        if (!validateStoreSubscription()) {
+          return;
+        }
+        renderAppView();
+        setTimeout(renderCharts, 40);
+      }
     }
 
     // --- Naturally Responsive Application View ---
