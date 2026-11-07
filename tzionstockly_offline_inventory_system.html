@@ -213,25 +213,13 @@
           <svg id="themeIconMoon" class="w-4 h-4 hidden text-tzion-purple-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>
         </button>
 
-        <!-- Viewport Switcher -->
-        <div class="bg-purple-100 dark:bg-tzion-purple-950 p-1 rounded-xl border border-purple-200 dark:border-purple-900/60 flex items-center text-xs font-medium">
-          <button id="viewBtnDesktop" onclick="setViewMode('desktop')" class="px-2.5 py-1 rounded-lg bg-tzion-purple-600 text-white font-semibold shadow-sm transition-all flex items-center gap-1">
-            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
-            <span class="hidden sm:inline">Desktop</span>
-          </button>
-          <button id="viewBtnMobile" onclick="setViewMode('mobile')" class="px-2.5 py-1 rounded-lg text-slate-600 dark:text-purple-300 hover:text-purple-950 dark:hover:text-white transition-all flex items-center gap-1">
-            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
-            <span class="hidden sm:inline">Mobile</span>
-          </button>
-        </div>
-
-        <!-- Network Online/Offline Toggle -->
-        <button id="netToggleBtn" onclick="toggleNetwork()" class="px-3 py-1.5 rounded-xl border border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-xs font-semibold flex items-center gap-2 hover:bg-emerald-500/20 transition-all">
+        <!-- Network Online/Offline Status Indicator -->
+        <button id="netToggleBtn" onclick="toggleNetwork()" title="Network Connection Status" class="px-2.5 py-1.5 rounded-xl border border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-xs font-semibold flex items-center gap-1.5 hover:bg-emerald-500/20 transition-all">
           <span class="relative flex h-2 w-2">
             <span id="netPing" class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
             <span id="netDot" class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
           </span>
-          <span id="netText">Online (Supabase Sync)</span>
+          <span id="netText" class="text-[11px]">Online</span>
         </button>
 
         <!-- Outbox Queue Drawer Button -->
@@ -379,62 +367,22 @@
   <main id="mainAppWorkspace" class="hidden flex-1 p-3 md:p-6 overflow-x-hidden flex justify-center items-start">
     <div id="workspaceContainer" class="w-full max-w-7xl transition-all duration-300">
       
-      <!-- DESKTOP WORKSPACE CONTAINER -->
-      <div id="desktopWrapper" class="block w-full">
+      <!-- DESKTOP WORKSPACE (Displayed on PC screens >= 768px) -->
+      <div id="desktopWrapper" class="hidden md:block w-full">
         <!-- Rendered by renderDesktopView() -->
       </div>
 
-      <!-- MOBILE DEVICE PHONE MOCKUP SHELL (390 x 844 px) -->
-      <div id="mobileWrapper" class="hidden flex-col items-center justify-center my-4">
-        <div class="mobile-frame-wrapper w-[390px] h-[844px] bg-slate-50 dark:bg-[#15082e] flex flex-col relative overflow-hidden border border-purple-200 dark:border-purple-900 shadow-2xl">
-          
-          <!-- Smartphone Status Bar & Island -->
-          <div class="h-11 bg-purple-100 dark:bg-[#0c041c] text-slate-700 dark:text-purple-200 flex items-center justify-between px-7 shrink-0 text-xs font-semibold select-none pt-1 transition-colors">
-            <span id="mobileClock">09:41</span>
-            <div class="w-24 h-4 bg-slate-900 dark:bg-black rounded-full mx-auto -mt-1 flex items-center justify-center">
-              <span class="w-2 h-2 rounded-full bg-purple-700 ml-auto mr-2"></span>
-            </div>
-            <div class="flex items-center space-x-1.5 text-[10px]">
-              <span id="mobileWifiIcon">📶</span>
-              <span id="mobileBattIcon">🔋 96%</span>
-            </div>
-          </div>
-
-          <!-- Mobile App Header with TzionStockly Logo -->
-          <div class="bg-white dark:bg-[#1b0c3a] px-4 py-2.5 border-b border-purple-200 dark:border-purple-900/60 flex items-center justify-between shrink-0 transition-colors">
-            <div class="flex items-center space-x-2">
-              <div class="w-7 h-7 rounded-lg bg-gradient-to-br from-tzion-purple-600 to-tzion-orange-500 text-white font-black flex items-center justify-center text-xs shadow">
-                ⚡
-              </div>
-              <div>
-                <h2 class="text-xs font-extrabold text-tzion-purple-700 dark:text-purple-200 tracking-wide">
-                  Tzion<span class="text-tzion-orange-500">Stockly</span>
-                </h2>
-                <p id="mobileRoleLabel" class="text-[9px] text-tzion-orange-500 font-mono font-bold">ADMIN PORTAL</p>
-              </div>
-            </div>
-            <div class="flex items-center space-x-1.5">
-              <button onclick="openStoreModal()" class="text-[9px] font-mono px-2 py-0.5 rounded-full bg-tzion-purple-100 dark:bg-tzion-purple-900 text-tzion-purple-700 dark:text-purple-300 border border-tzion-purple-300 flex items-center gap-1 font-bold">
-                <span>🏪</span>
-                <span id="mobileStoreCode">TZ-MAIN</span>
-              </button>
-              <span id="mobileNetPill" class="text-[9px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30">ONLINE</span>
-              <button onclick="handleLogout()" title="Switch Account" class="text-slate-400 hover:text-rose-500 p-1">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
-              </button>
-            </div>
-          </div>
-
-          <!-- Mobile Scrollable Content Body -->
-          <div id="mobileScrollContainer" class="flex-1 overflow-y-auto overflow-x-hidden p-3 space-y-4 pb-20">
-            <!-- Rendered by renderMobileView() -->
-          </div>
-
-          <!-- Mobile Bottom Navigation Bar (Role Aware) -->
-          <nav id="mobileNavBar" class="h-16 bg-white/95 dark:bg-[#120726]/95 backdrop-blur-md border-t border-purple-200 dark:border-purple-900/60 flex items-center justify-around px-2 absolute bottom-0 left-0 right-0 z-30 transition-colors">
-            <!-- Populated dynamically based on Admin vs Staff -->
-          </nav>
+      <!-- NATIVE MOBILE WORKSPACE (Displayed on Mobile Phones < 768px) -->
+      <div id="mobileWrapper" class="block md:hidden w-full pb-20">
+        <!-- Mobile Scrollable Content Body -->
+        <div id="mobileScrollContainer" class="w-full space-y-3">
+          <!-- Rendered by renderMobileView() -->
         </div>
+
+        <!-- Mobile Bottom Navigation Bar (Fixed to bottom of phone screen) -->
+        <nav id="mobileNavBar" class="fixed bottom-0 left-0 right-0 h-16 bg-white/95 dark:bg-[#120726]/95 backdrop-blur-md border-t border-purple-200 dark:border-purple-900/60 flex items-center justify-around px-2 z-40 transition-colors shadow-lg">
+          <!-- Populated dynamically based on Admin vs Staff -->
+        </nav>
       </div>
 
     </div>
@@ -1355,27 +1303,9 @@
       }
     }
 
-    // --- View Mode (Desktop vs Mobile Mockup) ---
+    // --- Automatic Responsive View Mode ---
     function setViewMode(mode) {
       AppState.viewMode = mode;
-      const dBtn = document.getElementById('viewBtnDesktop');
-      const mBtn = document.getElementById('viewBtnMobile');
-      const dWrap = document.getElementById('desktopWrapper');
-      const mWrap = document.getElementById('mobileWrapper');
-
-      if (mode === 'desktop') {
-        dBtn.className = "px-2.5 py-1 rounded-lg bg-tzion-purple-600 text-white font-semibold shadow-sm transition-all flex items-center gap-1";
-        mBtn.className = "px-2.5 py-1 rounded-lg text-slate-600 dark:text-purple-300 hover:text-purple-950 dark:hover:text-white transition-all flex items-center gap-1";
-        dWrap.classList.remove('hidden');
-        mWrap.classList.add('hidden');
-        mWrap.classList.remove('flex');
-      } else {
-        mBtn.className = "px-2.5 py-1 rounded-lg bg-tzion-purple-600 text-white font-semibold shadow-sm transition-all flex items-center gap-1";
-        dBtn.className = "px-2.5 py-1 rounded-lg text-slate-600 dark:text-purple-300 hover:text-purple-950 dark:hover:text-white transition-all flex items-center gap-1";
-        dWrap.classList.add('hidden');
-        mWrap.classList.remove('hidden');
-        mWrap.classList.add('flex');
-      }
       renderUI();
     }
 
@@ -1386,28 +1316,19 @@
       const dot = document.getElementById('netDot');
       const ping = document.getElementById('netPing');
       const text = document.getElementById('netText');
-      const mPill = document.getElementById('mobileNetPill');
 
       if (AppState.isOnline) {
-        btn.className = "px-3 py-1.5 rounded-xl border border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-xs font-semibold flex items-center gap-2 hover:bg-emerald-500/20 transition-all";
+        btn.className = "px-2.5 py-1.5 rounded-xl border border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-xs font-semibold flex items-center gap-1.5 hover:bg-emerald-500/20 transition-all";
         dot.className = "relative inline-flex rounded-full h-2 w-2 bg-emerald-500";
         ping.className = "animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75";
-        text.innerText = "Online (Supabase Sync)";
-        if (mPill) {
-          mPill.className = "text-[9px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30";
-          mPill.innerText = "ONLINE";
-        }
-        showToast("Online: Connection restored to Supabase Cloud", "success");
+        text.innerText = "Online";
+        showToast("Online: Connection active to Supabase Cloud", "success");
       } else {
-        btn.className = "px-3 py-1.5 rounded-xl border border-amber-500/40 bg-amber-500/15 text-amber-600 dark:text-amber-400 text-xs font-semibold flex items-center gap-2 hover:bg-amber-500/25 transition-all";
+        btn.className = "px-2.5 py-1.5 rounded-xl border border-amber-500/40 bg-amber-500/15 text-amber-600 dark:text-amber-400 text-xs font-semibold flex items-center gap-1.5 hover:bg-amber-500/25 transition-all";
         dot.className = "relative inline-flex rounded-full h-2 w-2 bg-amber-500";
         ping.className = "hidden";
-        text.innerText = "Offline (Local Queue)";
-        if (mPill) {
-          mPill.className = "text-[9px] font-mono px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-600 dark:text-amber-400 border border-amber-500/40";
-          mPill.innerText = "OFFLINE";
-        }
-        showToast("Offline Active: Checkouts safely queued on device", "warning");
+        text.innerText = "Offline";
+        showToast("Offline: Checkouts queued locally on device", "warning");
       }
 
       renderUI();
@@ -2607,105 +2528,174 @@
       }
     }
 
-    // --- Render Mobile View (Mockup Shell) ---
+    // --- Render Mobile View (Native Edge-to-Edge Responsive UI) ---
     function renderMobileView() {
       const container = document.getElementById('mobileScrollContainer');
       const navBar = document.getElementById('mobileNavBar');
+      if (!container || !navBar) return;
+
       const filtered = getFilteredProducts();
       const isAdmin = AppState.currentUser.role === 'admin';
-
-      // Update mobile clock
-      const clk = document.getElementById('mobileClock');
-      if (clk) clk.innerText = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-
-      // Update Role Label in Mockup Header
-      const mRole = document.getElementById('mobileRoleLabel');
-      if (mRole) {
-        mRole.innerText = isAdmin ? "ADMINISTRATOR" : "STAFF CHECKOUT";
-        mRole.className = isAdmin ? "text-[9px] text-tzion-purple-400 font-mono font-bold" : "text-[9px] text-tzion-orange-500 font-mono font-bold";
-      }
+      const metrics = calculateMetrics();
 
       // Populate Mobile Bottom Navigation
       if (isAdmin) {
         navBar.innerHTML = `
-          <button onclick="setMobileSubTab('catalog')" class="flex flex-col items-center justify-center ${AppState.mobileTab === 'catalog' ? 'text-tzion-purple-600 dark:text-purple-300' : 'text-slate-400'} flex-1 py-1">
+          <button onclick="setMobileSubTab('catalog')" class="flex flex-col items-center justify-center ${AppState.mobileTab === 'catalog' ? 'text-tzion-purple-600 dark:text-purple-300 font-bold' : 'text-slate-400'} flex-1 py-1">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7"/></svg>
-            <span class="text-[10px] font-bold mt-0.5">Catalog</span>
+            <span class="text-[10px] mt-0.5">Products</span>
+          </button>
+          <button onclick="setMobileSubTab('stats')" class="flex flex-col items-center justify-center ${AppState.mobileTab === 'stats' ? 'text-tzion-purple-600 dark:text-purple-300 font-bold' : 'text-slate-400'} flex-1 py-1">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+            <span class="text-[10px] mt-0.5">Summary</span>
           </button>
           <button onclick="openImportModal()" class="flex flex-col items-center justify-center text-slate-400 flex-1 py-1">
             <svg class="w-5 h-5 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-            <span class="text-[10px] font-bold mt-0.5">Excel</span>
+            <span class="text-[10px] mt-0.5">Excel</span>
           </button>
           <button onclick="openSyncModal()" class="flex flex-col items-center justify-center text-slate-400 flex-1 py-1 relative">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
-            <span class="text-[10px] font-bold mt-0.5">Outbox</span>
-            <span class="absolute top-1 right-3 w-4 h-4 bg-tzion-orange-500 text-white rounded-full text-[9px] font-bold flex items-center justify-center">${AppState.syncQueue.length}</span>
+            <svg class="w-5 h-5 text-tzion-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+            <span class="text-[10px] mt-0.5">Outbox</span>
+            ${AppState.syncQueue.length > 0 ? `<span class="absolute top-1 right-4 w-4 h-4 bg-tzion-orange-500 text-white rounded-full text-[9px] font-bold flex items-center justify-center">${AppState.syncQueue.length}</span>` : ''}
           </button>
         `;
       } else {
         navBar.innerHTML = `
-          <button onclick="setMobileSubTab('catalog')" class="flex flex-col items-center justify-center text-tzion-orange-500 flex-1 py-1">
+          <button onclick="setMobileSubTab('catalog')" class="flex flex-col items-center justify-center text-tzion-orange-500 font-bold flex-1 py-1">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
-            <span class="text-[10px] font-bold mt-0.5">Quick Checkout</span>
+            <span class="text-[10px] mt-0.5">POS Checkout</span>
           </button>
           <button onclick="openSyncModal()" class="flex flex-col items-center justify-center text-slate-400 flex-1 py-1 relative">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
-            <span class="text-[10px] font-bold mt-0.5">Outbox</span>
-            <span class="absolute top-1 right-6 w-4 h-4 bg-tzion-orange-500 text-white rounded-full text-[9px] font-bold flex items-center justify-center">${AppState.syncQueue.length}</span>
+            <svg class="w-5 h-5 text-tzion-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+            <span class="text-[10px] mt-0.5">Outbox</span>
+            ${AppState.syncQueue.length > 0 ? `<span class="absolute top-1 right-8 w-4 h-4 bg-tzion-orange-500 text-white rounded-full text-[9px] font-bold flex items-center justify-center">${AppState.syncQueue.length}</span>` : ''}
           </button>
         `;
       }
 
-      // Render Mobile Items List
+      // Check Active Mobile SubTab
+      if (isAdmin && AppState.mobileTab === 'stats') {
+        container.innerHTML = `
+          <div class="space-y-3">
+            <div class="bg-gradient-to-r from-tzion-purple-900 to-tzion-purple-950 p-4 rounded-2xl text-white border border-purple-800 shadow-md">
+              <span class="text-[10px] uppercase font-mono tracking-wider text-tzion-orange-400 font-bold">Store Financial Overview</span>
+              <div class="text-2xl font-black font-mono mt-1">${formatTZS(metrics.totalValuationTZS)}</div>
+              <div class="text-[11px] text-purple-200 mt-0.5">Total Inventory Valuation (Cost Basis)</div>
+              <div class="mt-3 pt-3 border-t border-purple-800/60 flex justify-between items-center text-xs">
+                <span>Retail Value:</span>
+                <span class="font-mono font-bold text-tzion-orange-400">${formatTZS(metrics.totalRetailValuationTZS)}</span>
+              </div>
+              <div class="flex justify-between items-center text-xs mt-1">
+                <span>Estimated Profit:</span>
+                <span class="font-mono font-bold text-emerald-400">+${formatTZS(metrics.projectedProfitTZS)}</span>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+              <div class="p-3 bg-white dark:bg-[#1b0c3a] border border-purple-200 dark:border-purple-900/60 rounded-2xl">
+                <div class="text-[11px] text-slate-500 dark:text-purple-300">Total Units</div>
+                <div class="text-xl font-bold font-mono text-slate-900 dark:text-white mt-1">${metrics.totalUnits}</div>
+                <div class="text-[10px] text-slate-400 font-mono">${metrics.totalSkus} SKUs</div>
+              </div>
+              <div class="p-3 bg-white dark:bg-[#1b0c3a] border ${metrics.lowStockCount > 0 ? 'border-amber-500/40 bg-amber-500/5' : 'border-purple-200 dark:border-purple-900/60'} rounded-2xl">
+                <div class="text-[11px] text-slate-500 dark:text-purple-300">Low Stock</div>
+                <div class="text-xl font-bold font-mono text-amber-500 mt-1">${metrics.lowStockCount}</div>
+                <div class="text-[10px] text-amber-600 dark:text-amber-400 font-mono">Reorder needed</div>
+              </div>
+            </div>
+
+            <div class="p-3 bg-white dark:bg-[#1b0c3a] border border-purple-200 dark:border-purple-900/60 rounded-2xl flex items-center justify-between">
+              <span class="text-xs font-semibold text-slate-700 dark:text-purple-200">Catalog CSV Export</span>
+              <button onclick="exportCatalogCSV()" class="px-3.5 py-1.5 rounded-xl bg-tzion-purple-600 text-white text-xs font-bold shadow transition-all">
+                Download CSV
+              </button>
+            </div>
+          </div>
+        `;
+        return;
+      }
+
+      // Catalog View
       container.innerHTML = `
+        <!-- Search & Action Bar -->
         <div class="space-y-2">
-          <input 
-            type="text" 
-            placeholder="Search items in TZS..." 
-            value="${AppState.searchQuery}"
-            oninput="handleSearch(this.value)"
-            class="w-full bg-white dark:bg-[#1b0c3a] border border-purple-200 dark:border-purple-800 rounded-2xl px-3 py-2 text-xs text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:border-tzion-orange-500 shadow-sm"
-          >
+          <div class="flex items-center gap-2">
+            <div class="relative flex-1">
+              <input 
+                type="text" 
+                placeholder="Search products or SKU..." 
+                value="${AppState.searchQuery}"
+                oninput="handleSearch(this.value)"
+                class="w-full bg-white dark:bg-[#1b0c3a] border border-purple-200 dark:border-purple-800 rounded-2xl pl-9 pr-3 py-2.5 text-xs text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:border-tzion-orange-500 shadow-sm"
+              >
+              <svg class="w-4 h-4 text-purple-400 absolute left-3 top-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+            </div>
+            ${isAdmin ? `
+              <button onclick="openAddItemModal()" title="Add Product" class="p-2.5 rounded-2xl bg-tzion-orange-500 hover:bg-tzion-orange-600 text-white shadow-sm flex items-center justify-center shrink-0">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+              </button>
+            ` : ''}
+          </div>
+
+          <!-- Horizontal Category Filter Pills -->
+          <div class="flex items-center space-x-1.5 overflow-x-auto pb-1 scrollbar-none text-xs">
+            ${['All', 'Beverages', 'Raw Materials', 'Household', 'Packaged Foods'].map(cat => `
+              <button 
+                onclick="setCategory('${cat}')" 
+                class="px-3 py-1 rounded-xl text-xs whitespace-nowrap transition-all ${AppState.selectedCategory === cat ? 'bg-tzion-purple-600 text-white font-bold shadow-sm' : 'bg-white dark:bg-[#1b0c3a] text-slate-600 dark:text-purple-300 border border-purple-200 dark:border-purple-800'}"
+              >
+                ${cat}
+              </button>
+            `).join('')}
+          </div>
         </div>
 
+        <!-- Products List -->
         <div class="space-y-2.5">
           ${filtered.length === 0 ? `
-            <div class="text-center py-10 text-slate-400 text-xs">No matching inventory found.</div>
+            <div class="text-center py-12 text-slate-400 text-xs">No matching inventory found.</div>
           ` : filtered.map(p => {
             const isLow = p.stock <= p.minStock;
+            const isOutOfStock = p.stock <= 0;
             return `
-              <div class="p-3 bg-white dark:bg-[#1b0c3a] border ${isLow ? 'border-amber-500/40' : 'border-purple-200 dark:border-purple-900/60'} rounded-2xl space-y-2 shadow-sm">
-                <div class="flex justify-between items-start">
-                  <div>
-                    <h4 class="font-bold text-xs text-slate-900 dark:text-white leading-tight">${p.name}</h4>
-                    <span class="text-[9px] text-tzion-orange-500 font-mono">#${p.sku}</span>
+              <div class="p-3.5 bg-white dark:bg-[#1b0c3a] border ${isLow ? 'border-amber-500/40' : 'border-purple-200 dark:border-purple-900/60'} rounded-2xl space-y-2 shadow-sm">
+                <div class="flex justify-between items-start gap-2">
+                  <div class="flex-1">
+                    <h4 class="font-bold text-sm text-slate-900 dark:text-white leading-tight">${p.name}</h4>
+                    <div class="flex items-center gap-2 mt-0.5">
+                      <span class="text-[10px] text-purple-600 dark:text-purple-400 font-mono font-semibold">${p.sku}</span>
+                      <span class="text-[10px] text-slate-400">• ${p.category}</span>
+                    </div>
                   </div>
-                  <span class="text-xs font-mono font-bold text-tzion-orange-500">${formatTZS(p.sellingPrice)}</span>
+                  <div class="text-right shrink-0">
+                    <span class="text-sm font-mono font-bold text-tzion-orange-500 block">${formatTZS(p.sellingPrice)}</span>
+                    <span class="text-[10px] font-mono ${isLow ? 'text-amber-500 font-bold' : 'text-slate-500 dark:text-purple-300'}">
+                      ${p.stock} ${p.unit} in stock
+                    </span>
+                  </div>
                 </div>
 
-                <div class="flex justify-between items-center text-xs pt-1 border-t border-purple-100 dark:border-purple-900/60">
-                  <div class="text-[11px]">
-                    <span class="text-slate-400">Stock: </span>
-                    <span class="font-mono font-bold ${isLow ? 'text-amber-500' : 'text-slate-900 dark:text-white'}">${p.stock}</span>
-                    <span class="text-[10px] text-slate-400">${p.unit}</span>
-                  </div>
-
-                  <div class="flex items-center space-x-1.5">
-                    ${isAdmin ? `
-                      <button onclick="openStockModal(${p.id}, 'in')" class="px-2.5 py-1 rounded-xl bg-tzion-purple-600/15 text-tzion-purple-700 dark:text-purple-300 font-bold text-xs border border-tzion-purple-600/30">
-                        + In
-                      </button>
-                    ` : ''}
-                    <button onclick="openStockModal(${p.id}, 'out')" class="px-3 py-1 rounded-xl bg-tzion-orange-500 text-white font-bold text-xs shadow-sm">
-                      - Check Out
+                <div class="flex items-center justify-end gap-2 pt-2 border-t border-purple-100 dark:border-purple-900/40">
+                  ${isAdmin ? `
+                    <button onclick="openStockModal(${p.id}, 'in')" class="px-3 py-1.5 rounded-xl bg-purple-100 dark:bg-tzion-purple-900/60 text-tzion-purple-700 dark:text-purple-300 font-bold text-xs border border-purple-200 dark:border-purple-700 flex items-center gap-1">
+                      <span>+ Receive</span>
                     </button>
-                  </div>
+                    <button onclick="openStockModal(${p.id}, 'out')" ${isOutOfStock ? 'disabled' : ''} class="px-3.5 py-1.5 rounded-xl bg-tzion-orange-500 hover:bg-tzion-orange-600 text-white font-bold text-xs shadow-sm flex items-center gap-1 disabled:opacity-40">
+                      <span>- Sell</span>
+                    </button>
+                  ` : `
+                    <button onclick="openStockModal(${p.id}, 'out')" ${isOutOfStock ? 'disabled' : ''} class="w-full py-2.5 rounded-xl bg-gradient-to-r from-tzion-orange-500 to-amber-600 text-white font-bold text-xs shadow-md shadow-tzion-orange-500/20 active:scale-98 flex items-center justify-center gap-2 disabled:opacity-40">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
+                      <span>Check Out / Sell</span>
+                    </button>
+                  `}
                 </div>
               </div>
             `;
           }).join('')}
         </div>
       `;
+    }
     }
 
     function setMobileSubTab(tab) {
