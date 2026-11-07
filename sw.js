@@ -1,7 +1,8 @@
-const CACHE_NAME = 'tzionstockly-pwa-v3';
+const CACHE_NAME = 'tzionstockly-pwa-v4';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
+  './superadmin.html',
   './manifest.json',
   './icons/Icon-192.png',
   './icons/Icon-512.png',

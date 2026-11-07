@@ -192,11 +192,6 @@
         </button>
 
         <!-- Super Admin Multi-Store Portal Switcher -->
-        <button id="superAdminPortalBtn" onclick="toggleSuperAdminRoute()" title="Super Admin Multi-Store Control" class="hidden px-3 py-1.5 rounded-xl border border-amber-500/40 bg-amber-500/10 hover:bg-amber-500/20 text-amber-600 dark:text-amber-400 text-xs font-bold items-center gap-1.5 transition-all shadow-sm">
-          <span>👑</span>
-          <span class="hidden sm:inline" id="superAdminBtnText">Super Admin Fleet</span>
-        </button>
-
         <!-- Supabase Settings Drawer Button -->
         <button onclick="openSupabaseModal()" title="Supabase Database Settings" class="p-2 rounded-xl border border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-xs hover:bg-emerald-500/20 transition-all">
           <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M21.362 9.354H12V.396a.396.396 0 0 0-.716-.233L2.2 12.604a.396.396 0 0 0 .32.617H12v8.958a.396.396 0 0 0 .716.233l9.084-12.441a.396.396 0 0 0-.32-.617z"/></svg>
@@ -273,15 +268,14 @@
       </div>
 
       <!-- Role Selector Tabs -->
-      <div class="bg-purple-100 dark:bg-tzion-purple-950 p-1 rounded-2xl border border-purple-200 dark:border-purple-900/60 grid grid-cols-3 gap-1 mb-5">
-        <button id="authTabAdmin" onclick="setAuthRoleTab('admin')" class="py-2 rounded-xl font-bold text-[11px] sm:text-xs transition-all flex items-center justify-center gap-1 bg-tzion-purple-600 text-white shadow-md">
-          <span>Admin</span>
+      <div class="bg-purple-100 dark:bg-tzion-purple-950 p-1 rounded-2xl border border-purple-200 dark:border-purple-900/60 grid grid-cols-2 gap-1 mb-5">
+        <button id="authTabAdmin" onclick="setAuthRoleTab('admin')" class="py-2.5 rounded-xl font-bold text-xs transition-all flex items-center justify-center gap-1.5 bg-tzion-purple-600 text-white shadow-md">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+          <span>Admin Portal</span>
         </button>
-        <button id="authTabStaff" onclick="setAuthRoleTab('staff')" class="py-2 rounded-xl font-bold text-[11px] sm:text-xs transition-all flex items-center justify-center gap-1 text-slate-600 dark:text-purple-300 hover:text-slate-900 dark:hover:text-white">
-          <span>Staff</span>
-        </button>
-        <button id="authTabSuperAdmin" onclick="setAuthRoleTab('super_admin')" class="py-2 rounded-xl font-bold text-[11px] sm:text-xs transition-all flex items-center justify-center gap-1 text-slate-600 dark:text-purple-300 hover:text-slate-900 dark:hover:text-white">
-          <span>👑 Super Admin</span>
+        <button id="authTabStaff" onclick="setAuthRoleTab('staff')" class="py-2.5 rounded-xl font-bold text-xs transition-all flex items-center justify-center gap-1.5 text-slate-600 dark:text-purple-300 hover:text-slate-900 dark:hover:text-white">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
+          <span>Staff Checkout</span>
         </button>
       </div>
 
@@ -309,16 +303,19 @@
       <!-- Instant Demo Shortcuts -->
       <div class="mt-6 pt-4 border-t border-purple-100 dark:border-purple-900/40 text-center">
         <span class="text-[10px] text-slate-400 dark:text-purple-400 font-mono block mb-2">QUICK DEMO ONE-CLICK SIGN IN:</span>
-        <div class="grid grid-cols-3 gap-1.5">
-          <button onclick="quickLogin('admin')" class="py-2 px-2 rounded-lg bg-purple-100 dark:bg-tzion-purple-900/40 hover:bg-tzion-purple-600 hover:text-white text-tzion-purple-700 dark:text-purple-300 text-[10px] sm:text-[11px] font-semibold border border-purple-200 dark:border-purple-800 transition-all truncate">
-            Store Admin
+        <div class="grid grid-cols-2 gap-2">
+          <button onclick="quickLogin('admin')" class="py-2 px-3 rounded-lg bg-purple-100 dark:bg-tzion-purple-900/40 hover:bg-tzion-purple-600 hover:text-white text-tzion-purple-700 dark:text-purple-300 text-[11px] font-semibold border border-purple-200 dark:border-purple-800 transition-all">
+            Login as Admin
           </button>
-          <button onclick="quickLogin('staff')" class="py-2 px-2 rounded-lg bg-tzion-orange-500/10 hover:bg-tzion-orange-500 hover:text-white text-tzion-orange-600 dark:text-tzion-orange-400 text-[10px] sm:text-[11px] font-semibold border border-tzion-orange-500/30 transition-all truncate">
-            Cashier Staff
+          <button onclick="quickLogin('staff')" class="py-2 px-3 rounded-lg bg-tzion-orange-500/10 hover:bg-tzion-orange-500 hover:text-white text-tzion-orange-600 dark:text-tzion-orange-400 text-[11px] font-semibold border border-tzion-orange-500/30 transition-all">
+            Login as Staff
           </button>
-          <button onclick="quickLogin('super_admin')" class="py-2 px-2 rounded-lg bg-amber-500/15 hover:bg-amber-500 hover:text-white text-amber-600 dark:text-amber-400 text-[10px] sm:text-[11px] font-bold border border-amber-500/30 transition-all truncate">
-            👑 Super Admin
-          </button>
+        </div>
+        <!-- Discreet Hidden Link for Platform Super Admin -->
+        <div class="mt-4 text-center">
+          <a href="superadmin.html" class="text-[10px] text-purple-300/30 dark:text-purple-800 hover:text-amber-500 font-mono transition-colors" title="Platform Super Admin Portal">
+            🔒 SaaS Fleet Root
+          </a>
         </div>
       </div>
 
@@ -2542,6 +2539,11 @@
 
     // --- Window Onload Initializer ---
     window.onload = function() {
+      if (window.location.hash.includes('super-admin')) {
+        window.location.href = 'superadmin.html';
+        return;
+      }
+
       applyTheme();
       setAuthRoleTab('admin');
     };

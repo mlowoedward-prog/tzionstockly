@@ -277,6 +277,38 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
+-- 6c. Manually Set Custom Store Renewal Date
+CREATE OR REPLACE FUNCTION public.set_store_renewal_date(
+    p_store_id UUID,
+    p_new_date TIMESTAMPTZ
+) RETURNS JSONB AS $$
+DECLARE
+    v_is_future BOOLEAN;
+    v_status subscription_status;
+BEGIN
+    v_is_future := (p_new_date > NOW());
+    IF v_is_future THEN
+        v_status := 'active';
+    ELSE
+        v_status := 'past_due';
+    END IF;
+
+    UPDATE public.stores
+    SET subscription_renews_at = p_new_date,
+        is_locked = CASE WHEN v_is_future THEN false ELSE is_locked END,
+        status = v_status,
+        lock_reason = CASE WHEN v_is_future THEN NULL ELSE lock_reason END
+    WHERE id = p_store_id;
+
+    RETURN jsonb_build_object(
+        'success', true,
+        'store_id', p_store_id,
+        'new_renewal_date', p_new_date,
+        'status', v_status
+    );
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
 -- 6c. Super Admin Multi-Store Metrics
 CREATE OR REPLACE FUNCTION public.get_super_admin_metrics()
 RETURNS JSONB AS $$
@@ -342,5 +374,7 @@ GRANT EXECUTE ON FUNCTION public.process_stock_mutation TO authenticated;
 GRANT EXECUTE ON FUNCTION public.process_stock_mutation TO anon;
 GRANT EXECUTE ON FUNCTION public.toggle_store_lock TO authenticated;
 GRANT EXECUTE ON FUNCTION public.extend_store_grace_period TO authenticated;
+GRANT EXECUTE ON FUNCTION public.set_store_renewal_date TO authenticated;
+GRANT EXECUTE ON FUNCTION public.set_store_renewal_date TO anon;
 GRANT EXECUTE ON FUNCTION public.get_super_admin_metrics TO authenticated;
 

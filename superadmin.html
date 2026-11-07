@@ -1,0 +1,946 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TzionStockly - Super Admin Fleet Portal</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- Google Fonts: Inter & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+          colors: {
+            tzion: {
+              purple: {
+                50: '#f5f3ff',
+                100: '#ede9fe',
+                200: '#ddd6fe',
+                300: '#c4b5fd',
+                400: '#a78bfa',
+                500: '#8b5cf6',
+                600: '#7c3aed',
+                700: '#6d28d9',
+                800: '#5b21b6',
+                900: '#4c1d95',
+                950: '#2e1065',
+                deep: '#3b0764'
+              },
+              orange: {
+                50: '#fff7ed',
+                100: '#ffedd5',
+                200: '#fed7aa',
+                300: '#fdba74',
+                400: '#fb923c',
+                500: '#f97316',
+                600: '#ea580c',
+                700: '#c2410c',
+                800: '#9a3412',
+                900: '#7c2d12',
+              }
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    .dark ::-webkit-scrollbar-thumb { background: #4c1d95; border-radius: 9999px; }
+    ::-webkit-scrollbar-thumb { background: #c4b5fd; border-radius: 9999px; }
+    ::-webkit-scrollbar-thumb:hover { background: #f97316; }
+  </style>
+</head>
+<body class="bg-slate-50 dark:bg-[#120726] text-slate-900 dark:text-purple-100 font-sans min-h-screen selection:bg-tzion-orange-500 selection:text-white flex flex-col antialiased transition-colors duration-200">
+
+  <!-- ========================================================================= -->
+  <!-- TOP SUPER ADMIN APP BAR (Visible when Authenticated)                      -->
+  <!-- ========================================================================= -->
+  <header id="superAdminHeader" class="hidden bg-white/95 dark:bg-[#1b0c3a]/95 border-b border-amber-500/30 sticky top-0 z-40 px-4 py-2.5 backdrop-blur-md transition-colors shadow-sm">
+    <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-3">
+      
+      <!-- Logo & SaaS Badge -->
+      <div class="flex items-center space-x-3 cursor-pointer" onclick="goToHome()">
+        <div class="w-10 h-10 shrink-0 relative flex items-center justify-center">
+          <svg viewBox="0 0 100 100" class="w-10 h-10 drop-shadow-md">
+            <circle cx="50" cy="50" r="44" fill="none" stroke="url(#purpleGradSA)" stroke-width="7" />
+            <path d="M 12 55 Q 50 68 88 32 Q 65 60 20 62 Z" fill="url(#orangeGradSA)" />
+            <polygon points="46,24 58,18 70,24 58,30" fill="#f59e0b" />
+            <polygon points="46,24 58,30 58,42 46,36" fill="#d97706" />
+            <polygon points="58,30 70,24 70,36 58,42" fill="#b45309" />
+            <polygon points="34,32 46,26 58,32 46,38" fill="#fbbf24" />
+            <polygon points="34,32 46,38 46,48 34,42" fill="#f59e0b" />
+            <polygon points="46,38 58,32 58,42 46,48" fill="#d97706" />
+            <path d="M 28 32 L 34 32 L 44 54 L 68 54 L 75 38 L 36 38" fill="none" stroke="#7c3aed" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+            <circle cx="45" cy="59" r="3.5" fill="#581c87" stroke="#a855f7" stroke-width="1.5" />
+            <circle cx="66" cy="59" r="3.5" fill="#581c87" stroke="#a855f7" stroke-width="1.5" />
+            <defs>
+              <linearGradient id="purpleGradSA" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stop-color="#9333ea" />
+                <stop offset="100%" stop-color="#3b0764" />
+              </linearGradient>
+              <linearGradient id="orangeGradSA" x1="0" y1="0" x2="1" y2="0">
+                <stop offset="0%" stop-color="#ea580c" />
+                <stop offset="100%" stop-color="#f97316" />
+              </linearGradient>
+            </defs>
+          </svg>
+        </div>
+        <div>
+          <div class="flex items-center space-x-2">
+            <span class="font-black tracking-tight text-lg text-tzion-purple-700 dark:text-tzion-purple-300">Tzion<span class="text-tzion-orange-500">Stockly</span></span>
+            <span class="text-[10px] uppercase font-mono px-2 py-0.5 rounded-full font-black bg-amber-500/20 text-amber-600 dark:text-amber-400 border border-amber-500/40">
+              👑 Super Admin Root
+            </span>
+          </div>
+          <p class="text-[10px] text-slate-500 dark:text-purple-300/60 font-mono">Multi-Store SaaS Fleet Controller • TZS Billing Hub</p>
+        </div>
+      </div>
+
+      <!-- Controls Right: Switch to Client Store App, Theme, Logout -->
+      <div class="flex items-center gap-2">
+        <!-- Switch to Client App Link -->
+        <a href="index.html" class="px-3 py-1.5 rounded-xl border border-purple-200 dark:border-purple-800 bg-purple-50 dark:bg-tzion-purple-950/80 hover:bg-purple-100 dark:hover:bg-tzion-purple-900 text-xs font-semibold text-tzion-purple-700 dark:text-purple-300 flex items-center gap-1.5 transition-all shadow-sm">
+          <span>🏪</span>
+          <span class="hidden sm:inline">Open Store App (Client)</span>
+        </a>
+
+        <!-- Theme Toggle -->
+        <button onclick="toggleTheme()" title="Toggle Theme" class="p-2 rounded-xl border border-purple-200 dark:border-purple-900/60 bg-white dark:bg-tzion-purple-950 hover:bg-purple-100 text-slate-700 dark:text-tzion-orange-400 text-xs font-semibold transition-all shadow-sm">
+          <svg id="themeIconSun" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+          <svg id="themeIconMoon" class="w-4 h-4 hidden text-tzion-purple-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>
+        </button>
+
+        <!-- Logout -->
+        <button onclick="superAdminLogout()" title="Exit Super Admin Portal" class="px-2.5 py-1.5 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 border border-rose-500/30 text-xs font-bold transition-all flex items-center gap-1">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+          <span class="hidden md:inline">Exit Root</span>
+        </button>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- TOAST NOTIFICATIONS CONTAINER -->
+  <div id="toastContainer" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+  <!-- ========================================================================= -->
+  <!-- 1. SUPER ADMIN MASTER AUTHENTICATION GATEWAY                              -->
+  <!-- ========================================================================= -->
+  <section id="superAdminLoginScreen" class="flex-1 flex items-center justify-center p-4">
+    <div class="w-full max-w-md bg-white dark:bg-[#1b0c3a] border border-amber-500/40 rounded-3xl p-6 sm:p-8 shadow-2xl relative overflow-hidden transition-colors">
+      
+      <!-- Ambient Glow Accents -->
+      <div class="absolute -top-24 -right-24 w-48 h-48 bg-amber-500/20 rounded-full blur-3xl pointer-events-none"></div>
+      <div class="absolute -bottom-24 -left-24 w-48 h-48 bg-tzion-purple-700/30 rounded-full blur-3xl pointer-events-none"></div>
+
+      <!-- Icon & Title -->
+      <div class="flex flex-col items-center text-center mb-6">
+        <div class="w-16 h-16 rounded-2xl bg-gradient-to-tr from-amber-500 to-amber-400 text-white flex items-center justify-center text-3xl shadow-lg shadow-amber-500/30 mb-3">
+          👑
+        </div>
+        <h1 class="text-2xl font-black text-slate-900 dark:text-white">Super Admin Control Hub</h1>
+        <p class="text-xs text-amber-600 dark:text-amber-400 font-mono mt-1">Multi-Store SaaS Fleet Management</p>
+      </div>
+
+      <div class="p-3 mb-4 rounded-xl bg-amber-500/10 border border-amber-500/20 text-[11px] text-amber-700 dark:text-amber-300">
+        <strong>Confidential Area:</strong> Only authorized platform administrators may access subscription controls, manual payment renewals, and store lockouts.
+      </div>
+
+      <!-- Super Admin Form -->
+      <form onsubmit="handleSuperAdminAuth(event)" class="space-y-4">
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 dark:text-purple-200 mb-1">Master Email</label>
+          <input type="email" id="superAdminEmail" value="superadmin@tzionstockly.com" required class="w-full bg-slate-50 dark:bg-tzion-purple-950 border border-purple-200 dark:border-purple-800 rounded-xl px-3.5 py-2.5 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-amber-500">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 dark:text-purple-200 mb-1">Master Security Key / PIN</label>
+          <input type="password" id="superAdminPin" value="1234" required class="w-full bg-slate-50 dark:bg-tzion-purple-950 border border-purple-200 dark:border-purple-800 rounded-xl px-3.5 py-2.5 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-amber-500 font-mono">
+        </div>
+
+        <button type="submit" class="w-full py-3 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-black text-xs uppercase tracking-wider shadow-lg shadow-amber-900/30 active:scale-98 transition-all">
+          Authorize Super Admin Access
+        </button>
+      </form>
+
+      <div class="mt-4 pt-3 border-t border-purple-100 dark:border-purple-900/40 text-center">
+        <a href="index.html" class="text-xs text-slate-500 dark:text-purple-400 hover:text-tzion-orange-500 underline">
+          ← Return to Store Client Login (index.html)
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================================================================= -->
+  <!-- 2. MAIN SUPER ADMIN WORKSPACE (Hidden until authenticated)                -->
+  <!-- ========================================================================= -->
+  <main id="superAdminWorkspace" class="hidden flex-1 p-3 sm:p-5 md:p-6 overflow-x-hidden flex justify-center items-start">
+    <div id="workspaceContent" class="w-full max-w-7xl"></div>
+  </main>
+
+  <!-- ========================================================================= -->
+  <!-- MODAL: MANUALLY SET CUSTOM RENEWAL DATE                                   -->
+  <!-- ========================================================================= -->
+  <div id="changeDateModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden items-center justify-center p-4">
+    <div class="bg-white dark:bg-[#1b0c3a] border border-amber-500/50 rounded-3xl w-full max-w-md overflow-hidden shadow-2xl transition-colors">
+      <div class="p-4 border-b border-purple-100 dark:border-purple-900/60 flex items-center justify-between bg-amber-500/10">
+        <div class="flex items-center space-x-2">
+          <span class="text-amber-500 font-bold text-lg">📅</span>
+          <div>
+            <h3 class="font-bold text-slate-900 dark:text-white text-sm">Change Payment Renewal Date</h3>
+            <p id="changeDateStoreTitle" class="text-[10px] text-slate-500 dark:text-purple-300 font-mono">Store Name</p>
+          </div>
+        </div>
+        <button onclick="closeChangeDateModal()" class="text-slate-400 hover:text-slate-700 dark:hover:text-white p-1">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+
+      <form onsubmit="handleSaveCustomRenewalDate(event)" class="p-5 space-y-4 text-xs">
+        <input type="hidden" id="changeDateStoreId">
+
+        <div class="p-3 rounded-2xl bg-purple-50 dark:bg-tzion-purple-950 border border-purple-200 dark:border-purple-800 flex justify-between items-center">
+          <div>
+            <span class="text-[10px] text-slate-400 block font-mono">Current Expiry:</span>
+            <span id="changeDateCurrentDisplay" class="font-bold font-mono text-slate-800 dark:text-purple-200 text-xs">-</span>
+          </div>
+          <div>
+            <span class="text-[10px] text-slate-400 block font-mono">Monthly Rate:</span>
+            <span id="changeDateFeeDisplay" class="font-bold font-mono text-tzion-orange-500 text-xs">TZS 50,000</span>
+          </div>
+        </div>
+
+        <div>
+          <label class="block font-semibold text-slate-700 dark:text-purple-200 mb-1">
+            New Payment Renewal Date
+          </label>
+          <input 
+            type="date" 
+            id="customRenewalDateInput" 
+            required 
+            class="w-full bg-slate-50 dark:bg-tzion-purple-950 border border-purple-200 dark:border-purple-800 rounded-xl px-3.5 py-2.5 text-xs text-slate-900 dark:text-white font-mono focus:outline-none focus:border-amber-500"
+          >
+          <p class="text-[10px] text-slate-400 dark:text-purple-400 mt-1">
+            Setting a date in the future will automatically mark the tenant as <strong>ACTIVE</strong> and unlock the store.
+          </p>
+        </div>
+
+        <div>
+          <label class="block font-semibold text-slate-700 dark:text-purple-200 mb-1">
+            Grace Period Leeway (Days)
+          </label>
+          <input 
+            type="number" 
+            id="customGracePeriodInput" 
+            min="0" 
+            max="30" 
+            value="3" 
+            class="w-full bg-slate-50 dark:bg-tzion-purple-950 border border-purple-200 dark:border-purple-800 rounded-xl px-3.5 py-2 text-xs text-slate-900 dark:text-white font-mono focus:outline-none focus:border-amber-500"
+          >
+        </div>
+
+        <div class="flex items-center space-x-2 pt-1">
+          <input type="checkbox" id="autoUnlockCheckbox" checked class="rounded text-amber-500 focus:ring-amber-500">
+          <label for="autoUnlockCheckbox" class="text-[11px] text-slate-600 dark:text-purple-300 cursor-pointer">
+            Automatically unlock store and clear lockout flags
+          </label>
+        </div>
+
+        <div class="pt-2 flex justify-end space-x-2">
+          <button type="button" onclick="closeChangeDateModal()" class="px-4 py-2 rounded-xl bg-purple-100 dark:bg-tzion-purple-900/40 text-slate-700 dark:text-purple-300 font-semibold">
+            Cancel
+          </button>
+          <button type="submit" class="px-5 py-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-bold shadow">
+            Save Renewal Date
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- MODAL: ONBOARD NEW TENANT STORE                                           -->
+  <!-- ========================================================================= -->
+  <div id="onboardStoreModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden items-center justify-center p-4">
+    <div class="bg-white dark:bg-[#1b0c3a] border border-purple-200 dark:border-purple-900/60 rounded-3xl w-full max-w-md overflow-hidden shadow-2xl transition-colors">
+      <div class="p-4 border-b border-purple-100 dark:border-purple-900/60 flex items-center justify-between bg-amber-500/10">
+        <div class="flex items-center space-x-2">
+          <span class="text-amber-500 font-bold text-base">🏪</span>
+          <h3 class="font-bold text-slate-900 dark:text-white text-sm">Register New Tenant Store</h3>
+        </div>
+        <button onclick="closeOnboardStoreModal()" class="text-slate-400 hover:text-slate-700 dark:hover:text-white p-1">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+
+      <form onsubmit="handleCreateStore(event)" class="p-5 space-y-3.5 text-xs">
+        <div>
+          <label class="block font-semibold text-slate-700 dark:text-purple-200 mb-1">Store / Business Name</label>
+          <input type="text" id="newStoreName" required placeholder="e.g. Zanzibar Spices Ltd" class="w-full bg-slate-50 dark:bg-tzion-purple-950 border border-purple-200 dark:border-purple-800 rounded-xl px-3 py-2 text-slate-900 dark:text-white focus:outline-none focus:border-amber-500">
+        </div>
+        <div>
+          <label class="block font-semibold text-slate-700 dark:text-purple-200 mb-1">Owner Full Name</label>
+          <input type="text" id="newStoreOwner" required placeholder="e.g. Farouk Said" class="w-full bg-slate-50 dark:bg-tzion-purple-950 border border-purple-200 dark:border-purple-800 rounded-xl px-3 py-2 text-slate-900 dark:text-white focus:outline-none focus:border-amber-500">
+        </div>
+        <div>
+          <label class="block font-semibold text-slate-700 dark:text-purple-200 mb-1">Owner WhatsApp Phone (+255...)</label>
+          <input type="text" id="newStorePhone" required placeholder="+255755123456" class="w-full bg-slate-50 dark:bg-tzion-purple-950 border border-purple-200 dark:border-purple-800 rounded-xl px-3 py-2 text-slate-900 dark:text-white focus:outline-none focus:border-amber-500 font-mono">
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block font-semibold text-slate-700 dark:text-purple-200 mb-1">Monthly Fee (TZS)</label>
+            <input type="number" id="newStoreFee" required value="50000" class="w-full bg-slate-50 dark:bg-tzion-purple-950 border border-purple-200 dark:border-purple-800 rounded-xl px-3 py-2 text-slate-900 dark:text-white focus:outline-none focus:border-amber-500 font-mono">
+          </div>
+          <div>
+            <label class="block font-semibold text-slate-700 dark:text-purple-200 mb-1">Grace Period (Days)</label>
+            <input type="number" id="newStoreGrace" required value="3" class="w-full bg-slate-50 dark:bg-tzion-purple-950 border border-purple-200 dark:border-purple-800 rounded-xl px-3 py-2 text-slate-900 dark:text-white focus:outline-none focus:border-amber-500 font-mono">
+          </div>
+        </div>
+
+        <div class="pt-2 flex justify-end space-x-2">
+          <button type="button" onclick="closeOnboardStoreModal()" class="px-4 py-2 rounded-xl bg-purple-100 dark:bg-tzion-purple-900/40 text-slate-700 dark:text-purple-300 font-semibold">
+            Cancel
+          </button>
+          <button type="submit" class="px-5 py-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-bold shadow">
+            Create Tenant Store
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- JAVASCRIPT LOGIC ENGINE                                                   -->
+  <!-- ========================================================================= -->
+  <script>
+    const SuperState = {
+      isDark: true,
+      isAuthenticated: false,
+      searchQuery: '',
+      statusFilter: 'All', // 'All' | 'active' | 'past_due' | 'suspended'
+      stores: [
+        {
+          id: "store-tz-001",
+          name: "Tzion Main Flagship Store",
+          owner_name: "Edward Mlowo",
+          owner_phone: "+255755123456",
+          monthly_fee_tzs: 50000,
+          status: "active",
+          subscription_renews_at: new Date(Date.now() + 18 * 86400000).toISOString(),
+          grace_period_days: 3,
+          is_locked: false,
+          lock_reason: ""
+        },
+        {
+          id: "store-tz-002",
+          name: "Arusha Safari Provisions",
+          owner_name: "Amina Rashid",
+          owner_phone: "+255784992211",
+          monthly_fee_tzs: 65000,
+          status: "active",
+          subscription_renews_at: new Date(Date.now() + 4 * 86400000).toISOString(),
+          grace_period_days: 3,
+          is_locked: false,
+          lock_reason: ""
+        },
+        {
+          id: "store-tz-003",
+          name: "Mwanza Lake Distributors",
+          owner_name: "Juma Baraka",
+          owner_phone: "+255713445566",
+          monthly_fee_tzs: 75000,
+          status: "past_due",
+          subscription_renews_at: new Date(Date.now() - 1 * 86400000).toISOString(),
+          grace_period_days: 3,
+          is_locked: false,
+          lock_reason: "Grace period active (2 days remaining)"
+        },
+        {
+          id: "store-tz-004",
+          name: "Dodoma Capital Wholesale",
+          owner_name: "Neema Mollel",
+          owner_phone: "+255762883344",
+          monthly_fee_tzs: 50000,
+          status: "suspended",
+          subscription_renews_at: new Date(Date.now() - 8 * 86400000).toISOString(),
+          grace_period_days: 3,
+          is_locked: true,
+          lock_reason: "Monthly subscription payment overdue"
+        }
+      ]
+    };
+
+    function formatTZS(amount) {
+      return `TZS ${Math.round(amount).toLocaleString('en-US')}`;
+    }
+
+    function toggleTheme() {
+      SuperState.isDark = !SuperState.isDark;
+      applyTheme();
+    }
+
+    function applyTheme() {
+      const html = document.documentElement;
+      const sun = document.getElementById('themeIconSun');
+      const moon = document.getElementById('themeIconMoon');
+      if (SuperState.isDark) {
+        html.classList.add('dark');
+        if (sun) sun.classList.remove('hidden');
+        if (moon) moon.classList.add('hidden');
+      } else {
+        html.classList.remove('dark');
+        if (sun) sun.classList.add('hidden');
+        if (moon) moon.classList.remove('hidden');
+      }
+    }
+
+    function showToast(msg, type = 'info') {
+      const container = document.getElementById('toastContainer');
+      const toast = document.createElement('div');
+      const colors = {
+        success: 'bg-emerald-600 text-white',
+        error: 'bg-rose-600 text-white',
+        warning: 'bg-tzion-orange-500 text-white',
+        info: 'bg-tzion-purple-700 text-white'
+      };
+      toast.className = `${colors[type] || colors.info} px-4 py-2.5 rounded-2xl shadow-xl text-xs font-semibold flex items-center space-x-2 pointer-events-auto transform transition-all duration-300`;
+      toast.innerHTML = `<span>${msg}</span>`;
+      container.appendChild(toast);
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        setTimeout(() => toast.remove(), 300);
+      }, 3500);
+    }
+
+    function initStoresFromStorage() {
+      const saved = localStorage.getItem('tzion_stores');
+      if (saved) {
+        try { SuperState.stores = JSON.parse(saved); } catch(e){}
+      }
+      saveStoresLocally();
+    }
+
+    function saveStoresLocally() {
+      localStorage.setItem('tzion_stores', JSON.stringify(SuperState.stores));
+      // Update active store lease
+      const activeId = localStorage.getItem('tzion_active_store_id') || SuperState.stores[0].id;
+      const curStore = SuperState.stores.find(s => s.id === activeId);
+      if (curStore) {
+        const renew = new Date(curStore.subscription_renews_at);
+        const expiresAt = new Date(renew.getTime() + (curStore.grace_period_days * 86400000)).toISOString();
+        localStorage.setItem('tzion_license_expires_at', expiresAt);
+        localStorage.setItem('tzion_is_locked', curStore.is_locked ? 'true' : 'false');
+      }
+    }
+
+    // --- Authentication ---
+    function handleSuperAdminAuth(e) {
+      e.preventDefault();
+      const email = document.getElementById('superAdminEmail').value.trim();
+      const pin = document.getElementById('superAdminPin').value.trim();
+
+      if (pin === '1234' || pin === 'admin' || pin === 'tzion2026') {
+        SuperState.isAuthenticated = true;
+        sessionStorage.setItem('tzion_superadmin_auth', 'true');
+        
+        document.getElementById('superAdminLoginScreen').classList.add('hidden');
+        document.getElementById('superAdminHeader').classList.remove('hidden');
+        document.getElementById('superAdminWorkspace').classList.remove('hidden');
+
+        showToast("Authenticated as Platform Super Administrator", "success");
+        renderSuperAdminDashboard();
+      } else {
+        showToast("Invalid Master Key / PIN. Access denied.", "error");
+      }
+    }
+
+    function superAdminLogout() {
+      sessionStorage.removeItem('tzion_superadmin_auth');
+      SuperState.isAuthenticated = false;
+      document.getElementById('superAdminLoginScreen').classList.remove('hidden');
+      document.getElementById('superAdminHeader').classList.add('hidden');
+      document.getElementById('superAdminWorkspace').classList.add('hidden');
+      showToast("Exited Super Admin Root Session", "info");
+    }
+
+    // --- Dashboard Renderer ---
+    function renderSuperAdminDashboard() {
+      const container = document.getElementById('workspaceContent');
+      if (!container) return;
+
+      const totalStores = SuperState.stores.length;
+      const activeStores = SuperState.stores.filter(s => s.status === 'active' && !s.is_locked).length;
+      const pastDueStores = SuperState.stores.filter(s => s.status === 'past_due' && !s.is_locked).length;
+      const suspendedStores = SuperState.stores.filter(s => s.status === 'suspended' || s.is_locked).length;
+      
+      const totalMRR = SuperState.stores
+        .filter(s => s.status === 'active' || s.status === 'past_due')
+        .reduce((sum, s) => sum + (s.monthly_fee_tzs || 50000), 0);
+
+      let filtered = SuperState.stores.filter(s => {
+        if (SuperState.statusFilter === 'active') return s.status === 'active' && !s.is_locked;
+        if (SuperState.statusFilter === 'past_due') return s.status === 'past_due';
+        if (SuperState.statusFilter === 'suspended') return s.status === 'suspended' || s.is_locked;
+        return true;
+      });
+
+      if (SuperState.searchQuery) {
+        filtered = filtered.filter(s => 
+          s.name.toLowerCase().includes(SuperState.searchQuery) ||
+          s.owner_name.toLowerCase().includes(SuperState.searchQuery) ||
+          s.owner_phone.includes(SuperState.searchQuery)
+        );
+      }
+
+      container.innerHTML = `
+        <div class="space-y-6">
+          
+          <!-- BANNER -->
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 sm:p-6 bg-gradient-to-r from-amber-600 via-tzion-purple-900 to-[#1e073d] text-white rounded-3xl border border-amber-500/40 shadow-2xl">
+            <div>
+              <span class="text-[10px] font-mono font-black px-2.5 py-0.5 rounded-full bg-amber-500 text-white uppercase tracking-wider shadow">
+                👑 SaaS Fleet Controller
+              </span>
+              <h2 class="text-xl sm:text-3xl font-black mt-2 text-white">Multi-Store Subscription & Lease Hub</h2>
+              <p class="text-xs text-amber-100/90 mt-0.5">Control tenant access, change renewal dates manually, toggle 1-click payment locks, and monitor MRR.</p>
+            </div>
+            <div class="flex flex-wrap items-center gap-2">
+              <button onclick="openOnboardStoreModal()" class="px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold shadow flex items-center gap-1.5 transition-all">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                <span>+ Onboard New Store</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- SUMMARY METRICS -->
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+            
+            <div class="bg-white dark:bg-[#1b0c3a] p-4 rounded-3xl border border-purple-200 dark:border-purple-900/60 shadow-sm">
+              <div class="flex justify-between items-start text-slate-500 dark:text-purple-300 mb-1">
+                <span class="text-xs font-semibold">Total Stores Registered</span>
+                <span class="text-xs p-1.5 rounded-xl bg-purple-100 dark:bg-tzion-purple-900 text-tzion-purple-600 dark:text-purple-300">🏪</span>
+              </div>
+              <div class="text-2xl font-black font-mono text-slate-900 dark:text-white">${totalStores} <span class="text-xs font-normal text-slate-400">Stores</span></div>
+              <span class="text-[10px] text-slate-500 dark:text-purple-400 font-mono">100% cloud & local synchronized</span>
+            </div>
+
+            <div class="bg-white dark:bg-[#1b0c3a] p-4 rounded-3xl border border-purple-200 dark:border-purple-900/60 shadow-sm">
+              <div class="flex justify-between items-start text-slate-500 dark:text-purple-300 mb-1">
+                <span class="text-xs font-semibold">Active vs. Overdue / Suspended</span>
+                <span class="text-xs p-1.5 rounded-xl bg-amber-500/10 text-amber-500">⚖️</span>
+              </div>
+              <div class="flex items-baseline space-x-2">
+                <span class="text-2xl font-black font-mono text-emerald-600 dark:text-emerald-400">${activeStores}</span>
+                <span class="text-xs text-slate-400 font-mono">Active</span>
+                <span class="text-slate-300 dark:text-slate-700">•</span>
+                <span class="text-lg font-bold font-mono text-amber-500">${pastDueStores}</span>
+                <span class="text-xs text-slate-400 font-mono">Past Due</span>
+                <span class="text-slate-300 dark:text-slate-700">•</span>
+                <span class="text-lg font-bold font-mono text-rose-500">${suspendedStores}</span>
+                <span class="text-xs text-slate-400 font-mono">Locked</span>
+              </div>
+              <span class="text-[10px] text-slate-500 dark:text-purple-400 font-mono">
+                ${suspendedStores > 0 ? `⚠️ ${suspendedStores} store(s) locked out` : 'All operational stores in good standing'}
+              </span>
+            </div>
+
+            <div class="bg-white dark:bg-[#1b0c3a] p-4 rounded-3xl border border-purple-200 dark:border-purple-900/60 shadow-sm">
+              <div class="flex justify-between items-start text-slate-500 dark:text-purple-300 mb-1">
+                <span class="text-xs font-semibold">Monthly Recurring Revenue (MRR)</span>
+                <span class="text-xs p-1.5 rounded-xl bg-tzion-orange-500/10 text-tzion-orange-500">💰</span>
+              </div>
+              <div class="text-xl sm:text-2xl font-black font-mono text-tzion-orange-600 dark:text-tzion-orange-400">${formatTZS(totalMRR)}</div>
+              <span class="text-[10px] text-emerald-600 dark:text-emerald-400 font-mono font-medium">Monthly billing in TZS</span>
+            </div>
+
+          </div>
+
+          <!-- SEARCH & FILTER -->
+          <div class="bg-white dark:bg-[#1b0c3a] p-3 sm:p-4 rounded-3xl border border-purple-200 dark:border-purple-900/60 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-3">
+            <div class="relative flex-1">
+              <input 
+                type="text" 
+                placeholder="Search tenant by store name, owner, or phone..." 
+                value="${SuperState.searchQuery}"
+                oninput="handleSearch(this.value)"
+                class="w-full bg-purple-50/50 dark:bg-tzion-purple-950 border border-purple-200 dark:border-purple-800 rounded-2xl pl-10 pr-3 py-2 text-xs text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:border-amber-500"
+              >
+              <svg class="w-4 h-4 text-amber-500 absolute left-3.5 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+            </div>
+            
+            <div class="flex items-center space-x-1.5 overflow-x-auto pb-1 md:pb-0">
+              ${['All', 'active', 'past_due', 'suspended'].map(cat => {
+                const label = cat === 'All' ? 'All Stores' : (cat === 'active' ? 'Active' : (cat === 'past_due' ? 'Past Due' : 'Suspended'));
+                const isActive = SuperState.statusFilter === cat;
+                return `
+                  <button 
+                    onclick="setStatusFilter('${cat}')" 
+                    class="shrink-0 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all ${isActive ? 'bg-amber-500 text-white shadow' : 'bg-purple-100 dark:bg-tzion-purple-950 text-slate-600 dark:text-purple-300 border border-purple-200 dark:border-purple-800'}"
+                  >
+                    ${label}
+                  </button>
+                `;
+              }).join('')}
+            </div>
+          </div>
+
+          <!-- TABLE -->
+          <div class="bg-white dark:bg-[#1b0c3a] rounded-3xl border border-purple-200 dark:border-purple-900/60 overflow-hidden shadow-sm">
+            <div class="p-4 border-b border-purple-100 dark:border-purple-900/60 flex items-center justify-between">
+              <div>
+                <h3 class="font-bold text-slate-900 dark:text-white text-sm">Tenant Store Fleet (${filtered.length})</h3>
+                <p class="text-[11px] text-slate-500 dark:text-purple-400">Click <strong>Change Date</strong> to set custom subscription renewal dates manually.</p>
+              </div>
+            </div>
+
+            <!-- Table for desktop -->
+            <div class="hidden lg:block overflow-x-auto">
+              <table class="w-full text-left border-collapse text-xs">
+                <thead>
+                  <tr class="border-b border-purple-100 dark:border-purple-900/60 text-slate-500 dark:text-purple-300 bg-purple-50/50 dark:bg-tzion-purple-950 uppercase font-mono text-[10px]">
+                    <th class="py-3 px-4">Store Name</th>
+                    <th class="py-3 px-4">Owner & Phone</th>
+                    <th class="py-3 px-4">Monthly Fee</th>
+                    <th class="py-3 px-4">Renewal Date & Leeway</th>
+                    <th class="py-3 px-4">Status</th>
+                    <th class="py-3 px-4 text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-purple-100 dark:divide-purple-900/60">
+                  ${filtered.length === 0 ? `
+                    <tr><td colspan="6" class="text-center py-8 text-slate-400">No stores match the filter.</td></tr>
+                  ` : filtered.map(st => {
+                    const renewDate = new Date(st.subscription_renews_at);
+                    const isOverdue = new Date() > renewDate;
+                    const statusPill = st.is_locked || st.status === 'suspended'
+                      ? '<span class="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-rose-500/15 text-rose-600 dark:text-rose-400 border border-rose-500/30">LOCKED (SUSPENDED)</span>'
+                      : (st.status === 'past_due' || isOverdue
+                        ? '<span class="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30">PAST DUE (GRACE)</span>'
+                        : '<span class="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30">ACTIVE</span>');
+
+                    return `
+                      <tr class="hover:bg-purple-50/60 dark:hover:bg-tzion-purple-900/30 transition-colors">
+                        <td class="py-3.5 px-4">
+                          <div class="font-bold text-slate-900 dark:text-white text-xs flex items-center gap-1.5">
+                            ${st.is_locked ? '<span class="text-rose-500">🔒</span>' : '<span>🏪</span>'}
+                            <span>${st.name}</span>
+                          </div>
+                          <div class="font-mono text-[10px] text-slate-400">ID: ${st.id}</div>
+                        </td>
+                        <td class="py-3.5 px-4">
+                          <div class="font-semibold text-slate-800 dark:text-purple-200">${st.owner_name}</div>
+                          <div class="font-mono text-[10px] text-tzion-orange-500">${st.owner_phone}</div>
+                        </td>
+                        <td class="py-3.5 px-4 font-mono font-bold text-slate-900 dark:text-white">
+                          ${formatTZS(st.monthly_fee_tzs || 50000)}
+                        </td>
+                        <td class="py-3.5 px-4">
+                          <div class="flex items-center gap-2">
+                            <div>
+                              <div class="font-mono text-xs ${isOverdue ? 'text-amber-500 font-bold' : 'text-slate-700 dark:text-purple-200'}">
+                                ${renewDate.toLocaleDateString()}
+                              </div>
+                              <div class="text-[10px] text-slate-400 font-mono">Grace: ${st.grace_period_days} days</div>
+                            </div>
+                            <!-- MANUAL DATE PICKER BUTTON -->
+                            <button 
+                              onclick="openChangeDateModal('${st.id}')"
+                              class="px-2 py-1 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 text-amber-600 dark:text-amber-400 border border-amber-500/30 font-semibold text-[10px] flex items-center gap-1 transition-all"
+                              title="Manually set exact renewal date"
+                            >
+                              <span>📅</span>
+                              <span>Change Date</span>
+                            </button>
+                          </div>
+                        </td>
+                        <td class="py-3.5 px-4">
+                          ${statusPill}
+                        </td>
+                        <td class="py-3.5 px-4 text-right">
+                          <div class="inline-flex items-center gap-1.5 flex-wrap justify-end">
+                            <!-- 1-Click Lock / Unlock -->
+                            <button 
+                              onclick="toggleLock('${st.id}')" 
+                              class="px-2.5 py-1.5 rounded-xl font-bold text-xs transition-all ${st.is_locked ? 'bg-emerald-600 hover:bg-emerald-700 text-white shadow' : 'bg-rose-500/15 hover:bg-rose-500/30 text-rose-600 dark:text-rose-400 border border-rose-500/30'}"
+                            >
+                              ${st.is_locked ? '🔓 Unlock' : '🔒 Lock'}
+                            </button>
+
+                            <!-- +3d / +7d Quick Extend -->
+                            <button onclick="extendGrace('${st.id}', 3)" class="px-2 py-1.5 rounded-xl bg-purple-100 dark:bg-tzion-purple-900/60 hover:bg-purple-200 text-slate-700 dark:text-purple-200 text-[11px] font-semibold border border-purple-200 dark:border-purple-800" title="+3 Days Leeway">+3d</button>
+                            <button onclick="extendGrace('${st.id}', 7)" class="px-2 py-1.5 rounded-xl bg-purple-100 dark:bg-tzion-purple-900/60 hover:bg-purple-200 text-slate-700 dark:text-purple-200 text-[11px] font-semibold border border-purple-200 dark:border-purple-800" title="+7 Days Leeway">+7d</button>
+
+                            <!-- WhatsApp Reminder -->
+                            <button onclick="sendWhatsAppReminder('${st.id}')" class="px-2.5 py-1.5 rounded-xl bg-emerald-500/15 hover:bg-emerald-500/30 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 font-bold text-xs flex items-center gap-1" title="Send WhatsApp Reminder">
+                              <span>💬</span>
+                              <span class="hidden xl:inline">WhatsApp</span>
+                            </button>
+
+                            <!-- Open Store in index.html -->
+                            <button onclick="openClientStore('${st.id}')" class="px-2.5 py-1.5 rounded-xl bg-tzion-purple-600/15 hover:bg-tzion-purple-600/30 text-tzion-purple-700 dark:text-purple-300 border border-tzion-purple-600/30 text-xs font-semibold" title="Open Store View">
+                              Open
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    `;
+                  }).join('')}
+                </tbody>
+              </table>
+            </div>
+
+            <!-- Cards for mobile/tablet screens -->
+            <div class="lg:hidden divide-y divide-purple-100 dark:divide-purple-900/60 p-3 space-y-3">
+              ${filtered.length === 0 ? `
+                <div class="text-center py-6 text-slate-400 text-xs">No stores match the filter.</div>
+              ` : filtered.map(st => {
+                const renewDate = new Date(st.subscription_renews_at);
+                const isOverdue = new Date() > renewDate;
+                return `
+                  <div class="p-3 bg-purple-50/50 dark:bg-tzion-purple-950/40 rounded-2xl border border-purple-200 dark:border-purple-800/80 space-y-2.5">
+                    <div class="flex justify-between items-start">
+                      <div>
+                        <div class="font-bold text-slate-900 dark:text-white text-sm flex items-center gap-1.5">
+                          ${st.is_locked ? '<span class="text-rose-500">🔒</span>' : '<span>🏪</span>'}
+                          <span>${st.name}</span>
+                        </div>
+                        <div class="text-[11px] text-slate-600 dark:text-purple-300">${st.owner_name} • <span class="font-mono text-tzion-orange-500">${st.owner_phone}</span></div>
+                      </div>
+                      <div>
+                        ${st.is_locked ? '<span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-rose-500/20 text-rose-500">LOCKED</span>' : '<span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-emerald-500/20 text-emerald-500">ACTIVE</span>'}
+                      </div>
+                    </div>
+
+                    <div class="flex justify-between items-center text-xs font-mono pt-1 border-t border-purple-100 dark:border-purple-900/40">
+                      <span class="text-slate-500 dark:text-purple-400">Monthly Fee:</span>
+                      <span class="font-bold text-tzion-orange-600 dark:text-tzion-orange-400">${formatTZS(st.monthly_fee_tzs || 50000)}</span>
+                    </div>
+
+                    <div class="flex justify-between items-center text-xs font-mono">
+                      <span class="text-slate-500 dark:text-purple-400">Renewal Date:</span>
+                      <div class="flex items-center gap-1.5">
+                        <span class="${isOverdue ? 'text-amber-500 font-bold' : 'text-slate-700 dark:text-purple-200'}">${renewDate.toLocaleDateString()}</span>
+                        <button onclick="openChangeDateModal('${st.id}')" class="px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-500 text-[10px] font-bold">📅 Change</button>
+                      </div>
+                    </div>
+
+                    <div class="pt-2 flex flex-wrap items-center gap-1.5">
+                      <button onclick="toggleLock('${st.id}')" class="flex-1 py-1.5 rounded-xl font-bold text-xs ${st.is_locked ? 'bg-emerald-600 text-white' : 'bg-rose-500/20 text-rose-500'}">
+                        ${st.is_locked ? '🔓 Unlock' : '🔒 Lock'}
+                      </button>
+                      <button onclick="openChangeDateModal('${st.id}')" class="px-2.5 py-1.5 rounded-xl bg-amber-500/15 text-amber-600 dark:text-amber-400 font-bold text-xs">
+                        📅 Date
+                      </button>
+                      <button onclick="extendGrace('${st.id}', 3)" class="px-2.5 py-1.5 rounded-xl bg-purple-100 dark:bg-tzion-purple-900 text-xs font-semibold">
+                        +3d
+                      </button>
+                      <button onclick="sendWhatsAppReminder('${st.id}')" class="px-2.5 py-1.5 rounded-xl bg-emerald-500/20 text-emerald-500 text-xs font-bold">
+                        💬 WhatsApp
+                      </button>
+                      <button onclick="openClientStore('${st.id}')" class="px-2.5 py-1.5 rounded-xl bg-tzion-purple-600/20 text-tzion-purple-600 dark:text-purple-300 text-xs font-semibold">
+                        Open
+                      </button>
+                    </div>
+                  </div>
+                `;
+              }).join('')}
+            </div>
+
+          </div>
+
+        </div>
+      `;
+    }
+
+    // --- Search & Filter ---
+    function handleSearch(val) {
+      SuperState.searchQuery = val.toLowerCase().trim();
+      renderSuperAdminDashboard();
+    }
+
+    function setStatusFilter(filter) {
+      SuperState.statusFilter = filter;
+      renderSuperAdminDashboard();
+    }
+
+    // --- Actions ---
+    function toggleLock(storeId) {
+      const st = SuperState.stores.find(s => s.id === storeId);
+      if (!st) return;
+
+      st.is_locked = !st.is_locked;
+      st.status = st.is_locked ? 'suspended' : 'active';
+      st.lock_reason = st.is_locked ? 'Monthly subscription payment overdue' : '';
+
+      saveStoresLocally();
+      showToast(`Store ${st.name} is now ${st.is_locked ? 'LOCKED' : 'UNLOCKED'}`, st.is_locked ? "warning" : "success");
+      renderSuperAdminDashboard();
+    }
+
+    function extendGrace(storeId, days) {
+      const st = SuperState.stores.find(s => s.id === storeId);
+      if (!st) return;
+
+      const currentRenew = new Date(st.subscription_renews_at);
+      const base = currentRenew > new Date() ? currentRenew : new Date();
+      st.subscription_renews_at = new Date(base.getTime() + (days * 86400000)).toISOString();
+      st.is_locked = false;
+      st.status = 'active';
+      st.lock_reason = '';
+
+      saveStoresLocally();
+      showToast(`Extended grace period by +${days} days for ${st.name}`, "success");
+      renderSuperAdminDashboard();
+    }
+
+    function sendWhatsAppReminder(storeId) {
+      const st = SuperState.stores.find(s => s.id === storeId);
+      if (!st) return;
+
+      const renewDate = new Date(st.subscription_renews_at).toLocaleDateString('sw-TZ', { day: 'numeric', month: 'long', year: 'numeric' });
+      const amountStr = formatTZS(st.monthly_fee_tzs || 50000);
+      const cleanPhone = (st.owner_phone || '+255755123456').replace(/[^0-9]/g, '');
+
+      const text = `Habari ${st.owner_name}, malipo ya mwezi ya mfumo wa TzionStockly (${amountStr}) yanatakiwa kulipwa kufikia tarehe ${renewDate}. Tafadhali kamilisha malipo ili kuepuka mfumo kusitishwa. Asante!`;
+
+      const url = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(text)}`;
+      window.open(url, '_blank');
+      showToast(`Opened WhatsApp reminder for ${st.owner_name}`, "info");
+    }
+
+    function openClientStore(storeId) {
+      localStorage.setItem('tzion_active_store_id', storeId);
+      window.location.href = `index.html`;
+    }
+
+    // --- Modal: Manual Renewal Date Adjustment ---
+    function openChangeDateModal(storeId) {
+      const st = SuperState.stores.find(s => s.id === storeId);
+      if (!st) return;
+
+      document.getElementById('changeDateStoreId').value = st.id;
+      document.getElementById('changeDateStoreTitle').innerText = `${st.name} (ID: ${st.id})`;
+      document.getElementById('changeDateCurrentDisplay').innerText = new Date(st.subscription_renews_at).toLocaleDateString();
+      document.getElementById('changeDateFeeDisplay').innerText = formatTZS(st.monthly_fee_tzs || 50000);
+      document.getElementById('customGracePeriodInput').value = st.grace_period_days || 3;
+
+      // Format ISO string to yyyy-mm-dd for input[type="date"]
+      const curDate = new Date(st.subscription_renews_at);
+      const yyyy = curDate.getFullYear();
+      const mm = String(curDate.getMonth() + 1).padStart(2, '0');
+      const dd = String(curDate.getDate()).padStart(2, '0');
+      document.getElementById('customRenewalDateInput').value = `${yyyy}-${mm}-${dd}`;
+
+      const modal = document.getElementById('changeDateModal');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
+
+    function closeChangeDateModal() {
+      const modal = document.getElementById('changeDateModal');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    }
+
+    function handleSaveCustomRenewalDate(e) {
+      e.preventDefault();
+      const storeId = document.getElementById('changeDateStoreId').value;
+      const dateVal = document.getElementById('customRenewalDateInput').value;
+      const graceDays = parseInt(document.getElementById('customGracePeriodInput').value) || 3;
+      const autoUnlock = document.getElementById('autoUnlockCheckbox').checked;
+
+      const st = SuperState.stores.find(s => s.id === storeId);
+      if (!st) return;
+
+      // Set new renewal date at 23:59:59
+      const newRenewDate = new Date(`${dateVal}T23:59:59`);
+      st.subscription_renews_at = newRenewDate.toISOString();
+      st.grace_period_days = graceDays;
+
+      const isFuture = newRenewDate > new Date();
+
+      if (autoUnlock && isFuture) {
+        st.is_locked = false;
+        st.status = 'active';
+        st.lock_reason = '';
+      } else if (!isFuture) {
+        st.status = 'past_due';
+      }
+
+      saveStoresLocally();
+      closeChangeDateModal();
+      showToast(`Updated renewal date for ${st.name} to ${newRenewDate.toLocaleDateString()}`, "success");
+      renderSuperAdminDashboard();
+    }
+
+    // --- Modal: Onboard Store ---
+    function openOnboardStoreModal() {
+      const modal = document.getElementById('onboardStoreModal');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
+
+    function closeOnboardStoreModal() {
+      const modal = document.getElementById('onboardStoreModal');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    }
+
+    function handleCreateStore(e) {
+      e.preventDefault();
+      const name = document.getElementById('newStoreName').value.trim();
+      const owner = document.getElementById('newStoreOwner').value.trim();
+      const phone = document.getElementById('newStorePhone').value.trim();
+      const fee = parseFloat(document.getElementById('newStoreFee').value) || 50000;
+      const grace = parseInt(document.getElementById('newStoreGrace').value) || 3;
+
+      const newStore = {
+        id: `store-tz-${(SuperState.stores.length + 1).toString().padStart(3, '0')}`,
+        name: name,
+        owner_name: owner,
+        owner_phone: phone,
+        monthly_fee_tzs: fee,
+        status: 'active',
+        subscription_renews_at: new Date(Date.now() + 30 * 86400000).toISOString(),
+        grace_period_days: grace,
+        is_locked: false,
+        lock_reason: ''
+      };
+
+      SuperState.stores.unshift(newStore);
+      saveStoresLocally();
+      closeOnboardStoreModal();
+      showToast(`Successfully registered new tenant store: ${name}`, "success");
+      renderSuperAdminDashboard();
+    }
+
+    window.onload = function() {
+      applyTheme();
+      initStoresFromStorage();
+
+      if (sessionStorage.getItem('tzion_superadmin_auth') === 'true') {
+        SuperState.isAuthenticated = true;
+        document.getElementById('superAdminLoginScreen').classList.add('hidden');
+        document.getElementById('superAdminHeader').classList.remove('hidden');
+        document.getElementById('superAdminWorkspace').classList.remove('hidden');
+        renderSuperAdminDashboard();
+      }
+    };
+  </script>
+</body>
+</html>
