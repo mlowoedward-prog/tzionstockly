@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../app/theme.dart';
 import '../../../core/database/providers.dart';
@@ -111,47 +112,128 @@ class _UserManagementScreenState extends ConsumerState<UserManagementScreen> {
             )
           : null,
       body: canManage
-          ? ListView.separated(
+          ? ListView(
               padding: const EdgeInsets.all(16),
-              itemCount: _mockMembers.length,
-              separatorBuilder: (_, __) => const Divider(),
-              itemBuilder: (context, index) {
-                final member = _mockMembers[index];
-                final role = UserRole.fromString(member['role']);
-
-                return ListTile(
-                  leading: CircleAvatar(
-                    backgroundColor: role == UserRole.owner
-                        ? AppTheme.primaryNavy
-                        : role == UserRole.manager
-                            ? AppTheme.secondaryTeal
-                            : Colors.grey.shade400,
-                    child: Icon(
-                      role == UserRole.owner
-                          ? Icons.shield_rounded
-                          : role == UserRole.manager
-                              ? Icons.manage_accounts_rounded
-                              : Icons.person_rounded,
-                      color: Colors.white,
+              children: [
+                // Store Code Onboarding Card
+                Card(
+                  color: AppTheme.primaryNavy.withValues(alpha: 0.05),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                    side: BorderSide(color: AppTheme.primaryNavy.withValues(alpha: 0.2)),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            const Text(
+                              'STORE JOIN CODE',
+                              style: TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.bold,
+                                letterSpacing: 1.2,
+                                color: AppTheme.primaryNavy,
+                              ),
+                            ),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: Colors.orange.shade100,
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Text(
+                                'SaaS Multi-Store',
+                                style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.orange.shade800),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        Row(
+                          children: [
+                            const Text(
+                              'TZ-MAIN',
+                              style: TextStyle(
+                                fontSize: 22,
+                                fontWeight: FontWeight.black,
+                                letterSpacing: 2,
+                                fontFamily: 'monospace',
+                                color: AppTheme.primaryNavy,
+                              ),
+                            ),
+                            const Spacer(),
+                            IconButton.filledTonal(
+                              onPressed: () {
+                                Clipboard.setData(const ClipboardData(text: 'TZ-MAIN'));
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(content: Text('Store Code copied! Share with your Cashiers & Staff.')),
+                                );
+                              },
+                              icon: const Icon(Icons.copy_rounded, size: 18),
+                              tooltip: 'Copy Store Code',
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'Share this code with your staff so they can join this store directly.',
+                          style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+                        ),
+                      ],
                     ),
                   ),
-                  title: Text(member['email']!, style: const TextStyle(fontWeight: FontWeight.bold)),
-                  subtitle: Text('Role: ${role.toFormattedString()}'),
-                  trailing: PopupMenuButton<UserRole>(
-                    onSelected: (newRole) {
-                      setState(() {
-                        _mockMembers[index]['role'] = newRole.name;
-                      });
-                    },
-                    itemBuilder: (context) => const [
-                      PopupMenuItem(value: UserRole.staff, child: Text('Staff')),
-                      PopupMenuItem(value: UserRole.manager, child: Text('Manager')),
-                      PopupMenuItem(value: UserRole.owner, child: Text('Owner')),
-                    ],
-                    child: const Icon(Icons.more_vert),
-                  ),
-                );
-              },
+                ),
+                const SizedBox(height: 16),
+                const Text(
+                  'TEAM MEMBERS',
+                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.grey),
+                ),
+                const SizedBox(height: 8),
+                ..._mockMembers.asMap().entries.map((entry) {
+                  final index = entry.key;
+                  final member = entry.value;
+                  final role = UserRole.fromString(member['role']);
+                  return Card(
+                    margin: const EdgeInsets.only(bottom: 8),
+                    child: ListTile(
+                      leading: CircleAvatar(
+                        backgroundColor: role == UserRole.owner
+                            ? AppTheme.primaryNavy
+                            : role == UserRole.manager
+                                ? AppTheme.secondaryTeal
+                                : Colors.grey.shade400,
+                        child: Icon(
+                          role == UserRole.owner
+                              ? Icons.shield_rounded
+                              : role == UserRole.manager
+                                  ? Icons.manage_accounts_rounded
+                                  : Icons.person_rounded,
+                          color: Colors.white,
+                        ),
+                      ),
+                      title: Text(member['email']!, style: const TextStyle(fontWeight: FontWeight.bold)),
+                      subtitle: Text('Role: ${role.toFormattedString()}'),
+                      trailing: PopupMenuButton<UserRole>(
+                        onSelected: (newRole) {
+                          setState(() {
+                            _mockMembers[index]['role'] = newRole.name;
+                          });
+                        },
+                        itemBuilder: (context) => const [
+                          PopupMenuItem(value: UserRole.staff, child: Text('Staff')),
+                          PopupMenuItem(value: UserRole.manager, child: Text('Manager')),
+                          PopupMenuItem(value: UserRole.owner, child: Text('Owner')),
+                        ],
+                        child: const Icon(Icons.more_vert),
+                      ),
+                    ),
+                  );
+                }),
+              ],
             )
           : Center(
               child: Padding(

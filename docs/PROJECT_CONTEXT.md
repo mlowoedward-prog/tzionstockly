@@ -218,3 +218,47 @@ Purple, orange, and white brand identity:
   - Purple (`#4c1d95`), Orange (`#ea580c`), and White design tokens applied.
   - Dynamic Light/Dark mode switcher and Desktop/Mobile responsive shells.
 
+---
+
+### 7. Multi-Tenant SaaS Architecture & Tenant Isolation Strategy
+
+To support multiple independent retail stores and wholesale shops within the same cloud instance, TzionStockly implements a shared-database, isolated-row multi-tenant SaaS architecture.
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                     TzionStockly SaaS Cloud                     │
+│                                                                 │
+│   Store A ("Kariakoo Wholesale")    Store B ("Mwenge Supermarket")
+│   • Store Code: TZ-7K9A2            • Store Code: TZ-MW819      │
+│   • business_id: uuid_A             • business_id: uuid_B       │
+│   • Owner: john@kariakoo.tz         • Owner: mary@mwenge.tz     │
+│   • Cashiers: staff1, staff2        • Cashiers: staff3          │
+└────────────────────────────────┬────────────────────────────────┘
+                                 │ Enforced by PostgreSQL RLS
+                                 ▼
+┌─────────────────────────────────────────────────────────────────┐
+│              PostgreSQL Row-Level Security (RLS)                │
+│                                                                 │
+│  • Products:        WHERE is_business_member(business_id)       │
+│  • Transactions:    WHERE is_business_member(business_id)       │
+│  • Categories:      WHERE is_business_member(business_id)       │
+│  • P&L Costs:       WHERE is_business_owner_or_manager(biz_id)  │
+│  • SKU Uniqueness:  UNIQUE(business_id, sku) (Per-Store)       │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+#### Key Multi-Tenant Capabilities:
+1. **Per-Store SKU & Barcode Uniqueness**:
+   - Different stores can independently use standard SKUs (e.g. `COKE-500` or `AZAM-1L`) without collision via `UNIQUE(business_id, sku) WHERE deleted_at IS NULL`.
+2. **Frictionless Staff Onboarding via 6-Digit Store Codes**:
+   - Each store generates a short alphanumeric code (e.g. `TZ-7K9A2`).
+   - Store owners share this code with their cashiers.
+   - Staff join the store by entering the code without requiring owner passwords.
+3. **Multi-Store Management for Owners**:
+   - Business owners operating multiple branches can switch active stores seamlessly (`switch_active_store`).
+4. **Client-Side Cache Partitioning**:
+   - LocalStorage and Drift SQLite partitions tables and cache keys by `business_id` (`tzionstockly_products_${storeId}`).
+5. **Electronic Receipts with Store Branding**:
+   - WhatsApp digital receipts dynamically render the active store's name, phone, address, and receipt serial number in Tanzanian Shillings (TZS).
+
+

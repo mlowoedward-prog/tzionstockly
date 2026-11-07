@@ -233,6 +233,14 @@
           <span id="queueBadge" class="bg-tzion-orange-500/20 text-tzion-orange-600 dark:text-tzion-orange-400 border border-tzion-orange-500/40 text-[10px] font-mono font-bold px-1.5 py-0.2 rounded-full">0</span>
         </button>
 
+        <!-- Multi-Tenant SaaS Store Selector -->
+        <button onclick="openStoreModal()" title="Switch or Manage Stores" class="px-3 py-1.5 rounded-xl border border-tzion-purple-300 dark:border-tzion-purple-700 bg-tzion-purple-50 dark:bg-tzion-purple-950 hover:bg-purple-100 dark:hover:bg-tzion-purple-900/60 text-xs font-semibold flex items-center gap-1.5 text-tzion-purple-800 dark:text-purple-200 shadow-sm transition-all">
+          <span class="text-xs">🏪</span>
+          <span id="headerStoreName" class="font-bold truncate max-w-[110px] sm:max-w-[140px]">Tzion Main</span>
+          <span id="headerStoreCode" class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-tzion-orange-500/20 text-tzion-orange-600 dark:text-tzion-orange-400 font-bold">TZ-MAIN</span>
+          <svg class="w-3.5 h-3.5 opacity-60" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+        </button>
+
         <!-- Supabase Settings Drawer Button -->
         <button onclick="openSupabaseModal()" title="Supabase Database Settings" class="p-2 rounded-xl border border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-xs hover:bg-emerald-500/20 transition-all">
           <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M21.362 9.354H12V.396a.396.396 0 0 0-.716-.233L2.2 12.604a.396.396 0 0 0 .32.617H12v8.958a.396.396 0 0 0 .716.233l9.084-12.441a.396.396 0 0 0-.32-.617z"/></svg>
@@ -398,6 +406,10 @@
               </div>
             </div>
             <div class="flex items-center space-x-1.5">
+              <button onclick="openStoreModal()" class="text-[9px] font-mono px-2 py-0.5 rounded-full bg-tzion-purple-100 dark:bg-tzion-purple-900 text-tzion-purple-700 dark:text-purple-300 border border-tzion-purple-300 flex items-center gap-1 font-bold">
+                <span>🏪</span>
+                <span id="mobileStoreCode">TZ-MAIN</span>
+              </button>
               <span id="mobileNetPill" class="text-[9px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30">ONLINE</span>
               <button onclick="handleLogout()" title="Switch Account" class="text-slate-400 hover:text-rose-500 p-1">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
@@ -845,6 +857,112 @@
   </div>
 
   <!-- ========================================================================= -->
+  <!-- MULTI-TENANT SAAS STORE MANAGEMENT MODAL                                  -->
+  <!-- ========================================================================= -->
+  <div id="storeModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden items-center justify-center p-4">
+    <div class="bg-white dark:bg-[#1b0c3a] border border-purple-200 dark:border-purple-900/60 rounded-3xl w-full max-w-lg overflow-hidden shadow-2xl flex flex-col transition-colors">
+      <div class="p-4 border-b border-purple-100 dark:border-purple-900/60 flex items-center justify-between bg-purple-50/50 dark:bg-tzion-purple-950/40">
+        <div class="flex items-center space-x-2">
+          <span class="text-xl">🏪</span>
+          <div>
+            <h3 class="font-bold text-slate-900 dark:text-white text-sm">Store & Tenant Management</h3>
+            <p class="text-[10px] text-slate-500 dark:text-purple-300">Multi-Tenant SaaS • Switch or Create Branches</p>
+          </div>
+        </div>
+        <button onclick="closeStoreModal()" class="text-slate-400 hover:text-slate-700 dark:hover:text-white p-1">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+
+      <!-- Store Tabs: Active Store, My Stores, Create Store, Join Store -->
+      <div class="flex border-b border-purple-100 dark:border-purple-900/60 bg-purple-50/30 dark:bg-tzion-purple-950/20 text-xs font-semibold">
+        <button onclick="setStoreTab('active')" id="tabBtnActiveStore" class="flex-1 py-2.5 border-b-2 border-tzion-purple-600 text-tzion-purple-700 dark:text-white transition-all">Current Store</button>
+        <button onclick="setStoreTab('list')" id="tabBtnListStores" class="flex-1 py-2.5 border-b-2 border-transparent text-slate-500 dark:text-purple-300 hover:text-purple-900 dark:hover:text-white transition-all">My Stores</button>
+        <button onclick="setStoreTab('create')" id="tabBtnCreateStore" class="flex-1 py-2.5 border-b-2 border-transparent text-slate-500 dark:text-purple-300 hover:text-purple-900 dark:hover:text-white transition-all">+ New Store</button>
+        <button onclick="setStoreTab('join')" id="tabBtnJoinStore" class="flex-1 py-2.5 border-b-2 border-transparent text-slate-500 dark:text-purple-300 hover:text-purple-900 dark:hover:text-white transition-all">Join Store</button>
+      </div>
+
+      <div class="p-5 space-y-4 text-xs overflow-y-auto max-h-[70vh]">
+        <!-- TAB 1: Current Active Store Details -->
+        <div id="storeTabActive" class="space-y-3">
+          <div class="p-4 rounded-2xl bg-gradient-to-br from-purple-500/10 to-orange-500/10 border border-purple-200 dark:border-purple-800 space-y-2">
+            <div class="flex justify-between items-start">
+              <div>
+                <span class="text-[10px] font-mono text-tzion-orange-500 uppercase font-bold">Active Branch</span>
+                <h4 id="activeStoreModalName" class="text-base font-extrabold text-slate-900 dark:text-white">Tzion Main Store</h4>
+                <p id="activeStoreModalAddress" class="text-xs text-slate-600 dark:text-purple-300">Kariakoo, Dar es Salaam</p>
+              </div>
+              <span id="activeStoreModalRoleBadge" class="text-[10px] font-mono uppercase px-2 py-0.5 rounded-full font-bold bg-tzion-purple-100 dark:bg-tzion-purple-900 text-tzion-purple-700 dark:text-purple-300 border border-tzion-purple-300">Owner</span>
+            </div>
+
+            <!-- Join Code Display with Copy Button -->
+            <div class="pt-2 border-t border-purple-200/60 dark:border-purple-800/60 flex items-center justify-between">
+              <div>
+                <span class="text-[10px] text-slate-500 dark:text-purple-300 block">Store Join Code (for Cashiers/Staff):</span>
+                <span id="activeStoreModalCode" class="text-lg font-black font-mono tracking-wider text-tzion-orange-600 dark:text-tzion-orange-400">TZ-MAIN</span>
+              </div>
+              <button onclick="copyStoreCode()" class="px-3 py-1.5 rounded-xl bg-tzion-orange-500 hover:bg-tzion-orange-600 text-white font-bold text-xs flex items-center gap-1 shadow-sm">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                <span>Copy Code</span>
+              </button>
+            </div>
+          </div>
+          <p class="text-[11px] text-slate-500 dark:text-purple-300/80">
+            💡 Share this <strong>Store Join Code</strong> with your cashier terminals or team members so they can connect directly to this store's inventory.
+          </p>
+        </div>
+
+        <!-- TAB 2: List of Stores / Switcher -->
+        <div id="storeTabList" class="space-y-3 hidden">
+          <p class="text-[11px] text-slate-500 dark:text-purple-300">Select a store branch to manage its inventory and sales:</p>
+          <div id="storeListContainer" class="space-y-2">
+            <!-- Populated dynamically by renderStoreList() -->
+          </div>
+        </div>
+
+        <!-- TAB 3: Create New Store -->
+        <div id="storeTabCreate" class="space-y-3 hidden">
+          <div>
+            <label class="block font-semibold text-slate-700 dark:text-purple-200 mb-1">Store / Branch Name</label>
+            <input type="text" id="newStoreNameInput" placeholder="e.g. Duka la Posta, Arusha Branch" class="w-full bg-slate-50 dark:bg-tzion-purple-950 border border-purple-200 dark:border-purple-800 rounded-xl px-3 py-2 text-slate-900 dark:text-white text-xs focus:outline-none focus:border-tzion-orange-500">
+          </div>
+          <div class="grid grid-cols-2 gap-2">
+            <div>
+              <label class="block font-semibold text-slate-700 dark:text-purple-200 mb-1">Phone Number</label>
+              <input type="tel" id="newStorePhoneInput" placeholder="+255 7..." class="w-full bg-slate-50 dark:bg-tzion-purple-950 border border-purple-200 dark:border-purple-800 rounded-xl px-3 py-2 text-slate-900 dark:text-white text-xs focus:outline-none focus:border-tzion-orange-500">
+            </div>
+            <div>
+              <label class="block font-semibold text-slate-700 dark:text-purple-200 mb-1">Currency</label>
+              <input type="text" value="TZS" readonly class="w-full bg-slate-100 dark:bg-tzion-purple-900/40 border border-purple-200 dark:border-purple-800 rounded-xl px-3 py-2 text-slate-500 dark:text-purple-300 text-xs font-mono font-bold">
+            </div>
+          </div>
+          <div>
+            <label class="block font-semibold text-slate-700 dark:text-purple-200 mb-1">Physical Location / Address</label>
+            <input type="text" id="newStoreAddressInput" placeholder="e.g. Samora Avenue, Dar es Salaam" class="w-full bg-slate-50 dark:bg-tzion-purple-950 border border-purple-200 dark:border-purple-800 rounded-xl px-3 py-2 text-slate-900 dark:text-white text-xs focus:outline-none focus:border-tzion-orange-500">
+          </div>
+          <button onclick="handleCreateStore()" class="w-full py-2.5 rounded-xl bg-tzion-purple-600 hover:bg-tzion-purple-700 text-white font-bold text-xs shadow-md transition-all flex items-center justify-center gap-1.5">
+            <span>✨ Create & Switch to New Store</span>
+          </button>
+        </div>
+
+        <!-- TAB 4: Join Existing Store -->
+        <div id="storeTabJoin" class="space-y-3 hidden">
+          <div class="p-3 rounded-2xl bg-purple-50/60 dark:bg-tzion-purple-950 border border-purple-200 dark:border-purple-800">
+            <label class="block font-semibold text-slate-700 dark:text-purple-200 mb-1">Enter 6-Digit Store Code</label>
+            <input type="text" id="joinStoreCodeInput" placeholder="e.g. TZ-7K9A2" class="w-full bg-white dark:bg-tzion-purple-900/60 border border-purple-200 dark:border-purple-700 rounded-xl px-3 py-2 text-slate-900 dark:text-white text-sm font-mono tracking-widest uppercase focus:outline-none focus:border-tzion-orange-500">
+            <p class="text-[10px] text-slate-500 dark:text-purple-300 mt-1.5">
+              Ask your shop owner or manager for the Store Code displayed in their Store Management screen.
+            </p>
+          </div>
+          <button onclick="handleJoinStore()" class="w-full py-2.5 rounded-xl bg-tzion-orange-500 hover:bg-tzion-orange-600 text-white font-bold text-xs shadow-md transition-all flex items-center justify-center gap-1.5">
+            <span>🚀 Join Store Team</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
   <!-- JAVASCRIPT APPLICATION CORE (TZS Currency, RBAC, Excel & Themes)         -->
   <!-- ========================================================================= -->
   <script>
@@ -859,6 +977,29 @@
       mobileTab: 'catalog',// 'catalog' | 'stats' | 'outbox'
       searchQuery: '',
       selectedCategory: 'All',
+
+      // Multi-Tenant SaaS Store Context
+      currentStore: {
+        id: "00000000-0000-0000-0000-000000000001",
+        name: "Tzion Main Store",
+        code: "TZ-MAIN",
+        currency: "TZS",
+        phone: "+255 712 345 678",
+        address: "Kariakoo, Dar es Salaam",
+        role: "owner"
+      },
+      userStores: [
+        {
+          id: "00000000-0000-0000-0000-000000000001",
+          name: "Tzion Main Store",
+          code: "TZ-MAIN",
+          currency: "TZS",
+          phone: "+255 712 345 678",
+          address: "Kariakoo, Dar es Salaam",
+          role: "owner"
+        }
+      ],
+      activeStoreTab: 'active',
 
       // Stock adjustment modal active item
       activeModalItem: null,
@@ -908,6 +1049,192 @@
     // --- Currency Formatter for Tanzanian Shillings (TZS) ---
     function formatTZS(amount) {
       return `TZS ${Math.round(amount).toLocaleString('en-US')}`;
+    }
+
+    // =========================================================================
+    // MULTI-TENANT SAAS STORE CONTROLLER
+    // =========================================================================
+    function openStoreModal() {
+      document.getElementById('storeModal').classList.remove('hidden');
+      document.getElementById('storeModal').classList.add('flex');
+      updateStoreModalUI();
+    }
+
+    function closeStoreModal() {
+      document.getElementById('storeModal').classList.add('hidden');
+      document.getElementById('storeModal').classList.remove('flex');
+    }
+
+    function setStoreTab(tab) {
+      AppState.activeStoreTab = tab;
+      const tabs = ['active', 'list', 'create', 'join'];
+      tabs.forEach(t => {
+        const el = document.getElementById(`storeTab${t.charAt(0).toUpperCase() + t.slice(1)}`);
+        const btn = document.getElementById(`tabBtn${t.charAt(0).toUpperCase() + t.slice(1)}Store`);
+        if (el && btn) {
+          if (t === tab) {
+            el.classList.remove('hidden');
+            btn.className = "flex-1 py-2.5 border-b-2 border-tzion-purple-600 text-tzion-purple-700 dark:text-white transition-all font-bold";
+          } else {
+            el.classList.add('hidden');
+            btn.className = "flex-1 py-2.5 border-b-2 border-transparent text-slate-500 dark:text-purple-300 hover:text-purple-900 dark:hover:text-white transition-all";
+          }
+        }
+      });
+      if (tab === 'list') renderStoreList();
+    }
+
+    function updateStoreModalUI() {
+      const store = AppState.currentStore;
+      const nameEl = document.getElementById('activeStoreModalName');
+      const addrEl = document.getElementById('activeStoreModalAddress');
+      const codeEl = document.getElementById('activeStoreModalCode');
+      const badgeEl = document.getElementById('activeStoreModalRoleBadge');
+      if (nameEl) nameEl.innerText = store.name;
+      if (addrEl) addrEl.innerText = store.address || 'Tanzania';
+      if (codeEl) codeEl.innerText = store.code;
+      if (badgeEl) badgeEl.innerText = (store.role || 'Staff').toUpperCase();
+      updateStoreHeaders();
+    }
+
+    function updateStoreHeaders() {
+      const store = AppState.currentStore;
+      const nameEl = document.getElementById('headerStoreName');
+      const codeEl = document.getElementById('headerStoreCode');
+      const mobCodeEl = document.getElementById('mobileStoreCode');
+      if (nameEl) nameEl.innerText = store.name;
+      if (codeEl) codeEl.innerText = store.code;
+      if (mobCodeEl) mobCodeEl.innerText = store.code;
+    }
+
+    function copyStoreCode() {
+      const code = AppState.currentStore.code;
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(code).then(() => {
+          showToast(`Store Join Code ${code} copied to clipboard!`, "success");
+        }).catch(() => {
+          showToast(`Store Code: ${code}`, "info");
+        });
+      } else {
+        showToast(`Store Code: ${code}`, "info");
+      }
+    }
+
+    function renderStoreList() {
+      const container = document.getElementById('storeListContainer');
+      if (!container) return;
+      container.innerHTML = AppState.userStores.map(s => {
+        const isActive = s.id === AppState.currentStore.id;
+        return `
+          <div class="p-3 rounded-2xl border ${isActive ? 'bg-tzion-purple-50 dark:bg-tzion-purple-900/40 border-tzion-purple-500' : 'bg-slate-50 dark:bg-tzion-purple-950 border-purple-200 dark:border-purple-800'} flex items-center justify-between transition-all">
+            <div>
+              <div class="flex items-center gap-2">
+                <span class="font-bold text-slate-900 dark:text-white text-xs">${s.name}</span>
+                <span class="text-[9px] font-mono px-1.5 py-0.2 rounded font-bold ${isActive ? 'bg-tzion-purple-600 text-white' : 'bg-purple-200 dark:bg-purple-800 text-purple-800 dark:text-purple-200'}">${s.code}</span>
+              </div>
+              <p class="text-[10px] text-slate-500 dark:text-purple-300">${s.address || 'Tanzania'} • Role: <strong class="uppercase text-tzion-orange-500">${s.role || 'Member'}</strong></p>
+            </div>
+            ${isActive ? `
+              <span class="text-xs font-bold text-emerald-500 flex items-center gap-1">
+                <span>✓</span> Active
+              </span>
+            ` : `
+              <button onclick="switchActiveStore('${s.id}')" class="px-3 py-1 rounded-xl bg-tzion-purple-600 hover:bg-tzion-purple-700 text-white font-bold text-xs shadow-sm transition-all">
+                Switch
+              </button>
+            `}
+          </div>
+        `;
+      }).join('');
+    }
+
+    function switchActiveStore(storeId) {
+      const target = AppState.userStores.find(s => s.id === storeId);
+      if (!target) return;
+      saveStateToStorage();
+      AppState.currentStore = target;
+
+      // Load specific catalog for this store
+      const savedProducts = localStorage.getItem(`tzion_products_${storeId}`);
+      if (savedProducts) {
+        AppState.products = JSON.parse(savedProducts);
+      } else {
+        AppState.products = [
+          { id: Date.now() + 1, uuid: "p-" + Date.now(), name: `${target.name} Demo Item 1`, sku: `${target.code}-101`, category: "General", stock: 25, minStock: 5, costPrice: 5000, sellingPrice: 8000, unit: "pcs", velocity: 4 }
+        ];
+      }
+
+      const savedOutbox = localStorage.getItem(`tzion_outbox_${storeId}`);
+      AppState.syncQueue = savedOutbox ? JSON.parse(savedOutbox) : [];
+
+      saveStateToStorage();
+      updateStoreModalUI();
+      closeStoreModal();
+      renderUI();
+      showToast(`Switched active store to: ${target.name}`, "success");
+    }
+
+    function handleCreateStore() {
+      const nameInput = document.getElementById('newStoreNameInput');
+      const phoneInput = document.getElementById('newStorePhoneInput');
+      const addressInput = document.getElementById('newStoreAddressInput');
+      const name = nameInput.value.trim();
+
+      if (!name) {
+        showToast("Please enter a valid store name.", "warning");
+        return;
+      }
+
+      const newId = "store_" + Date.now();
+      const randomCode = "TZ-" + Math.random().toString(36).substring(2, 6).toUpperCase();
+      const newStore = {
+        id: newId,
+        name: name,
+        code: randomCode,
+        currency: "TZS",
+        phone: phoneInput.value.trim() || "+255 700 000 000",
+        address: addressInput.value.trim() || "Tanzania",
+        role: "owner"
+      };
+
+      AppState.userStores.push(newStore);
+      nameInput.value = '';
+      phoneInput.value = '';
+      addressInput.value = '';
+
+      switchActiveStore(newId);
+      showToast(`Branch "${name}" created with code ${randomCode}!`, "success");
+    }
+
+    function handleJoinStore() {
+      const codeInput = document.getElementById('joinStoreCodeInput');
+      const code = codeInput.value.trim().toUpperCase();
+
+      if (!code) {
+        showToast("Please enter a valid store code.", "warning");
+        return;
+      }
+
+      const existing = AppState.userStores.find(s => s.code.toUpperCase() === code);
+      if (existing) {
+        switchActiveStore(existing.id);
+        return;
+      }
+
+      const joinedStore = {
+        id: "joined_" + Date.now(),
+        name: `Shop (${code})`,
+        code: code,
+        currency: "TZS",
+        phone: "+255",
+        address: "Tanzania",
+        role: "staff"
+      };
+
+      AppState.userStores.push(joinedStore);
+      codeInput.value = '';
+      switchActiveStore(joinedStore.id);
+      showToast(`Joined store ${code} as Staff Terminal!`, "success");
     }
 
     // --- Theme Controller (Light / Dark) ---
@@ -1444,8 +1771,11 @@
 
     function generateReceiptText() {
       if (!lastReceiptData) return '';
-      return `🛒 *TZIONSTOCKLY - DIGITAL RECEIPT*\n` +
-             `🏪 Store: TzionStockly Retail & Wholesale POS\n` +
+      const store = AppState.currentStore || { name: 'TzionStockly POS', code: 'TZ-MAIN', address: 'Tanzania', phone: '+255' };
+      return `🛒 *${store.name.toUpperCase()} - DIGITAL RECEIPT*\n` +
+             `🏪 Store Code: ${store.code}\n` +
+             `📍 Location: ${store.address || 'Tanzania'}\n` +
+             `📞 Tel: ${store.phone || '+255'}\n` +
              `📅 Date: ${lastReceiptData.date}\n` +
              `🧾 Receipt No: ${lastReceiptData.txId}\n` +
              `👤 Served By: ${lastReceiptData.cashier}\n` +
@@ -1457,7 +1787,7 @@
              `--------------------------------\n` +
              `Thank you for shopping with us!\n` +
              `Asante kwa kununua nasi! Karibu tena! 🇹🇿\n` +
-             `TzionStockly: Offline-First Zero-Latency POS`;
+             `Powered by TzionStockly Multi-Tenant POS`;
     }
 
     function sendWhatsAppReceipt() {
@@ -1772,11 +2102,14 @@
       showToast("Purged local synchronization outbox.", "warning");
     }
 
-    // --- Local Storage Persistence ---
+    // --- Local Storage Persistence (Partitioned per Tenant Store) ---
     function saveStateToStorage() {
       try {
-        localStorage.setItem('tzionstockly_products', JSON.stringify(AppState.products));
-        localStorage.setItem('tzionstockly_outbox', JSON.stringify(AppState.syncQueue));
+        const storeId = (AppState.currentStore && AppState.currentStore.id) ? AppState.currentStore.id : '00000000-0000-0000-0000-000000000001';
+        localStorage.setItem(`tzionstockly_products_${storeId}`, JSON.stringify(AppState.products));
+        localStorage.setItem(`tzionstockly_outbox_${storeId}`, JSON.stringify(AppState.syncQueue));
+        localStorage.setItem('tzionstockly_current_store', JSON.stringify(AppState.currentStore));
+        localStorage.setItem('tzionstockly_user_stores', JSON.stringify(AppState.userStores));
         if (AppState.currentUser) {
           localStorage.setItem('tzionstockly_user', JSON.stringify(AppState.currentUser));
         } else {
@@ -1790,10 +2123,17 @@
 
     function loadStateFromStorage() {
       try {
-        const p = localStorage.getItem('tzionstockly_products');
+        const storedStores = localStorage.getItem('tzionstockly_user_stores');
+        if (storedStores) AppState.userStores = JSON.parse(storedStores);
+
+        const storedCurrent = localStorage.getItem('tzionstockly_current_store');
+        if (storedCurrent) AppState.currentStore = JSON.parse(storedCurrent);
+
+        const storeId = (AppState.currentStore && AppState.currentStore.id) ? AppState.currentStore.id : '00000000-0000-0000-0000-000000000001';
+        const p = localStorage.getItem(`tzionstockly_products_${storeId}`) || localStorage.getItem('tzionstockly_products');
         if (p) AppState.products = JSON.parse(p);
 
-        const q = localStorage.getItem('tzionstockly_outbox');
+        const q = localStorage.getItem(`tzionstockly_outbox_${storeId}`) || localStorage.getItem('tzionstockly_outbox');
         if (q) AppState.syncQueue = JSON.parse(q);
 
         const d = localStorage.getItem('tzionstockly_dark');
@@ -1804,6 +2144,8 @@
           const user = JSON.parse(u);
           completeLogin(user.email, user.role, false);
         }
+
+        updateStoreHeaders();
       } catch (e) {
         console.warn('LocalStorage load error:', e);
       }

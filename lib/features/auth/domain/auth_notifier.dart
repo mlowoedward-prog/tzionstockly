@@ -241,6 +241,136 @@ class AuthNotifier extends StateNotifier<AuthState> {
     state = const AuthState(isAuthenticated: false, isLoading: false);
   }
 
+  // =========================================================================
+  // MULTI-TENANT SAAS STORE MANAGEMENT
+  // =========================================================================
+
+  /// Creates a new tenant store branch on Supabase
+  Future<bool> createStore({
+    required String name,
+    String? phone,
+    String? address,
+    String currency = 'TZS',
+  }) async {
+    if (!SupabaseConfig.isConfigured || SupabaseConfig.client == null) {
+      state = state.copyWith(errorMessage: 'Supabase is not configured.');
+      return false;
+    }
+
+    state = state.copyWith(isLoading: true, errorMessage: null);
+    try {
+      final client = SupabaseConfig.client!;
+      final res = await client.rpc('create_new_store', params: {
+        'p_name': name,
+        'p_currency': currency,
+        'p_phone': phone,
+        'p_address': address,
+      });
+
+      final newBizId = res['id'] as String;
+      final currentProfile = state.userProfile;
+      if (currentProfile != null) {
+        final updatedProfile = UserProfile(
+          id: currentProfile.id,
+          email: currentProfile.email,
+          businessId: newBizId,
+          role: 'owner',
+        );
+        await dbService.adoptDefaultBusinessData(newBizId);
+        await _cacheProfile(updatedProfile);
+        state = state.copyWith(
+          isLoading: false,
+          userProfile: updatedProfile,
+        );
+      }
+      return true;
+    } catch (e) {
+      state = state.copyWith(isLoading: false, errorMessage: e.toString());
+      return false;
+    }
+  }
+
+  /// Joins an existing store as staff using its 6-digit store code
+  Future<bool> joinStoreWithCode({required String code}) async {
+    if (!SupabaseConfig.isConfigured || SupabaseConfig.client == null) {
+      state = state.copyWith(errorMessage: 'Supabase is not configured.');
+      return false;
+    }
+
+    state = state.copyWith(isLoading: true, errorMessage: null);
+    try {
+      final client = SupabaseConfig.client!;
+      final res = await client.rpc('join_store_by_code', params: {
+        'p_code': code.trim().toUpperCase(),
+      });
+
+      final targetBizId = res['business_id'] as String;
+      final assignedRole = (res['role'] ?? 'staff').toString();
+
+      final currentProfile = state.userProfile;
+      if (currentProfile != null) {
+        final updatedProfile = UserProfile(
+          id: currentProfile.id,
+          email: currentProfile.email,
+          businessId: targetBizId,
+          role: assignedRole,
+        );
+        await _cacheProfile(updatedProfile);
+        state = state.copyWith(
+          isLoading: false,
+          userProfile: updatedProfile,
+        );
+      }
+      return true;
+    } catch (e) {
+      state = state.copyWith(isLoading: false, errorMessage: e.toString());
+      return false;
+    }
+  }
+
+  /// Switches active store branch for multi-store owners
+  Future<bool> switchActiveStore({required String businessId}) async {
+    if (!SupabaseConfig.isConfigured || SupabaseConfig.client == null) {
+      // Local switch
+      final currentProfile = state.userProfile;
+      if (currentProfile != null) {
+        final updated = UserProfile(
+          id: currentProfile.id,
+          email: currentProfile.email,
+          businessId: businessId,
+          role: currentProfile.role,
+        );
+        await _cacheProfile(updated);
+        state = state.copyWith(userProfile: updated);
+      }
+      return true;
+    }
+
+    try {
+      final client = SupabaseConfig.client!;
+      final res = await client.rpc('switch_active_store', params: {
+        'p_business_id': businessId,
+      });
+
+      final userRole = (res['role'] ?? 'owner').toString();
+      final currentProfile = state.userProfile;
+      if (currentProfile != null) {
+        final updated = UserProfile(
+          id: currentProfile.id,
+          email: currentProfile.email,
+          businessId: businessId,
+          role: userRole,
+        );
+        await _cacheProfile(updated);
+        state = state.copyWith(userProfile: updated);
+      }
+      return true;
+    } catch (e) {
+      state = state.copyWith(errorMessage: e.toString());
+      return false;
+    }
+  }
+
   Future<void> _cacheProfile(UserProfile profile) async {
     await _storage.write(key: _userKey, value: jsonEncode(profile.toJson()));
   }
