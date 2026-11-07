@@ -1,10 +1,25 @@
 -- =========================================================================
 -- Migration 00004: Atomic Stock Mutation, Profiles & RLS (TzionStockly DDL)
 -- Compatible with PostgreSQL 15+ & Supabase Auth
+-- Fully idempotent with existing tables (00001-00003)
 -- =========================================================================
 
 -- 1. Enable UUID Extension
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
+-- Ensure businesses table exists
+CREATE TABLE IF NOT EXISTS public.businesses (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    name TEXT NOT NULL DEFAULT 'Default Business',
+    currency TEXT NOT NULL DEFAULT 'TZS',
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ
+);
+
+INSERT INTO public.businesses (id, name, currency)
+VALUES ('00000000-0000-0000-0000-000000000001', 'Tzion Stockly Shop', 'TZS')
+ON CONFLICT (id) DO NOTHING;
 
 -- 2. User Roles & Profiles Table (Linked to Supabase Auth)
 DO $$ BEGIN
@@ -22,23 +37,37 @@ CREATE TABLE IF NOT EXISTS public.profiles (
     updated_at TIMESTAMPTZ DEFAULT TIMEZONE('utc', NOW())
 );
 
--- 3. Products Catalog Table
+-- 3. Products Catalog Table (Ensure base table and all columns exist)
 CREATE TABLE IF NOT EXISTS public.products (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    sku TEXT UNIQUE NOT NULL,
+    business_id UUID REFERENCES public.businesses(id) ON DELETE CASCADE,
+    sku TEXT,
     name TEXT NOT NULL,
     category TEXT NOT NULL DEFAULT 'General',
     stock_quantity INTEGER NOT NULL DEFAULT 0 CHECK (stock_quantity >= 0),
     min_threshold INTEGER NOT NULL DEFAULT 5 CHECK (min_threshold >= 1),
     cost_price_tzs NUMERIC(12, 2) NOT NULL DEFAULT 0.00 CHECK (cost_price_tzs >= 0.00),
     selling_price_tzs NUMERIC(12, 2) NOT NULL DEFAULT 0.00 CHECK (selling_price_tzs >= 0.00),
+    cost_price BIGINT NOT NULL DEFAULT 0,
+    selling_price BIGINT NOT NULL DEFAULT 0,
+    unit TEXT NOT NULL DEFAULT 'pcs',
     created_at TIMESTAMPTZ DEFAULT TIMEZONE('utc', NOW()),
     updated_at TIMESTAMPTZ DEFAULT TIMEZONE('utc', NOW())
 );
 
+-- Idempotent column additions if products was created by another migration
+ALTER TABLE public.products ADD COLUMN IF NOT EXISTS business_id UUID REFERENCES public.businesses(id) ON DELETE CASCADE;
+ALTER TABLE public.products ADD COLUMN IF NOT EXISTS category TEXT DEFAULT 'General';
+ALTER TABLE public.products ADD COLUMN IF NOT EXISTS stock_quantity INTEGER NOT NULL DEFAULT 0;
+ALTER TABLE public.products ADD COLUMN IF NOT EXISTS min_threshold INTEGER NOT NULL DEFAULT 5;
+ALTER TABLE public.products ADD COLUMN IF NOT EXISTS cost_price_tzs NUMERIC(12, 2) NOT NULL DEFAULT 0.00;
+ALTER TABLE public.products ADD COLUMN IF NOT EXISTS selling_price_tzs NUMERIC(12, 2) NOT NULL DEFAULT 0.00;
+ALTER TABLE public.products ADD COLUMN IF NOT EXISTS unit TEXT NOT NULL DEFAULT 'pcs';
+
 -- Index for high-velocity lookups
 CREATE INDEX IF NOT EXISTS idx_products_sku ON public.products(sku);
 CREATE INDEX IF NOT EXISTS idx_products_updated_at ON public.products(updated_at);
+CREATE INDEX IF NOT EXISTS idx_products_business_id ON public.products(business_id);
 
 -- 4. Stock Movement Log (Audit Trail & Delta Source)
 DO $$ BEGIN
@@ -50,7 +79,7 @@ END $$;
 CREATE TABLE IF NOT EXISTS public.stock_transactions (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     product_id UUID NOT NULL REFERENCES public.products(id) ON DELETE CASCADE,
-    performed_by UUID NOT NULL REFERENCES public.profiles(id),
+    performed_by UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
     type transaction_type NOT NULL,
     quantity INTEGER NOT NULL CHECK (quantity > 0),
     unit_price_tzs NUMERIC(12, 2) NOT NULL,
@@ -72,10 +101,21 @@ CREATE OR REPLACE FUNCTION process_stock_mutation(
     p_notes TEXT,
     p_device_created_at TIMESTAMPTZ
 ) RETURNS VOID AS $$
+DECLARE
+    is_admin_user BOOLEAN := FALSE;
 BEGIN
+    -- Check admin or owner status across profiles or user_profiles
+    IF EXISTS (SELECT 1 FROM public.profiles WHERE id = p_user_id AND role = 'admin') THEN
+        is_admin_user := TRUE;
+    ELSIF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'user_profiles') THEN
+        IF EXISTS (SELECT 1 FROM public.user_profiles WHERE id = p_user_id AND role IN ('admin', 'owner')) THEN
+            is_admin_user := TRUE;
+        END IF;
+    END IF;
+
     -- Validate permissions inside transaction
     IF p_type = 'CHECK_IN' THEN
-        IF NOT EXISTS (SELECT 1 FROM public.profiles WHERE id = p_user_id AND role = 'admin') THEN
+        IF NOT is_admin_user THEN
             RAISE EXCEPTION 'Access Denied: Only Admins can perform stock Check-In.';
         END IF;
 
@@ -104,55 +144,52 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- 6. Trigger: Auto-Provision User Profile on Auth Signup
-CREATE OR REPLACE FUNCTION public.handle_new_user()
-RETURNS trigger AS $$
-BEGIN
-    INSERT INTO public.profiles (id, full_name, role, phone_number)
-    VALUES (
-        NEW.id,
-        COALESCE(NEW.raw_user_meta_data->>'full_name', split_part(NEW.email, '@', 1)),
-        COALESCE((NEW.raw_user_meta_data->>'role')::user_role, 'staff'::user_role),
-        NEW.raw_user_meta_data->>'phone_number'
-    )
-    ON CONFLICT (id) DO UPDATE
-    SET full_name = EXCLUDED.full_name,
-        role = EXCLUDED.role;
-    RETURN NEW;
-END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
-
-DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
-CREATE TRIGGER on_auth_user_created
-    AFTER INSERT ON auth.users
-    FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
-
--- 7. Row Level Security (RLS)
+-- 6. Row Level Security (RLS) Policies
 ALTER TABLE public.products ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.stock_transactions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.stock_transactions ENABLE ROW LEVEL SECURITY;
 
--- Profiles: Authenticated users can view profiles; only admins can edit profiles
-DROP POLICY IF EXISTS "Allow authenticated read profiles" ON public.profiles;
-CREATE POLICY "Allow authenticated read profiles" ON public.profiles
-    FOR SELECT TO authenticated USING (true);
+-- Products: Everyone authenticated can view catalog
+DROP POLICY IF EXISTS "Products viewable by authenticated" ON public.products;
+CREATE POLICY "Products viewable by authenticated"
+    ON public.products FOR SELECT
+    TO authenticated
+    USING (true);
 
-DROP POLICY IF EXISTS "Allow user update self profile" ON public.profiles;
-CREATE POLICY "Allow user update self profile" ON public.profiles
-    FOR UPDATE TO authenticated USING (auth.uid() = id);
+-- Products: Admin/Owner can insert/update
+DROP POLICY IF EXISTS "Products mutable by admin" ON public.products;
+CREATE POLICY "Products mutable by admin"
+    ON public.products FOR ALL
+    TO authenticated
+    USING (
+        EXISTS (SELECT 1 FROM public.profiles WHERE id = (select auth.uid()) AND role = 'admin')
+        OR
+        EXISTS (SELECT 1 FROM public.user_profiles WHERE id = (select auth.uid()) AND role IN ('admin', 'owner'))
+    );
 
--- Products: Everyone can read; only Admins can create/update/delete
-DROP POLICY IF EXISTS "Allow authenticated read products" ON public.products;
-CREATE POLICY "Allow authenticated read products" ON public.products
-    FOR SELECT TO authenticated USING (true);
+-- Profiles: Users can view all profiles
+DROP POLICY IF EXISTS "Profiles viewable by authenticated" ON public.profiles;
+CREATE POLICY "Profiles viewable by authenticated"
+    ON public.profiles FOR SELECT
+    TO authenticated
+    USING (true);
 
-DROP POLICY IF EXISTS "Allow admin write products" ON public.products;
-CREATE POLICY "Allow admin write products" ON public.products
-    FOR ALL TO authenticated
-    USING ((SELECT role FROM public.profiles WHERE id = auth.uid()) = 'admin');
+-- Stock Transactions: Audit log readable by authenticated
+DROP POLICY IF EXISTS "Transactions viewable by authenticated" ON public.stock_transactions;
+CREATE POLICY "Transactions viewable by authenticated"
+    ON public.stock_transactions FOR SELECT
+    TO authenticated
+    USING (true);
 
--- Transactions: Staff and Admin can view records; write handled through RPC or validated insert
-DROP POLICY IF EXISTS "Allow authenticated view transactions" ON public.stock_transactions;
-CREATE POLICY "Allow authenticated view transactions" ON public.stock_transactions
-    FOR SELECT TO authenticated USING (true);
+-- Stock Transactions: Insert allowed for transactions performed by current user
+DROP POLICY IF EXISTS "Transactions insertable by performer" ON public.stock_transactions;
+CREATE POLICY "Transactions insertable by performer"
+    ON public.stock_transactions FOR INSERT
+    TO authenticated
+    WITH CHECK (performed_by = (select auth.uid()));
 
+-- Grants for Data API
+GRANT EXECUTE ON FUNCTION process_stock_mutation TO authenticated;
+GRANT SELECT ON public.products TO authenticated, anon;
+GRANT SELECT ON public.profiles TO authenticated;
+GRANT SELECT, INSERT ON public.stock_transactions TO authenticated;

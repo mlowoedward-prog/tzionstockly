@@ -1,11 +1,34 @@
 -- =========================================================================
 -- Migration 00005: Supabase Auth, User Profiles, RBAC & Protected Routes
 -- Follows Supabase Security Checklist & Postgres Best Practices
+-- Self-contained: creates public.businesses if it does not already exist
 -- =========================================================================
 
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
--- 1. USER PROFILES TABLE (Mirrors Auth State for Local & Cloud)
+-- Ensure user_role enum exists
+DO $$ BEGIN
+    CREATE TYPE user_role AS ENUM ('admin', 'staff');
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
+
+-- 1. BUSINESSES TABLE (Ensure table exists before foreign key reference)
+CREATE TABLE IF NOT EXISTS public.businesses (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    name TEXT NOT NULL DEFAULT 'Default Business',
+    currency TEXT NOT NULL DEFAULT 'TZS',
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ
+);
+
+-- Seed default local business if missing (matches DatabaseService.defaultBusinessId)
+INSERT INTO public.businesses (id, name, currency)
+VALUES ('00000000-0000-0000-0000-000000000001', 'Tzion Stockly Shop', 'TZS')
+ON CONFLICT (id) DO NOTHING;
+
+-- 2. USER PROFILES TABLE (Mirrors Auth State for Local & Cloud)
 CREATE TABLE IF NOT EXISTS public.user_profiles (
     id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
     email TEXT NOT NULL,
@@ -21,7 +44,7 @@ CREATE TABLE IF NOT EXISTS public.user_profiles (
 CREATE INDEX IF NOT EXISTS idx_user_profiles_business_id ON public.user_profiles(business_id);
 CREATE INDEX IF NOT EXISTS idx_user_profiles_role ON public.user_profiles(role);
 
--- 2. SERVER TIMESTAMP TRIGGER
+-- 3. SERVER TIMESTAMP TRIGGER
 CREATE OR REPLACE FUNCTION public.set_user_profiles_updated_at()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -35,7 +58,7 @@ CREATE TRIGGER trg_user_profiles_updated_at
     BEFORE UPDATE ON public.user_profiles
     FOR EACH ROW EXECUTE FUNCTION public.set_user_profiles_updated_at();
 
--- 3. AUTO-SYNC TRIGGER FROM auth.users
+-- 4. AUTO-SYNC TRIGGER FROM auth.users
 CREATE OR REPLACE FUNCTION public.handle_new_auth_user()
 RETURNS trigger AS $$
 DECLARE
@@ -59,8 +82,17 @@ BEGIN
     user_phone_val := NEW.raw_user_meta_data->>'phone_number';
 
     -- Insert or update user_profiles
-    INSERT INTO public.user_profiles (id, email, role, full_name, phone_number, created_at, updated_at)
-    VALUES (NEW.id, COALESCE(NEW.email, ''), user_role_val, user_name_val, user_phone_val, NOW(), NOW())
+    INSERT INTO public.user_profiles (id, email, business_id, role, full_name, phone_number, created_at, updated_at)
+    VALUES (
+        NEW.id,
+        COALESCE(NEW.email, ''),
+        '00000000-0000-0000-0000-000000000001'::UUID,
+        user_role_val,
+        user_name_val,
+        user_phone_val,
+        NOW(),
+        NOW()
+    )
     ON CONFLICT (id) DO UPDATE
     SET email = EXCLUDED.email,
         full_name = COALESCE(EXCLUDED.full_name, public.user_profiles.full_name),
@@ -90,8 +122,22 @@ CREATE TRIGGER on_auth_user_created_sync
     AFTER INSERT OR UPDATE ON auth.users
     FOR EACH ROW EXECUTE FUNCTION public.handle_new_auth_user();
 
--- 4. ROW LEVEL SECURITY (RLS) FOR USER PROFILES
+-- 5. ROW LEVEL SECURITY (RLS) FOR USER PROFILES & BUSINESSES
+ALTER TABLE public.businesses ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.user_profiles ENABLE ROW LEVEL SECURITY;
+
+-- Policies for businesses
+DROP POLICY IF EXISTS "Authenticated users can read businesses" ON public.businesses;
+CREATE POLICY "Authenticated users can read businesses"
+    ON public.businesses FOR SELECT
+    TO authenticated
+    USING (true);
+
+DROP POLICY IF EXISTS "Authenticated users can insert businesses" ON public.businesses;
+CREATE POLICY "Authenticated users can insert businesses"
+    ON public.businesses FOR INSERT
+    TO authenticated
+    WITH CHECK (true);
 
 -- Allow user to view their own profile
 DROP POLICY IF EXISTS "Users can read own profile" ON public.user_profiles;
@@ -107,7 +153,7 @@ CREATE POLICY "Users can insert own profile"
     TO authenticated
     WITH CHECK ((select auth.uid()) = id);
 
--- Allow user to update their own profile (WITH CHECK mandatory for Postgres update RLS)
+-- Allow user to update their own profile
 DROP POLICY IF EXISTS "Users can update own profile" ON public.user_profiles;
 CREATE POLICY "Users can update own profile"
     ON public.user_profiles FOR UPDATE
@@ -142,6 +188,8 @@ CREATE POLICY "Business owners can update member profiles"
         )
     );
 
--- 5. GRANTS FOR POSTGREST DATA API
+-- 6. GRANTS FOR POSTGREST DATA API
+GRANT SELECT, INSERT, UPDATE ON TABLE public.businesses TO authenticated;
+GRANT SELECT ON TABLE public.businesses TO anon;
 GRANT SELECT, INSERT, UPDATE ON TABLE public.user_profiles TO authenticated;
 GRANT SELECT ON TABLE public.user_profiles TO anon;
