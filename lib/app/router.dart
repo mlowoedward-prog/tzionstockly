@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../core/database/providers.dart';
+import '../features/auth/domain/auth_models.dart';
+import '../features/auth/domain/role_permissions.dart';
 import '../features/dashboard/presentation/dashboard_screen.dart';
 import '../features/products/presentation/products_screen.dart';
 import '../features/products/presentation/product_detail_screen.dart';
@@ -16,10 +20,63 @@ import 'app_shell.dart';
 
 final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'root');
 
-final GoRouter appRouter = GoRouter(
-  navigatorKey: _rootNavigatorKey,
-  initialLocation: '/',
-  routes: [
+/// Reactive Router Notifier that listens to Riverpod Auth changes
+class RouterNotifier extends ChangeNotifier {
+  final Ref _ref;
+
+  RouterNotifier(this._ref) {
+    _ref.listen<AuthState>(
+      authNotifierProvider,
+      (_, __) => notifyListeners(),
+    );
+  }
+
+  String? redirect(BuildContext context, GoRouterState state) {
+    final authState = _ref.read(authNotifierProvider);
+    final isLoggingIn = state.matchedLocation == '/login';
+
+    // 1. Unauthenticated Route Guarding
+    if (!authState.isAuthenticated) {
+      return isLoggingIn ? null : '/login';
+    }
+
+    // 2. Prevent authenticated users from remaining on the login page
+    if (isLoggingIn) {
+      return authState.userRole == UserRole.staff ? '/stock' : '/';
+    }
+
+    final loc = state.matchedLocation;
+
+    // 3. Staff Route Restrictions:
+    // Staff cannot view financial reports, team management, or diagnostics
+    if (authState.userRole == UserRole.staff) {
+      if (loc == '/reports' ||
+          loc.startsWith('/reports') ||
+          loc == '/team' ||
+          loc.startsWith('/team') ||
+          loc == '/diagnostics') {
+        return '/stock';
+      }
+    }
+
+    // 4. Manager Route Restrictions:
+    // Managers can view reports and products, but cannot manage users/team
+    if (authState.userRole == UserRole.manager) {
+      if (loc == '/team' || loc.startsWith('/team')) {
+        return '/';
+      }
+    }
+
+    return null; // Route allowed
+  }
+}
+
+final routerNotifierProvider = Provider<RouterNotifier>((ref) {
+  return RouterNotifier(ref);
+});
+
+List<RouteBase> _buildRoutes() {
+  return [
     GoRoute(
       path: '/login',
       builder: (context, state) => const LoginScreen(),
@@ -33,7 +90,6 @@ final GoRouter appRouter = GoRouter(
       builder: (context, state) => const DiagnosticsScreen(),
     ),
     StatefulShellRoute.indexedStack(
-
       builder: (context, state, navigationShell) {
         return AppShell(navigationShell: navigationShell);
       },
@@ -110,5 +166,23 @@ final GoRouter appRouter = GoRouter(
       path: '/partners',
       builder: (context, state) => const PartnersScreen(),
     ),
-  ],
+  ];
+}
+
+final routerProvider = Provider<GoRouter>((ref) {
+  final notifier = ref.watch(routerNotifierProvider);
+  return GoRouter(
+    navigatorKey: _rootNavigatorKey,
+    initialLocation: '/',
+    refreshListenable: notifier,
+    redirect: notifier.redirect,
+    routes: _buildRoutes(),
+  );
+});
+
+/// Direct GoRouter instance for backward compatibility
+final GoRouter appRouter = GoRouter(
+  navigatorKey: _rootNavigatorKey,
+  initialLocation: '/',
+  routes: _buildRoutes(),
 );

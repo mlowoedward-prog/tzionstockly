@@ -63,10 +63,54 @@ class AuthNotifier extends StateNotifier<AuthState> {
       if (response != null) {
         return UserProfile.fromJson(response);
       }
+
+      // Fallback: check profiles table if present
+      final profileAlt = await SupabaseConfig.client!
+          .from('profiles')
+          .select()
+          .eq('id', userId)
+          .maybeSingle();
+
+      if (profileAlt != null) {
+        final email = SupabaseConfig.client!.auth.currentUser?.email ?? 'user@tzionstockly.com';
+        final role = profileAlt['role'] == 'admin' ? 'owner' : 'staff';
+        return UserProfile(
+          id: userId,
+          email: email,
+          businessId: DatabaseService.defaultBusinessId,
+          role: role,
+        );
+      }
     } catch (e) {
-      // Fallback
+      // Fallback to session user data
+      final currentUser = SupabaseConfig.client!.auth.currentUser;
+      if (currentUser != null && currentUser.id == userId) {
+        final email = currentUser.email ?? 'user@tzionstockly.com';
+        final role = (currentUser.appMetadata['role'] ?? currentUser.userMetadata?['role'] ?? 'owner').toString();
+        return UserProfile(
+          id: userId,
+          email: email,
+          businessId: DatabaseService.defaultBusinessId,
+          role: role,
+        );
+      }
     }
     return null;
+  }
+
+  void continueAsGuest([String role = 'owner']) {
+    final guestProfile = UserProfile(
+      id: 'local_guest_${DateTime.now().millisecondsSinceEpoch}',
+      email: 'guest@tzionstockly.local',
+      businessId: DatabaseService.defaultBusinessId,
+      role: role,
+    );
+    state = AuthState(
+      isAuthenticated: true,
+      isLoading: false,
+      userProfile: guestProfile,
+    );
+    _cacheProfile(guestProfile);
   }
 
   Future<bool> signUp({

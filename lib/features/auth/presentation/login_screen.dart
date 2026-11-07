@@ -220,6 +220,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
                         OutlinedButton.icon(
                           onPressed: () {
+                            ref.read(authNotifierProvider.notifier).continueAsGuest();
                             context.go('/');
                           },
                           icon: const Icon(Icons.wifi_off_rounded),

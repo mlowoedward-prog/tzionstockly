@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import '../../../core/database/providers.dart';
 import '../../products/domain/product_stock_info.dart';
+import '../../auth/domain/role_permissions.dart';
 import '../domain/reports_service.dart';
 
 enum DateRangeFilter { today, week, month, custom }
@@ -52,6 +53,37 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> with SingleTicker
 
   @override
   Widget build(BuildContext context) {
+    final userRole = ref.watch(userRoleProvider);
+
+    // Enforce Role-Based Access Control: Staff cannot view financial reports or margins
+    if (!RolePermissions.canViewFinancialReports(userRole)) {
+      return Scaffold(
+        appBar: AppBar(title: const Text('Reports & Analysis')),
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(28.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.lock_person_rounded, size: 72, color: Colors.amber),
+                const SizedBox(height: 16),
+                const Text(
+                  'Access Restricted',
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Your current role (${userRole.toFormattedString()}) does not have clearance to view COGS, sales turnover, and profit margins. Please contact your shop owner.',
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(color: Colors.grey, height: 1.4),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+
     final (startDate, endDate) = _getEffectiveDateRange();
     final dateRangeStr = '${DateFormat('MMM d, yyyy').format(startDate)} - ${DateFormat('MMM d, yyyy').format(endDate)}';
     final exportService = ref.watch(exportServiceProvider);

@@ -29,6 +29,7 @@ class TzionStocklyApp extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final currentLocale = ref.watch(localeProvider);
     final currentThemeMode = ref.watch(themeModeProvider);
+    final router = ref.watch(routerProvider);
 
     return MaterialApp.router(
       title: 'Tzion Stockly',
@@ -37,7 +38,7 @@ class TzionStocklyApp extends ConsumerWidget {
       darkTheme: AppTheme.darkTheme,
       themeMode: currentThemeMode,
       locale: currentLocale,
-      routerConfig: appRouter,
+      routerConfig: router,
       localizationsDelegates: const [
         AppLocalizations.delegate,
         GlobalMaterialLocalizations.delegate,
