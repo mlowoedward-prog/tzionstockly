@@ -273,6 +273,89 @@
     </div>
   </div>
 
+
+  <!-- ========================================================================= -->
+  <!-- MODAL: EDIT STORE DETAILS & MONTHLY FEE                                   -->
+  <!-- ========================================================================= -->
+  <div id="editStoreModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden items-center justify-center p-4">
+    <div class="bg-white dark:bg-[#1b0c3a] border border-amber-500/50 rounded-3xl w-full max-w-lg overflow-hidden shadow-2xl transition-colors">
+      <div class="p-4 border-b border-purple-100 dark:border-purple-900/60 flex items-center justify-between bg-amber-500/10">
+        <div class="flex items-center space-x-2">
+          <span class="text-amber-500 font-bold text-lg">✏️</span>
+          <div>
+            <h3 class="font-bold text-slate-900 dark:text-white text-sm">Edit Tenant Store Configuration</h3>
+            <p id="editStoreHeaderSub" class="text-[10px] text-slate-500 dark:text-purple-300 font-mono">ID: store-tz-001</p>
+          </div>
+        </div>
+        <button onclick="closeEditStoreModal()" class="text-slate-400 hover:text-slate-700 dark:hover:text-white p-1">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+
+      <form onsubmit="handleSaveStoreDetails(event)" class="p-5 space-y-3.5 text-xs">
+        <input type="hidden" id="editStoreId">
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block font-semibold text-slate-700 dark:text-purple-200 mb-1">Store / Business Name</label>
+            <input type="text" id="editStoreName" required class="w-full bg-slate-50 dark:bg-tzion-purple-950 border border-purple-200 dark:border-purple-800 rounded-xl px-3 py-2 text-slate-900 dark:text-white focus:outline-none focus:border-amber-500 font-semibold">
+          </div>
+          <div>
+            <label class="block font-semibold text-slate-700 dark:text-purple-200 mb-1">Monthly Fee (TZS)</label>
+            <input type="number" id="editStoreFee" min="0" step="1000" required class="w-full bg-slate-50 dark:bg-tzion-purple-950 border border-purple-200 dark:border-purple-800 rounded-xl px-3 py-2 text-tzion-orange-600 dark:text-tzion-orange-400 focus:outline-none focus:border-amber-500 font-bold font-mono">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block font-semibold text-slate-700 dark:text-purple-200 mb-1">Owner Full Name</label>
+            <input type="text" id="editStoreOwner" required class="w-full bg-slate-50 dark:bg-tzion-purple-950 border border-purple-200 dark:border-purple-800 rounded-xl px-3 py-2 text-slate-900 dark:text-white focus:outline-none focus:border-amber-500">
+          </div>
+          <div>
+            <label class="block font-semibold text-slate-700 dark:text-purple-200 mb-1">Owner WhatsApp Phone</label>
+            <input type="text" id="editStorePhone" required class="w-full bg-slate-50 dark:bg-tzion-purple-950 border border-purple-200 dark:border-purple-800 rounded-xl px-3 py-2 text-slate-900 dark:text-white focus:outline-none focus:border-amber-500 font-mono">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block font-semibold text-slate-700 dark:text-purple-200 mb-1">Subscription Status</label>
+            <select id="editStoreStatus" class="w-full bg-slate-50 dark:bg-tzion-purple-950 border border-purple-200 dark:border-purple-800 rounded-xl px-3 py-2 text-slate-900 dark:text-white focus:outline-none focus:border-amber-500 font-semibold">
+              <option value="active">Active (Good Standing)</option>
+              <option value="past_due">Past Due (Grace Period)</option>
+              <option value="suspended">Suspended (Locked Out)</option>
+              <option value="trial">Trial Period</option>
+            </select>
+          </div>
+          <div>
+            <label class="block font-semibold text-slate-700 dark:text-purple-200 mb-1">Grace Period (Days)</label>
+            <input type="number" id="editStoreGrace" min="0" max="30" required class="w-full bg-slate-50 dark:bg-tzion-purple-950 border border-purple-200 dark:border-purple-800 rounded-xl px-3 py-2 text-slate-900 dark:text-white focus:outline-none focus:border-amber-500 font-mono">
+          </div>
+        </div>
+
+        <div class="p-3 rounded-2xl bg-purple-50 dark:bg-tzion-purple-950 border border-purple-200 dark:border-purple-800 flex items-center justify-between">
+          <div>
+            <span class="font-bold text-slate-800 dark:text-white block text-xs">Lockout Access Control</span>
+            <span class="text-[10px] text-slate-500 dark:text-purple-400">Instantly blocks POS checkout & inventory mutations</span>
+          </div>
+          <label class="relative inline-flex items-center cursor-pointer">
+            <input type="checkbox" id="editStoreIsLocked" class="sr-only peer">
+            <div class="w-11 h-6 bg-slate-200 dark:bg-tzion-purple-900 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-rose-600"></div>
+          </label>
+        </div>
+
+        <div class="pt-3 border-t border-purple-100 dark:border-purple-900/60 flex justify-end space-x-2">
+          <button type="button" onclick="closeEditStoreModal()" class="px-4 py-2 rounded-xl bg-purple-100 dark:bg-tzion-purple-900/40 text-slate-700 dark:text-purple-300 font-semibold">
+            Cancel
+          </button>
+          <button type="submit" class="px-5 py-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-bold shadow">
+            Save Store Details
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <!-- ========================================================================= -->
   <!-- MODAL: ONBOARD NEW TENANT STORE                                           -->
   <!-- ========================================================================= -->
@@ -673,6 +756,16 @@
                         </td>
                         <td class="py-3.5 px-4 text-right">
                           <div class="inline-flex items-center gap-1.5 flex-wrap justify-end">
+                            <!-- Edit Store Details & Fee -->
+                            <button 
+                              onclick="openEditStoreModal('${st.id}')"
+                              class="px-2.5 py-1.5 rounded-xl bg-amber-500/15 hover:bg-amber-500/30 text-amber-600 dark:text-amber-400 border border-amber-500/30 font-bold text-xs flex items-center gap-1 transition-all"
+                              title="Edit Store Name, Owner, Phone & Monthly Fee (TZS)"
+                            >
+                              <span>✏️</span>
+                              <span>Edit</span>
+                            </button>
+
                             <!-- 1-Click Lock / Unlock -->
                             <button 
                               onclick="toggleLock('${st.id}')" 
@@ -740,6 +833,10 @@
                     </div>
 
                     <div class="pt-2 flex flex-wrap items-center gap-1.5">
+                      <button onclick="openEditStoreModal('${st.id}')" class="px-3 py-1.5 rounded-xl bg-amber-500/20 text-amber-600 dark:text-amber-400 text-xs font-bold flex items-center gap-1">
+                        <span>✏️</span>
+                        <span>Edit Details</span>
+                      </button>
                       <button onclick="toggleLock('${st.id}')" class="flex-1 py-1.5 rounded-xl font-bold text-xs ${st.is_locked ? 'bg-emerald-600 text-white' : 'bg-rose-500/20 text-rose-500'}">
                         ${st.is_locked ? '🔓 Unlock' : '🔒 Lock'}
                       </button>
@@ -826,6 +923,66 @@
     function openClientStore(storeId) {
       localStorage.setItem('tzion_active_store_id', storeId);
       window.location.href = `index.html`;
+    }
+
+
+    // --- Modal: Edit Store Details & Monthly Fee ---
+    function openEditStoreModal(storeId) {
+      const st = SuperState.stores.find(s => s.id === storeId);
+      if (!st) return;
+
+      document.getElementById('editStoreId').value = st.id;
+      document.getElementById('editStoreHeaderSub').innerText = `ID: ${st.id} • ${st.name}`;
+      document.getElementById('editStoreName').value = st.name;
+      document.getElementById('editStoreFee').value = st.monthly_fee_tzs || 50000;
+      document.getElementById('editStoreOwner').value = st.owner_name;
+      document.getElementById('editStorePhone').value = st.owner_phone;
+      document.getElementById('editStoreStatus').value = st.status || 'active';
+      document.getElementById('editStoreGrace').value = st.grace_period_days || 3;
+      document.getElementById('editStoreIsLocked').checked = !!st.is_locked;
+
+      const modal = document.getElementById('editStoreModal');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
+
+    function closeEditStoreModal() {
+      const modal = document.getElementById('editStoreModal');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    }
+
+    function handleSaveStoreDetails(e) {
+      e.preventDefault();
+      const storeId = document.getElementById('editStoreId').value;
+      const name = document.getElementById('editStoreName').value.trim();
+      const fee = parseFloat(document.getElementById('editStoreFee').value) || 50000;
+      const owner = document.getElementById('editStoreOwner').value.trim();
+      const phone = document.getElementById('editStorePhone').value.trim();
+      const status = document.getElementById('editStoreStatus').value;
+      const grace = parseInt(document.getElementById('editStoreGrace').value) || 3;
+      const isLocked = document.getElementById('editStoreIsLocked').checked;
+
+      const st = SuperState.stores.find(s => s.id === storeId);
+      if (!st) return;
+
+      st.name = name;
+      st.monthly_fee_tzs = fee;
+      st.owner_name = owner;
+      st.owner_phone = phone;
+      st.status = status;
+      st.grace_period_days = grace;
+      st.is_locked = isLocked;
+      if (isLocked) {
+        st.lock_reason = 'Monthly subscription payment overdue';
+      } else if (st.lock_reason === 'Monthly subscription payment overdue') {
+        st.lock_reason = '';
+      }
+
+      saveStoresLocally();
+      closeEditStoreModal();
+      showToast(`Updated ${st.name}: Fee ${formatTZS(fee)}, Status: ${status.toUpperCase()}`, "success");
+      renderSuperAdminDashboard();
     }
 
     // --- Modal: Manual Renewal Date Adjustment ---
@@ -944,3 +1101,4 @@
   </script>
 </body>
 </html>
+

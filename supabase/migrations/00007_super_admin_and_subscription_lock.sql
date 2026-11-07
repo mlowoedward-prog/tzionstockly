@@ -277,6 +277,40 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
+
+-- 6d. Update Store Details, Owner, Phone & Monthly Fee
+CREATE OR REPLACE FUNCTION public.update_store_details(
+    p_store_id UUID,
+    p_name TEXT,
+    p_owner_name TEXT,
+    p_owner_phone TEXT,
+    p_monthly_fee_tzs NUMERIC,
+    p_grace_period_days INTEGER DEFAULT 3,
+    p_status subscription_status DEFAULT 'active',
+    p_is_locked BOOLEAN DEFAULT false
+) RETURNS JSONB AS $
+BEGIN
+    UPDATE public.stores
+    SET name = p_name,
+        owner_name = p_owner_name,
+        owner_phone = p_owner_phone,
+        monthly_fee_tzs = p_monthly_fee_tzs,
+        grace_period_days = p_grace_period_days,
+        status = p_status,
+        is_locked = p_is_locked,
+        lock_reason = CASE WHEN p_is_locked THEN 'Monthly subscription payment overdue' ELSE NULL END
+    WHERE id = p_store_id;
+
+    RETURN jsonb_build_object(
+        'success', true,
+        'store_id', p_store_id,
+        'name', p_name,
+        'monthly_fee_tzs', p_monthly_fee_tzs,
+        'status', p_status
+    );
+END;
+$ LANGUAGE plpgsql SECURITY DEFINER;
+
 -- 6c. Manually Set Custom Store Renewal Date
 CREATE OR REPLACE FUNCTION public.set_store_renewal_date(
     p_store_id UUID,
@@ -376,5 +410,7 @@ GRANT EXECUTE ON FUNCTION public.toggle_store_lock TO authenticated;
 GRANT EXECUTE ON FUNCTION public.extend_store_grace_period TO authenticated;
 GRANT EXECUTE ON FUNCTION public.set_store_renewal_date TO authenticated;
 GRANT EXECUTE ON FUNCTION public.set_store_renewal_date TO anon;
+GRANT EXECUTE ON FUNCTION public.update_store_details TO authenticated;
+GRANT EXECUTE ON FUNCTION public.update_store_details TO anon;
 GRANT EXECUTE ON FUNCTION public.get_super_admin_metrics TO authenticated;
 
