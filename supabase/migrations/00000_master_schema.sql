@@ -408,6 +408,22 @@ RETURNS BOOLEAN AS $$
 $$ LANGUAGE sql SECURITY DEFINER STABLE;
 
 -- 19. MULTI-TENANT STORE MANAGEMENT PROCEDURES
+
+-- Clean up any existing overloaded RPC function signatures from previous migrations
+DO $$ 
+DECLARE
+    r RECORD;
+BEGIN
+    FOR r IN (
+        SELECT oid::regprocedure AS func_sig
+        FROM pg_proc
+        WHERE proname IN ('process_stock_mutation', 'create_new_store', 'join_store_by_code', 'switch_active_store', 'generate_store_code')
+          AND pronamespace = 'public'::regnamespace
+    ) LOOP
+        EXECUTE 'DROP FUNCTION IF EXISTS ' || r.func_sig || ' CASCADE';
+    END LOOP;
+END $$;
+
 -- A. Create New Store
 CREATE OR REPLACE FUNCTION public.create_new_store(
     p_name TEXT,
@@ -782,8 +798,4 @@ CREATE POLICY "Anyone can read health check" ON public.health_check
 GRANT USAGE ON SCHEMA public TO anon, authenticated;
 GRANT SELECT ON ALL TABLES IN SCHEMA public TO anon;
 GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO authenticated;
-GRANT EXECUTE ON FUNCTION public.generate_store_code TO authenticated;
-GRANT EXECUTE ON FUNCTION public.create_new_store TO authenticated;
-GRANT EXECUTE ON FUNCTION public.join_store_by_code TO authenticated;
-GRANT EXECUTE ON FUNCTION public.switch_active_store TO authenticated;
-GRANT EXECUTE ON FUNCTION public.process_stock_mutation TO authenticated;
+GRANT EXECUTE ON ALL FUNCTIONS IN SCHEMA public TO authenticated;
