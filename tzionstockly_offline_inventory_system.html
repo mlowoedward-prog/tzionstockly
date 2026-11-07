@@ -686,6 +686,13 @@
       searchQuery: '',
       selectedCategory: 'All',
 
+      
+      // Store Staff Accounts & Passwords
+      staffAccounts: [
+        { id: 'usr-1', name: 'Store Owner / Admin', email: 'admin@tzionstockly.com', pin: '1234', role: 'admin' },
+        { id: 'usr-2', name: 'Cashier Sarah (Till 1)', email: 'staff@tzionstockly.com', pin: '1234', role: 'staff' },
+        { id: 'usr-3', name: 'Cashier Juma (Till 2)', email: 'juma@store', pin: '5678', role: 'staff' }
+      ],
       // Multi-Store SaaS & Subscription Control
       currentStoreId: 'store-tz-001',
       activeSuperAdminPortal: false,
@@ -778,6 +785,7 @@
     function toggleTheme() {
       AppState.isDark = !AppState.isDark;
       applyTheme();
+      initStaffAccounts();
       if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('./sw.js').catch(function(err) {
           console.warn('PWA service worker registration failed:', err);
@@ -847,11 +855,28 @@
     function handleFormLogin(e) {
       e.preventDefault();
       const email = document.getElementById('loginEmail').value.trim();
-      const role = AppState.authTabRole;
-      completeLogin(email, role);
+      const pin = document.getElementById('loginPin').value.trim();
+      const targetRole = AppState.authTabRole;
+
+      initStaffAccounts();
+
+      // Check if matches an existing staff account
+      const matched = AppState.staffAccounts.find(u => 
+        (u.email.toLowerCase() === email.toLowerCase() || u.name.toLowerCase() === email.toLowerCase()) && 
+        u.pin === pin
+      );
+
+      if (matched) {
+        completeLogin(matched.email, matched.role, matched.name);
+      } else if (pin === '1234' || pin === 'admin') {
+        // Fallback for default demo access
+        completeLogin(email, targetRole);
+      } else {
+        showToast("Invalid credentials or PIN. Please verify with your Store Admin.", "error");
+      }
     }
 
-    function completeLogin(email, role) {
+    function completeLogin(email, role, customName) {
       const isSuper = (role === 'super_admin' || email.includes('superadmin'));
       AppState.isAuthenticated = true;
       AppState.activeSuperAdminPortal = isSuper;
@@ -859,7 +884,7 @@
         email: email || (isSuper ? 'superadmin@tzionstockly.com' : (role === 'admin' ? 'admin@tzionstockly.com' : 'cashier@tzionstockly.com')),
         role: role,
         is_super_admin: isSuper,
-        name: isSuper ? 'Edward Mlowo (Super Admin)' : (role === 'admin' ? 'Store Manager' : 'Cashier Terminal 1')
+        name: customName || (isSuper ? 'Edward Mlowo (Super Admin)' : (role === 'admin' ? 'Store Manager' : 'Cashier Terminal 1'))
       };
 
       initSubscriptionState();
@@ -2140,6 +2165,161 @@
     }
 
 
+
+    // --- Store Staff & Password/PIN Controller ---
+    function initStaffAccounts() {
+      const saved = localStorage.getItem('tzion_store_staff');
+      if (saved) {
+        try { AppState.staffAccounts = JSON.parse(saved); } catch(e){}
+      }
+    }
+
+    function saveStaffAccounts() {
+      localStorage.setItem('tzion_store_staff', JSON.stringify(AppState.staffAccounts));
+    }
+
+    function openStaffModal() {
+      renderStaffList();
+      const modal = document.getElementById('staffModal');
+      if (modal) {
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+      }
+    }
+
+    function closeStaffModal() {
+      const modal = document.getElementById('staffModal');
+      if (modal) {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+      }
+    }
+
+    function renderStaffList() {
+      const container = document.getElementById('cashierListContainer');
+      if (!container) return;
+
+      const cashiers = AppState.staffAccounts.filter(u => u.role === 'staff');
+      if (cashiers.length === 0) {
+        container.innerHTML = `<div class="p-3 text-center text-slate-400 text-xs">No cashiers registered yet. Add one below!</div>`;
+        return;
+      }
+
+      container.innerHTML = cashiers.map(c => `
+        <div class="p-3 bg-white dark:bg-tzion-purple-900/40 rounded-2xl border border-purple-200 dark:border-purple-800 flex flex-col sm:flex-row sm:items-center justify-between gap-2 shadow-sm">
+          <div>
+            <div class="font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
+              <span>👤</span>
+              <span>${c.name}</span>
+              <span class="text-[9px] font-mono px-1.5 py-0.2 rounded bg-tzion-orange-500/20 text-tzion-orange-500 font-bold">Cashier</span>
+            </div>
+            <div class="text-[11px] text-slate-500 dark:text-purple-300 font-mono">Staff ID: ${c.email}</div>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <!-- Edit Cashier PIN inline form -->
+            <div class="flex items-center gap-1">
+              <span class="text-[10px] text-slate-400 font-mono">PIN:</span>
+              <input 
+                type="text" 
+                id="pin_input_${c.id}" 
+                value="${c.pin}" 
+                class="w-20 bg-purple-50 dark:bg-tzion-purple-950 border border-purple-200 dark:border-purple-800 rounded-lg px-2 py-1 text-center font-mono font-bold text-xs text-slate-900 dark:text-white focus:outline-none focus:border-tzion-orange-500"
+              >
+              <button 
+                onclick="handleUpdateCashierPin('${c.id}')"
+                class="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[11px] shadow transition-all"
+                title="Save new PIN for this cashier"
+              >
+                Save PIN
+              </button>
+            </div>
+
+            <button 
+              onclick="handleRemoveCashier('${c.id}')"
+              class="p-1.5 text-rose-500 hover:bg-rose-500/10 rounded-lg text-xs transition-colors"
+              title="Remove Cashier"
+            >
+              🗑️
+            </button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function handleUpdateAdminPin(e) {
+      e.preventDefault();
+      const newPin = document.getElementById('newAdminPinInput').value.trim();
+      if (!newPin) return;
+
+      const adminUser = AppState.staffAccounts.find(u => u.role === 'admin');
+      if (adminUser) {
+        adminUser.pin = newPin;
+      } else {
+        AppState.staffAccounts.unshift({
+          id: 'usr-admin-1',
+          name: 'Store Administrator',
+          email: 'admin@tzionstockly.com',
+          pin: newPin,
+          role: 'admin'
+        });
+      }
+
+      saveStaffAccounts();
+      document.getElementById('newAdminPinInput').value = '';
+      showToast("Store Admin PIN updated successfully!", "success");
+    }
+
+    function handleUpdateCashierPin(cashierId) {
+      const inputEl = document.getElementById(`pin_input_${cashierId}`);
+      if (!inputEl) return;
+      const newPin = inputEl.value.trim();
+      if (!newPin) return;
+
+      const cashier = AppState.staffAccounts.find(u => u.id === cashierId);
+      if (cashier) {
+        cashier.pin = newPin;
+        saveStaffAccounts();
+        showToast(`Updated PIN for ${cashier.name} to: ${newPin}`, "success");
+      }
+    }
+
+    function handleCreateCashier(e) {
+      e.preventDefault();
+      const name = document.getElementById('newCashierName').value.trim();
+      const idOrEmail = document.getElementById('newCashierId').value.trim();
+      const pin = document.getElementById('newCashierPin').value.trim();
+
+      const newCashier = {
+        id: `usr-${Date.now().toString().slice(-4)}`,
+        name: name,
+        email: idOrEmail,
+        pin: pin,
+        role: 'staff'
+      };
+
+      AppState.staffAccounts.push(newCashier);
+      saveStaffAccounts();
+
+      document.getElementById('newCashierName').value = '';
+      document.getElementById('newCashierId').value = '';
+      document.getElementById('newCashierPin').value = '1234';
+
+      showToast(`Created cashier account for ${name} (PIN: ${pin})`, "success");
+      renderStaffList();
+    }
+
+    function handleRemoveCashier(cashierId) {
+      const cashier = AppState.staffAccounts.find(u => u.id === cashierId);
+      if (!cashier) return;
+      if (confirm(`Are you sure you want to remove cashier "${cashier.name}"?`)) {
+        AppState.staffAccounts = AppState.staffAccounts.filter(u => u.id !== cashierId);
+        saveStaffAccounts();
+        showToast(`Removed cashier ${cashier.name}`, "info");
+        renderStaffList();
+      }
+    }
+
     // --- Edit Store Modal Controller ---
     function openEditStoreModal(storeId) {
       const targetId = storeId || AppState.currentStoreId;
@@ -2242,6 +2422,10 @@
                 <button onclick="openEditStoreModal()" class="flex-1 sm:flex-initial px-3.5 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-xs font-black shadow-lg shadow-amber-900/30 flex items-center justify-center gap-1.5 transition-all active:scale-95">
                   <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
                   <span>✏️ Edit Store & Fees</span>
+                </button>
+                <button onclick="openStaffModal()" class="flex-1 sm:flex-initial px-3.5 py-2.5 rounded-xl bg-tzion-purple-600 hover:bg-tzion-purple-700 text-white text-xs font-bold shadow flex items-center justify-center gap-1.5 transition-all">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+                  <span>👥 Staff & PINs</span>
                 </button>
                 <button onclick="openImportModal()" class="flex-1 sm:flex-initial px-3.5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow flex items-center justify-center gap-1.5 transition-all">
                   <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
