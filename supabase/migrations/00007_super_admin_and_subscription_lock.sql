@@ -309,6 +309,11 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 -- 7. Row Level Security for Stores & Profiles
 ALTER TABLE public.stores ENABLE ROW LEVEL SECURITY;
 
+-- Drop existing policies if any to allow safe re-runs
+DROP POLICY IF EXISTS "Super Admins have full access to stores" ON public.stores;
+DROP POLICY IF EXISTS "Store members can read their assigned store" ON public.stores;
+DROP POLICY IF EXISTS "Public read stores verification" ON public.stores;
+
 -- Allow Super Admins full access to all stores
 CREATE POLICY "Super Admins have full access to stores"
 ON public.stores FOR ALL TO authenticated
@@ -338,3 +343,4 @@ GRANT EXECUTE ON FUNCTION public.process_stock_mutation TO anon;
 GRANT EXECUTE ON FUNCTION public.toggle_store_lock TO authenticated;
 GRANT EXECUTE ON FUNCTION public.extend_store_grace_period TO authenticated;
 GRANT EXECUTE ON FUNCTION public.get_super_admin_metrics TO authenticated;
+
