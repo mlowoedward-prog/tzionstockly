@@ -1,0 +1,2803 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TzionStockly - Offline-First Inventory Management</title>
+  <!-- PWA Meta & Manifest -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#7c3aed">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="TzionStockly">
+  <link rel="apple-touch-icon" href="icons/Icon-192.png">
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Chart.js CDN for client-side offline analytics -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- SheetJS (xlsx) for offline Excel & CSV spreadsheet parsing -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <!-- Google Fonts: Inter & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+          colors: {
+            // Brand palette derived from TzionStockly logo (Purple, Orange & White)
+            tzion: {
+              purple: {
+                50: '#f5f3ff',
+                100: '#ede9fe',
+                200: '#ddd6fe',
+                300: '#c4b5fd',
+                400: '#a78bfa',
+                500: '#8b5cf6',
+                600: '#7c3aed',
+                700: '#6d28d9',
+                800: '#5b21b6',
+                900: '#4c1d95',
+                950: '#2e1065',
+                deep: '#3b0764'
+              },
+              orange: {
+                50: '#fff7ed',
+                100: '#ffedd5',
+                200: '#fed7aa',
+                300: '#fdba74',
+                400: '#fb923c',
+                500: '#f97316',
+                600: '#ea580c',
+                700: '#c2410c',
+                800: '#9a3412',
+                900: '#7c2d12',
+              }
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    /* Brand Design System & Color Tokens (Purple, Orange & White Identity) */
+    :root {
+      /* Core Brand Colors */
+      --tzion-purple-primary:   #4c1d95; /* Deep Purple */
+      --tzion-purple-accent:    #7c3aed; /* Electric Purple */
+      --tzion-purple-glow:      #8b5cf6;
+      --tzion-orange-primary:   #ea580c; /* Deep Vibrant Orange */
+      --tzion-orange-accent:    #f97316; /* Electric Orange */
+      --tzion-orange-light:     #fed7aa;
+
+      /* Neutral Dark Theme */
+      --dark-bg-base:           #0d0b14;
+      --dark-surface:           #161224;
+      --dark-border:            #2e244d;
+      --dark-text-primary:      #f8fafc;
+      --dark-text-secondary:    #94a3b8;
+
+      /* Neutral Light Theme */
+      --light-bg-base:          #f8f6fc;
+      --light-surface:          #ffffff;
+      --light-border:           #e5def0;
+      --light-text-primary:     #1e1b4b;
+      --light-text-secondary:   #64748b;
+
+      /* Functional Badges */
+      --color-success:          #10b981;
+      --color-warning:          #f59e0b;
+      --color-danger:           #ef4444;
+    }
+
+    /* Custom Scrollbars */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    .dark ::-webkit-scrollbar-thumb {
+      background: #4c1d95;
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #c4b5fd;
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #f97316;
+    }
+
+    /* Smartphone Frame Wrapper */
+    .mobile-frame-wrapper {
+      box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.6), 0 0 0 10px #2e1065, 0 0 0 12px #4c1d95;
+      border-radius: 46px;
+      transition: all 0.3s ease;
+    }
+    html:not(.dark) .mobile-frame-wrapper {
+      box-shadow: 0 25px 50px -12px rgba(46, 16, 101, 0.25), 0 0 0 10px #ede9fe, 0 0 0 12px #c4b5fd;
+    }
+
+    /* Gradient Brand Text */
+    .brand-gradient-text {
+      background: linear-gradient(135deg, #a78bfa 0%, #ffffff 30%, #f97316 70%, #ea580c 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    html:not(.dark) .brand-gradient-text {
+      background: linear-gradient(135deg, #5b21b6 0%, #7c3aed 40%, #ea580c 70%, #c2410c 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+  </style>
+</head>
+<body class="bg-slate-50 dark:bg-[#120726] text-slate-900 dark:text-purple-100 font-sans min-h-screen selection:bg-tzion-orange-500 selection:text-white flex flex-col antialiased transition-colors duration-200">
+
+  <!-- ========================================================================= -->
+  <!-- TOP GLOBAL APP BAR (Visible when Authenticated)                           -->
+  <!-- ========================================================================= -->
+  <header id="mainAppHeader" class="hidden bg-white/90 dark:bg-[#1b0c3a]/90 border-b border-purple-200 dark:border-purple-900/60 sticky top-0 z-40 px-4 py-2.5 backdrop-blur-md transition-colors">
+    <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-3">
+      
+      <!-- Brand Logo & App Name -->
+      <div class="flex items-center space-x-3 cursor-pointer" onclick="goToHome()">
+        <!-- SVG Vectorized representation of the 3D TzionStockly Cart Logo -->
+        <div class="w-10 h-10 shrink-0 relative flex items-center justify-center">
+          <svg viewBox="0 0 100 100" class="w-10 h-10 drop-shadow-md">
+            <!-- Outer Purple Ring -->
+            <circle cx="50" cy="50" r="44" fill="none" stroke="url(#purpleGrad)" stroke-width="7" />
+            <!-- Orange Curved Speed Swoosh -->
+            <path d="M 12 55 Q 50 68 88 32 Q 65 60 20 62 Z" fill="url(#orangeGrad)" />
+            <!-- Delivery Boxes inside Cart -->
+            <polygon points="46,24 58,18 70,24 58,30" fill="#f59e0b" />
+            <polygon points="46,24 58,30 58,42 46,36" fill="#d97706" />
+            <polygon points="58,30 70,24 70,36 58,42" fill="#b45309" />
+            
+            <polygon points="34,32 46,26 58,32 46,38" fill="#fbbf24" />
+            <polygon points="34,32 46,38 46,48 34,42" fill="#f59e0b" />
+            <polygon points="46,38 58,32 58,42 46,48" fill="#d97706" />
+
+            <!-- Purple Shopping Cart Lines -->
+            <path d="M 28 32 L 34 32 L 44 54 L 68 54 L 75 38 L 36 38" fill="none" stroke="#7c3aed" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+            <line x1="48" y1="38" x2="48" y2="54" stroke="#7c3aed" stroke-width="2.5" />
+            <line x1="58" y1="38" x2="58" y2="54" stroke="#7c3aed" stroke-width="2.5" />
+            <line x1="40" y1="46" x2="71" y2="46" stroke="#7c3aed" stroke-width="2" />
+            <!-- Speed horizontal lines -->
+            <line x1="18" y1="36" x2="28" y2="36" stroke="#8b5cf6" stroke-width="2.5" stroke-linecap="round" />
+            <line x1="15" y1="42" x2="27" y2="42" stroke="#8b5cf6" stroke-width="2.5" stroke-linecap="round" />
+            <!-- Cart Wheels -->
+            <circle cx="45" cy="59" r="3.5" fill="#581c87" stroke="#a855f7" stroke-width="1.5" />
+            <circle cx="66" cy="59" r="3.5" fill="#581c87" stroke="#a855f7" stroke-width="1.5" />
+
+            <!-- Gradients Definition -->
+            <defs>
+              <linearGradient id="purpleGrad" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stop-color="#9333ea" />
+                <stop offset="50%" stop-color="#581c87" />
+                <stop offset="100%" stop-color="#3b0764" />
+              </linearGradient>
+              <linearGradient id="orangeGrad" x1="0" y1="0" x2="1" y2="0">
+                <stop offset="0%" stop-color="#ea580c" />
+                <stop offset="50%" stop-color="#f97316" />
+                <stop offset="100%" stop-color="#fdba74" />
+              </linearGradient>
+            </defs>
+          </svg>
+        </div>
+        <div>
+          <div class="flex items-center space-x-2">
+            <span class="font-extrabold tracking-tight text-lg text-tzion-purple-700 dark:text-tzion-purple-300">Tzion<span class="text-tzion-orange-500">Stockly</span></span>
+            <span id="roleHeaderBadge" class="text-[10px] uppercase font-mono px-2 py-0.5 rounded-full font-bold bg-tzion-purple-100 dark:bg-tzion-purple-900/60 border border-tzion-purple-300 dark:border-tzion-purple-700 text-tzion-purple-700 dark:text-tzion-purple-300">Admin Mode</span>
+          </div>
+          <p class="text-[10px] text-slate-500 dark:text-purple-300/60 font-mono">Currency: TZS (Tanzanian Shillings) • Supabase Ready</p>
+        </div>
+      </div>
+
+      <!-- Controls Right: Theme, Viewport, Outbox, User Pill, Logout -->
+      <div class="flex flex-wrap items-center gap-2">
+
+        <!-- Theme Toggle Button -->
+        <button onclick="toggleTheme()" title="Toggle Theme" class="p-2 rounded-xl border border-purple-200 dark:border-purple-900/60 bg-white dark:bg-tzion-purple-950 hover:bg-purple-100 dark:hover:bg-purple-900/50 text-slate-700 dark:text-tzion-orange-400 text-xs font-semibold flex items-center transition-all shadow-sm">
+          <svg id="themeIconSun" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+          <svg id="themeIconMoon" class="w-4 h-4 hidden text-tzion-purple-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>
+        </button>
+
+        <!-- Viewport Switcher -->
+        <div class="bg-purple-100 dark:bg-tzion-purple-950 p-1 rounded-xl border border-purple-200 dark:border-purple-900/60 flex items-center text-xs font-medium">
+          <button id="viewBtnDesktop" onclick="setViewMode('desktop')" class="px-2.5 py-1 rounded-lg bg-tzion-purple-600 text-white font-semibold shadow-sm transition-all flex items-center gap-1">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+            <span class="hidden sm:inline">Desktop</span>
+          </button>
+          <button id="viewBtnMobile" onclick="setViewMode('mobile')" class="px-2.5 py-1 rounded-lg text-slate-600 dark:text-purple-300 hover:text-purple-950 dark:hover:text-white transition-all flex items-center gap-1">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
+            <span class="hidden sm:inline">Mobile</span>
+          </button>
+        </div>
+
+        <!-- Network Online/Offline Toggle -->
+        <button id="netToggleBtn" onclick="toggleNetwork()" class="px-3 py-1.5 rounded-xl border border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-xs font-semibold flex items-center gap-2 hover:bg-emerald-500/20 transition-all">
+          <span class="relative flex h-2 w-2">
+            <span id="netPing" class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+            <span id="netDot" class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+          </span>
+          <span id="netText">Online (Supabase Sync)</span>
+        </button>
+
+        <!-- Outbox Queue Drawer Button -->
+        <button onclick="openSyncModal()" class="relative px-3 py-1.5 rounded-xl border border-purple-200 dark:border-purple-900/60 bg-white dark:bg-tzion-purple-950 hover:bg-purple-100 dark:hover:bg-purple-900/50 text-xs font-medium flex items-center gap-1.5 transition-all text-slate-700 dark:text-purple-200 shadow-sm">
+          <svg class="w-3.5 h-3.5 text-tzion-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+          <span class="hidden sm:inline">Outbox</span>
+          <span id="queueBadge" class="bg-tzion-orange-500/20 text-tzion-orange-600 dark:text-tzion-orange-400 border border-tzion-orange-500/40 text-[10px] font-mono font-bold px-1.5 py-0.2 rounded-full">0</span>
+        </button>
+
+        <!-- Multi-Tenant SaaS Store Selector -->
+        <button onclick="openStoreModal()" title="Switch or Manage Stores" class="px-3 py-1.5 rounded-xl border border-tzion-purple-300 dark:border-tzion-purple-700 bg-tzion-purple-50 dark:bg-tzion-purple-950 hover:bg-purple-100 dark:hover:bg-tzion-purple-900/60 text-xs font-semibold flex items-center gap-1.5 text-tzion-purple-800 dark:text-purple-200 shadow-sm transition-all">
+          <span class="text-xs">🏪</span>
+          <span id="headerStoreName" class="font-bold truncate max-w-[110px] sm:max-w-[140px]">Tzion Main</span>
+          <span id="headerStoreCode" class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-tzion-orange-500/20 text-tzion-orange-600 dark:text-tzion-orange-400 font-bold">TZ-MAIN</span>
+          <svg class="w-3.5 h-3.5 opacity-60" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+        </button>
+
+        <!-- Supabase Settings Drawer Button -->
+        <button onclick="openSupabaseModal()" title="Supabase Database Settings" class="p-2 rounded-xl border border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-xs hover:bg-emerald-500/20 transition-all">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M21.362 9.354H12V.396a.396.396 0 0 0-.716-.233L2.2 12.604a.396.396 0 0 0 .32.617H12v8.958a.396.396 0 0 0 .716.233l9.084-12.441a.396.396 0 0 0-.32-.617z"/></svg>
+        </button>
+
+        <!-- User Profile Pill & Logout -->
+        <div class="flex items-center space-x-2 pl-2 border-l border-purple-200 dark:border-purple-900/60">
+          <div class="hidden sm:block text-right">
+            <span id="headerUserName" class="text-xs font-bold text-slate-800 dark:text-white block leading-tight">Admin User</span>
+            <span id="headerUserRole" class="text-[10px] font-mono text-tzion-orange-500 font-semibold uppercase">Administrator</span>
+          </div>
+          <button onclick="handleLogout()" title="Logout" class="px-2.5 py-1.5 rounded-xl bg-purple-100 dark:bg-tzion-purple-900/50 hover:bg-rose-500/20 hover:text-rose-500 border border-purple-200 dark:border-purple-800 text-xs font-semibold text-slate-600 dark:text-purple-300 transition-colors flex items-center gap-1">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+            <span class="hidden md:inline">Sign Out</span>
+          </button>
+        </div>
+
+      </div>
+
+    </div>
+  </header>
+
+  <!-- ========================================================================= -->
+  <!-- TOAST NOTIFICATIONS CONTAINER                                             -->
+  <!-- ========================================================================= -->
+  <div id="toastContainer" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+  <!-- ========================================================================= -->
+  <!-- 1. AUTHENTICATION / LOGIN PORTAL SCREEN                                   -->
+  <!-- ========================================================================= -->
+  <section id="authPortalScreen" class="flex-1 flex items-center justify-center p-4">
+    <div class="w-full max-w-md bg-white dark:bg-[#1b0c3a] border border-purple-200 dark:border-purple-900/60 rounded-3xl p-6 sm:p-8 shadow-2xl relative overflow-hidden transition-colors">
+      
+      <!-- Top Decorative Accent -->
+      <div class="absolute -top-24 -right-24 w-48 h-48 bg-gradient-to-br from-tzion-purple-600/30 to-tzion-orange-500/20 rounded-full blur-3xl pointer-events-none"></div>
+      <div class="absolute -bottom-24 -left-24 w-48 h-48 bg-gradient-to-tr from-tzion-orange-500/20 to-tzion-purple-700/30 rounded-full blur-3xl pointer-events-none"></div>
+
+      <!-- Brand Logo Display -->
+      <div class="flex flex-col items-center text-center mb-6">
+        <div class="w-20 h-20 mb-3 relative flex items-center justify-center drop-shadow-xl animate-bounce-slow">
+          <svg viewBox="0 0 100 100" class="w-20 h-20">
+            <circle cx="50" cy="50" r="44" fill="none" stroke="url(#purpleGradAuth)" stroke-width="7" />
+            <path d="M 12 55 Q 50 68 88 32 Q 65 60 20 62 Z" fill="url(#orangeGradAuth)" />
+            <polygon points="46,24 58,18 70,24 58,30" fill="#f59e0b" />
+            <polygon points="46,24 58,30 58,42 46,36" fill="#d97706" />
+            <polygon points="58,30 70,24 70,36 58,42" fill="#b45309" />
+            <polygon points="34,32 46,26 58,32 46,38" fill="#fbbf24" />
+            <polygon points="34,32 46,38 46,48 34,42" fill="#f59e0b" />
+            <polygon points="46,38 58,32 58,42 46,48" fill="#d97706" />
+            <path d="M 28 32 L 34 32 L 44 54 L 68 54 L 75 38 L 36 38" fill="none" stroke="#7c3aed" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+            <line x1="48" y1="38" x2="48" y2="54" stroke="#7c3aed" stroke-width="2.5" />
+            <line x1="58" y1="38" x2="58" y2="54" stroke="#7c3aed" stroke-width="2.5" />
+            <circle cx="45" cy="59" r="3.5" fill="#581c87" stroke="#a855f7" stroke-width="1.5" />
+            <circle cx="66" cy="59" r="3.5" fill="#581c87" stroke="#a855f7" stroke-width="1.5" />
+            <defs>
+              <linearGradient id="purpleGradAuth" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stop-color="#9333ea" />
+                <stop offset="50%" stop-color="#581c87" />
+                <stop offset="100%" stop-color="#3b0764" />
+              </linearGradient>
+              <linearGradient id="orangeGradAuth" x1="0" y1="0" x2="1" y2="0">
+                <stop offset="0%" stop-color="#ea580c" />
+                <stop offset="50%" stop-color="#f97316" />
+                <stop offset="100%" stop-color="#fdba74" />
+              </linearGradient>
+            </defs>
+          </svg>
+        </div>
+
+        <h1 class="text-3xl font-black tracking-tight text-tzion-purple-700 dark:text-tzion-purple-300">
+          Tzion<span class="text-tzion-orange-500">Stockly</span>
+        </h1>
+        <p class="text-xs text-slate-500 dark:text-purple-300/70 mt-1">Smart Offline-First Inventory Management (TZS)</p>
+      </div>
+
+      <!-- Role Selector Tabs -->
+      <div class="bg-purple-100 dark:bg-tzion-purple-950 p-1 rounded-2xl border border-purple-200 dark:border-purple-900/60 grid grid-cols-2 gap-1 mb-5">
+        <button id="authTabAdmin" onclick="setAuthRoleTab('admin')" class="py-2.5 rounded-xl font-bold text-xs transition-all flex items-center justify-center gap-1.5 bg-tzion-purple-600 text-white shadow-md">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+          <span>Admin Portal</span>
+        </button>
+        <button id="authTabStaff" onclick="setAuthRoleTab('staff')" class="py-2.5 rounded-xl font-bold text-xs transition-all flex items-center justify-center gap-1.5 text-slate-600 dark:text-purple-300 hover:text-slate-900 dark:hover:text-white">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
+          <span>Staff Checkout</span>
+        </button>
+      </div>
+
+      <!-- Dynamic Role Description -->
+      <div id="authRoleNotice" class="p-3 mb-4 rounded-xl bg-purple-50 dark:bg-tzion-purple-950/60 border border-purple-200 dark:border-purple-900/60 text-[11px] text-tzion-purple-900 dark:text-purple-200">
+        <strong class="text-tzion-orange-500">Administrator Clearance:</strong> Full control over stock check-in, check-out, valuations in TZS, profit reports, and Excel bulk imports.
+      </div>
+
+      <!-- Login Form -->
+      <form onsubmit="handleFormLogin(event)" class="space-y-4">
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 dark:text-purple-200 mb-1">Email or Staff ID</label>
+          <input type="text" id="loginEmail" required class="w-full bg-slate-50 dark:bg-tzion-purple-950 border border-purple-200 dark:border-purple-800 rounded-xl px-3.5 py-2.5 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-tzion-orange-500 transition-colors">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 dark:text-purple-200 mb-1">Security PIN / Password</label>
+          <input type="password" id="loginPin" required value="1234" class="w-full bg-slate-50 dark:bg-tzion-purple-950 border border-purple-200 dark:border-purple-800 rounded-xl px-3.5 py-2.5 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-tzion-orange-500 transition-colors font-mono">
+        </div>
+
+        <button type="submit" id="authSubmitBtn" class="w-full py-3 rounded-xl bg-gradient-to-r from-tzion-purple-600 to-tzion-orange-500 hover:from-tzion-purple-700 hover:to-tzion-orange-600 text-white font-bold text-xs uppercase tracking-wider shadow-lg shadow-tzion-purple-900/30 active:scale-98 transition-all">
+          Sign In to TzionStockly
+        </button>
+      </form>
+
+      <!-- Instant Demo Shortcuts -->
+      <div class="mt-6 pt-4 border-t border-purple-100 dark:border-purple-900/40 text-center">
+        <span class="text-[10px] text-slate-400 dark:text-purple-400 font-mono block mb-2">QUICK DEMO ONE-CLICK SIGN IN:</span>
+        <div class="grid grid-cols-2 gap-2">
+          <button onclick="quickLogin('admin')" class="py-2 px-3 rounded-lg bg-purple-100 dark:bg-tzion-purple-900/40 hover:bg-tzion-purple-600 hover:text-white text-tzion-purple-700 dark:text-purple-300 text-[11px] font-semibold border border-purple-200 dark:border-purple-800 transition-all">
+            Login as Admin
+          </button>
+          <button onclick="quickLogin('staff')" class="py-2 px-3 rounded-lg bg-tzion-orange-500/10 hover:bg-tzion-orange-500 hover:text-white text-tzion-orange-600 dark:text-tzion-orange-400 text-[11px] font-semibold border border-tzion-orange-500/30 transition-all">
+            Login as Staff
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ========================================================================= -->
+  <!-- 2. MAIN APPLICATION WORKSPACE (Hidden until authenticated)                -->
+  <!-- ========================================================================= -->
+  <main id="mainAppWorkspace" class="hidden flex-1 p-3 md:p-6 overflow-x-hidden flex justify-center items-start">
+    <div id="workspaceContainer" class="w-full max-w-7xl transition-all duration-300">
+      
+      <!-- DESKTOP WORKSPACE CONTAINER -->
+      <div id="desktopWrapper" class="block w-full">
+        <!-- Rendered by renderDesktopView() -->
+      </div>
+
+      <!-- MOBILE DEVICE PHONE MOCKUP SHELL (390 x 844 px) -->
+      <div id="mobileWrapper" class="hidden flex-col items-center justify-center my-4">
+        <div class="mobile-frame-wrapper w-[390px] h-[844px] bg-slate-50 dark:bg-[#15082e] flex flex-col relative overflow-hidden border border-purple-200 dark:border-purple-900 shadow-2xl">
+          
+          <!-- Smartphone Status Bar & Island -->
+          <div class="h-11 bg-purple-100 dark:bg-[#0c041c] text-slate-700 dark:text-purple-200 flex items-center justify-between px-7 shrink-0 text-xs font-semibold select-none pt-1 transition-colors">
+            <span id="mobileClock">09:41</span>
+            <div class="w-24 h-4 bg-slate-900 dark:bg-black rounded-full mx-auto -mt-1 flex items-center justify-center">
+              <span class="w-2 h-2 rounded-full bg-purple-700 ml-auto mr-2"></span>
+            </div>
+            <div class="flex items-center space-x-1.5 text-[10px]">
+              <span id="mobileWifiIcon">📶</span>
+              <span id="mobileBattIcon">🔋 96%</span>
+            </div>
+          </div>
+
+          <!-- Mobile App Header with TzionStockly Logo -->
+          <div class="bg-white dark:bg-[#1b0c3a] px-4 py-2.5 border-b border-purple-200 dark:border-purple-900/60 flex items-center justify-between shrink-0 transition-colors">
+            <div class="flex items-center space-x-2">
+              <div class="w-7 h-7 rounded-lg bg-gradient-to-br from-tzion-purple-600 to-tzion-orange-500 text-white font-black flex items-center justify-center text-xs shadow">
+                ⚡
+              </div>
+              <div>
+                <h2 class="text-xs font-extrabold text-tzion-purple-700 dark:text-purple-200 tracking-wide">
+                  Tzion<span class="text-tzion-orange-500">Stockly</span>
+                </h2>
+                <p id="mobileRoleLabel" class="text-[9px] text-tzion-orange-500 font-mono font-bold">ADMIN PORTAL</p>
+              </div>
+            </div>
+            <div class="flex items-center space-x-1.5">
+              <button onclick="openStoreModal()" class="text-[9px] font-mono px-2 py-0.5 rounded-full bg-tzion-purple-100 dark:bg-tzion-purple-900 text-tzion-purple-700 dark:text-purple-300 border border-tzion-purple-300 flex items-center gap-1 font-bold">
+                <span>🏪</span>
+                <span id="mobileStoreCode">TZ-MAIN</span>
+              </button>
+              <span id="mobileNetPill" class="text-[9px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30">ONLINE</span>
+              <button onclick="handleLogout()" title="Switch Account" class="text-slate-400 hover:text-rose-500 p-1">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- Mobile Scrollable Content Body -->
+          <div id="mobileScrollContainer" class="flex-1 overflow-y-auto overflow-x-hidden p-3 space-y-4 pb-20">
+            <!-- Rendered by renderMobileView() -->
+          </div>
+
+          <!-- Mobile Bottom Navigation Bar (Role Aware) -->
+          <nav id="mobileNavBar" class="h-16 bg-white/95 dark:bg-[#120726]/95 backdrop-blur-md border-t border-purple-200 dark:border-purple-900/60 flex items-center justify-around px-2 absolute bottom-0 left-0 right-0 z-30 transition-colors">
+            <!-- Populated dynamically based on Admin vs Staff -->
+          </nav>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- ========================================================================= -->
+  <!-- CHECK-IN / CHECK-OUT MODAL DIALOG                                        -->
+  <!-- ========================================================================= -->
+  <div id="stockActionModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden items-center justify-center p-4">
+    <div class="bg-white dark:bg-[#1b0c3a] border border-purple-200 dark:border-purple-900/60 rounded-3xl w-full max-w-md overflow-hidden shadow-2xl transition-colors">
+      <div id="stockModalHeader" class="p-4 border-b border-purple-100 dark:border-purple-900/60 flex items-center justify-between bg-purple-50/50 dark:bg-tzion-purple-950/40">
+        <div class="flex items-center space-x-2">
+          <span id="stockActionBadge" class="px-2 py-0.5 rounded text-xs font-mono font-bold uppercase bg-tzion-orange-500/20 text-tzion-orange-600 dark:text-tzion-orange-400 border border-tzion-orange-500/30">CHECK OUT</span>
+          <h3 id="stockModalTitle" class="font-bold text-slate-900 dark:text-white text-sm truncate">Product Name</h3>
+        </div>
+        <button onclick="closeStockModal()" class="text-slate-400 hover:text-slate-700 dark:hover:text-white p-1">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+
+      <div class="p-5 space-y-4">
+        <!-- Current stock info with TZS retail price -->
+        <div class="flex justify-between items-center p-3 rounded-2xl bg-purple-50/80 dark:bg-tzion-purple-950 border border-purple-200 dark:border-purple-800">
+          <div>
+            <span class="text-xs text-slate-500 dark:text-purple-300 block">Available Quantity</span>
+            <span id="stockModalCurrent" class="text-xl font-bold font-mono text-slate-900 dark:text-white">45</span> <span id="stockModalUnit" class="text-xs text-slate-500 dark:text-purple-300">units</span>
+          </div>
+          <div class="text-right">
+            <span class="text-xs text-slate-500 dark:text-purple-300 block">Retail Price (TZS)</span>
+            <span id="stockModalPrice" class="text-xs font-mono text-tzion-orange-600 dark:text-tzion-orange-400 font-bold">TZS 15,000</span>
+          </div>
+        </div>
+
+        <!-- Quantity input with quick increment buttons -->
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 dark:text-purple-200 mb-1.5">Quantity</label>
+          <div class="flex items-center space-x-2">
+            <button onclick="adjustInputQty(-5)" class="w-10 h-10 rounded-xl bg-purple-100 dark:bg-tzion-purple-900/60 hover:bg-purple-200 text-slate-900 dark:text-white font-bold text-sm border border-purple-200 dark:border-purple-800">-5</button>
+            <button onclick="adjustInputQty(-1)" class="w-10 h-10 rounded-xl bg-purple-100 dark:bg-tzion-purple-900/60 hover:bg-purple-200 text-slate-900 dark:text-white font-bold text-sm border border-purple-200 dark:border-purple-800">-1</button>
+            <input type="number" id="stockModalQty" min="1" value="1" class="flex-1 bg-slate-50 dark:bg-tzion-purple-950 border border-purple-200 dark:border-purple-800 rounded-xl text-center font-mono font-bold text-lg text-slate-900 dark:text-white focus:outline-none focus:border-tzion-orange-500 h-10">
+            <button onclick="adjustInputQty(1)" class="w-10 h-10 rounded-xl bg-purple-100 dark:bg-tzion-purple-900/60 hover:bg-purple-200 text-slate-900 dark:text-white font-bold text-sm border border-purple-200 dark:border-purple-800">+1</button>
+            <button onclick="adjustInputQty(5)" class="w-10 h-10 rounded-xl bg-purple-100 dark:bg-tzion-purple-900/60 hover:bg-purple-200 text-slate-900 dark:text-white font-bold text-sm border border-purple-200 dark:border-purple-800">+5</button>
+          </div>
+        </div>
+
+        <!-- Total Calculation Preview in TZS -->
+        <div class="flex justify-between items-center px-2 py-1 text-xs">
+          <span class="text-slate-500 dark:text-purple-300">Transaction Subtotal:</span>
+          <span id="stockModalSubtotal" class="font-mono font-bold text-tzion-orange-600 dark:text-tzion-orange-400">TZS 15,000</span>
+        </div>
+
+        <!-- Operation Reason -->
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 dark:text-purple-200 mb-1.5">Transaction Type / Notes</label>
+          <select id="stockModalReason" class="w-full bg-slate-50 dark:bg-tzion-purple-950 border border-purple-200 dark:border-purple-800 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-purple-200 focus:outline-none focus:border-tzion-orange-500">
+            <!-- Populated dynamically based on check-in vs check-out -->
+          </select>
+        </div>
+
+        <!-- Offline Queue Notice -->
+        <div class="p-2.5 rounded-xl bg-tzion-purple-100 dark:bg-tzion-purple-950/70 border border-purple-200 dark:border-purple-800 text-tzion-purple-900 dark:text-purple-300 text-xs flex items-center gap-2">
+          <svg class="w-4 h-4 shrink-0 text-tzion-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          <span>Immediate offline write. Mutation logged to Supabase sync queue.</span>
+        </div>
+      </div>
+
+      <div class="p-4 bg-purple-50/50 dark:bg-tzion-purple-950/40 border-t border-purple-100 dark:border-purple-900/60 flex space-x-3">
+        <button onclick="closeStockModal()" class="flex-1 py-2 rounded-xl text-slate-600 dark:text-purple-300 hover:text-slate-900 dark:hover:text-white bg-purple-100 dark:bg-tzion-purple-900/50 border border-purple-200 dark:border-purple-800 text-xs font-semibold">Cancel</button>
+        <button id="stockModalSubmitBtn" onclick="submitStockAdjustment()" class="flex-1 py-2 rounded-xl bg-tzion-orange-500 hover:bg-tzion-orange-600 text-white text-xs font-bold shadow-lg shadow-tzion-orange-500/20">Confirm Check Out</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- EXCEL / SPREADSHEET BULK IMPORT MODAL (ADMIN ONLY)                        -->
+  <!-- ========================================================================= -->
+  <div id="importExcelModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden items-center justify-center p-3 sm:p-5">
+    <div class="bg-white dark:bg-[#1b0c3a] border border-purple-200 dark:border-purple-900/60 rounded-3xl w-full max-w-3xl overflow-hidden shadow-2xl flex flex-col max-h-[90vh] transition-colors">
+      
+      <div class="p-4 border-b border-purple-100 dark:border-purple-900/60 flex items-center justify-between bg-purple-50/50 dark:bg-tzion-purple-950/40">
+        <div class="flex items-center space-x-2.5">
+          <div class="w-8 h-8 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-bold text-base">
+            📊
+          </div>
+          <div>
+            <h3 class="font-bold text-slate-900 dark:text-white text-sm">Bulk Import Inventory from Excel (.xlsx / .csv)</h3>
+            <p class="text-[11px] text-slate-500 dark:text-purple-300/70">Amounts parsed and validated in Tanzanian Shillings (TZS)</p>
+          </div>
+        </div>
+        <button onclick="closeImportModal()" class="text-slate-400 hover:text-slate-700 dark:hover:text-white p-1 rounded-lg">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+
+      <div class="p-5 flex-1 overflow-y-auto space-y-4">
+        <div class="flex flex-wrap items-center justify-between gap-2 p-3 rounded-2xl bg-purple-50 dark:bg-tzion-purple-950/60 border border-purple-200 dark:border-purple-800">
+          <div class="text-xs text-slate-600 dark:text-purple-300">
+            <span class="font-semibold text-tzion-purple-700 dark:text-white">Supported formats:</span> .xlsx, .xls, .csv
+          </div>
+          <div class="flex items-center space-x-2">
+            <button onclick="downloadExcelTemplate()" class="px-3 py-1.5 rounded-xl bg-white dark:bg-tzion-purple-900 hover:bg-purple-100 text-slate-700 dark:text-purple-200 border border-purple-300 dark:border-purple-700 text-xs font-medium flex items-center gap-1.5 transition-all shadow-sm">
+              <svg class="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+              <span>Download TZS Template</span>
+            </button>
+            <button onclick="loadDemoExcelData()" class="px-3 py-1.5 rounded-xl bg-tzion-purple-600 hover:bg-tzion-purple-700 text-white text-xs font-semibold flex items-center gap-1.5 transition-all shadow-sm">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+              <span>Load Demo Sheet (TZS)</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Drag & Drop Zone -->
+        <div 
+          id="excelDropZone"
+          ondragover="handleDragOver(event)"
+          ondragleave="handleDragLeave(event)"
+          ondrop="handleFileDrop(event)"
+          class="border-2 border-dashed border-purple-200 dark:border-purple-800 hover:border-tzion-orange-500 rounded-3xl p-6 text-center cursor-pointer bg-purple-50/30 dark:bg-tzion-purple-950/30 transition-all group"
+          onclick="document.getElementById('excelFileInput').click()"
+        >
+          <input type="file" id="excelFileInput" accept=".xlsx, .xls, .csv" class="hidden" onchange="handleFileSelect(event)">
+          <div class="w-12 h-12 rounded-2xl bg-tzion-orange-500/10 text-tzion-orange-500 mx-auto flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
+          </div>
+          <p class="text-xs font-semibold text-slate-800 dark:text-purple-200">
+            Click to upload or drag & drop Excel spreadsheet here
+          </p>
+          <p class="text-[11px] text-slate-500 dark:text-purple-400 mt-1">Columns: SKU, Name, Category, Stock, MinStock, CostPrice_TZS, SellingPrice_TZS, Unit</p>
+        </div>
+
+        <!-- Staged Rows Preview Table -->
+        <div id="importPreviewContainer" class="hidden space-y-3">
+          <div class="flex items-center justify-between">
+            <h4 class="text-xs font-bold text-slate-800 dark:text-purple-200 flex items-center gap-2">
+              <span>Spreadsheet Preview & Integrity Check</span>
+              <span id="previewCountBadge" class="px-2 py-0.5 rounded-full text-[10px] font-mono bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 font-bold border border-emerald-500/30">0 Items Found</span>
+            </h4>
+            <span class="text-[11px] text-slate-500 dark:text-purple-400">Values in Tanzanian Shillings</span>
+          </div>
+
+          <div class="border border-purple-200 dark:border-purple-800 rounded-2xl overflow-x-auto max-h-56">
+            <table class="w-full text-left text-xs border-collapse">
+              <thead class="bg-purple-100 dark:bg-tzion-purple-950 text-slate-600 dark:text-purple-300 font-mono text-[10px] uppercase sticky top-0">
+                <tr>
+                  <th class="py-2.5 px-3">Status</th>
+                  <th class="py-2.5 px-3">SKU</th>
+                  <th class="py-2.5 px-3">Product Name</th>
+                  <th class="py-2.5 px-3">Category</th>
+                  <th class="py-2.5 px-3">Stock</th>
+                  <th class="py-2.5 px-3">Min</th>
+                  <th class="py-2.5 px-3">Cost (TZS)</th>
+                  <th class="py-2.5 px-3">Retail (TZS)</th>
+                </tr>
+              </thead>
+              <tbody id="importPreviewTableBody" class="divide-y divide-purple-200 dark:divide-purple-900/60 text-slate-800 dark:text-purple-200 bg-white dark:bg-[#1b0c3a]">
+                <!-- Populated dynamically -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="p-4 bg-purple-50/50 dark:bg-tzion-purple-950/40 border-t border-purple-100 dark:border-purple-900/60 flex items-center justify-between gap-3">
+        <span class="text-[11px] text-slate-500 dark:text-purple-400 hidden sm:inline">Writes directly to local offline cache and queues for Supabase sync.</span>
+        <div class="flex space-x-2 ml-auto">
+          <button onclick="closeImportModal()" class="px-4 py-2 rounded-xl text-slate-600 dark:text-purple-300 hover:text-slate-900 dark:hover:text-white bg-purple-100 dark:bg-tzion-purple-900/50 text-xs font-semibold">Cancel</button>
+          <button id="confirmImportBtn" onclick="commitExcelImport()" disabled class="px-5 py-2 rounded-xl bg-tzion-orange-500 hover:bg-tzion-orange-600 text-white text-xs font-bold shadow-lg shadow-tzion-orange-500/20 disabled:opacity-40 disabled:cursor-not-allowed transition-all flex items-center gap-1.5">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+            <span>Confirm & Import to TzionStockly</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- ADD SINGLE NEW SKU MODAL (ADMIN ONLY)                                     -->
+  <!-- ========================================================================= -->
+  <div id="addItemModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden items-center justify-center p-4">
+    <div class="bg-white dark:bg-[#1b0c3a] border border-purple-200 dark:border-purple-900/60 rounded-3xl w-full max-w-md overflow-hidden shadow-2xl transition-colors">
+      <div class="p-4 border-b border-purple-100 dark:border-purple-900/60 flex items-center justify-between bg-purple-50/50 dark:bg-tzion-purple-950/40">
+        <h3 class="font-bold text-slate-900 dark:text-white text-sm">Add New SKU to TzionStockly</h3>
+        <button onclick="closeAddItemModal()" class="text-slate-400 hover:text-slate-700 dark:hover:text-white p-1">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+
+      <form onsubmit="handleCreateProduct(event)" class="p-5 space-y-3.5 text-xs">
+        <div>
+          <label class="block font-semibold text-slate-700 dark:text-purple-200 mb-1">Product Name</label>
+          <input type="text" id="newProdName" required placeholder="e.g. Premium Kilimanjaro Coffee 500g" class="w-full bg-slate-50 dark:bg-tzion-purple-950 border border-purple-200 dark:border-purple-800 rounded-xl px-3 py-2 text-slate-900 dark:text-white focus:outline-none focus:border-tzion-orange-500 text-xs">
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-semibold text-slate-700 dark:text-purple-200 mb-1">SKU / Code</label>
+            <input type="text" id="newProdSku" required placeholder="TZ-SKU-992" class="w-full bg-slate-50 dark:bg-tzion-purple-950 border border-purple-200 dark:border-purple-800 rounded-xl px-3 py-2 text-slate-900 dark:text-white font-mono focus:outline-none focus:border-tzion-orange-500 text-xs">
+          </div>
+          <div>
+            <label class="block font-semibold text-slate-700 dark:text-purple-200 mb-1">Category</label>
+            <select id="newProdCat" class="w-full bg-slate-50 dark:bg-tzion-purple-950 border border-purple-200 dark:border-purple-800 rounded-xl px-2.5 py-2 text-slate-900 dark:text-white focus:outline-none focus:border-tzion-orange-500 text-xs">
+              <option value="Beverages">Beverages</option>
+              <option value="Raw Materials">Raw Materials</option>
+              <option value="Packaged Foods">Packaged Foods</option>
+              <option value="Household">Household</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-3 gap-2">
+          <div>
+            <label class="block font-semibold text-slate-700 dark:text-purple-200 mb-1">Initial Stock</label>
+            <input type="number" id="newProdStock" required min="0" value="50" class="w-full bg-slate-50 dark:bg-tzion-purple-950 border border-purple-200 dark:border-purple-800 rounded-xl px-2 py-2 text-slate-900 dark:text-white font-mono text-xs focus:outline-none focus:border-tzion-orange-500">
+          </div>
+          <div>
+            <label class="block font-semibold text-slate-700 dark:text-purple-200 mb-1">Min Alert</label>
+            <input type="number" id="newProdMin" required min="1" value="10" class="w-full bg-slate-50 dark:bg-tzion-purple-950 border border-purple-200 dark:border-purple-800 rounded-xl px-2 py-2 text-slate-900 dark:text-white font-mono text-xs focus:outline-none focus:border-tzion-orange-500">
+          </div>
+          <div>
+            <label class="block font-semibold text-slate-700 dark:text-purple-200 mb-1">Unit</label>
+            <input type="text" id="newProdUnit" required value="units" class="w-full bg-slate-50 dark:bg-tzion-purple-950 border border-purple-200 dark:border-purple-800 rounded-xl px-2 py-2 text-slate-900 dark:text-white text-xs focus:outline-none focus:border-tzion-orange-500">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3 pt-1">
+          <div>
+            <label class="block font-semibold text-slate-700 dark:text-purple-200 mb-1">Cost Price (TZS)</label>
+            <input type="number" id="newProdCost" required value="12000" class="w-full bg-slate-50 dark:bg-tzion-purple-950 border border-purple-200 dark:border-purple-800 rounded-xl px-3 py-2 text-slate-900 dark:text-white font-mono text-xs focus:outline-none focus:border-tzion-orange-500">
+          </div>
+          <div>
+            <label class="block font-semibold text-slate-700 dark:text-purple-200 mb-1">Selling Price (TZS)</label>
+            <input type="number" id="newProdSell" required value="18000" class="w-full bg-slate-50 dark:bg-tzion-purple-950 border border-purple-200 dark:border-purple-800 rounded-xl px-3 py-2 text-slate-900 dark:text-white font-mono text-xs focus:outline-none focus:border-tzion-orange-500">
+          </div>
+        </div>
+
+        <div class="pt-3 flex gap-2">
+          <button type="button" onclick="closeAddItemModal()" class="flex-1 py-2 rounded-xl text-slate-600 dark:text-purple-300 hover:text-slate-900 dark:hover:text-white bg-purple-100 dark:bg-tzion-purple-900/50 text-xs font-semibold">Cancel</button>
+          <button type="submit" class="flex-1 py-2 rounded-xl bg-tzion-purple-600 hover:bg-tzion-purple-700 text-white text-xs font-bold shadow-lg shadow-tzion-purple-900/20">Save to Inventory</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- OUTBOX QUEUE MODAL                                                        -->
+  <!-- ========================================================================= -->
+  <div id="syncModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden items-center justify-center p-4">
+    <div class="bg-white dark:bg-[#1b0c3a] border border-purple-200 dark:border-purple-900/60 rounded-3xl w-full max-w-lg overflow-hidden shadow-2xl flex flex-col max-h-[85vh] transition-colors">
+      <div class="p-4 border-b border-purple-100 dark:border-purple-900/60 flex items-center justify-between bg-purple-50/50 dark:bg-tzion-purple-950/40">
+        <div class="flex items-center space-x-2">
+          <div class="w-3 h-3 rounded-full bg-tzion-orange-500"></div>
+          <h3 class="font-bold text-slate-900 dark:text-white text-sm">Offline Outbox (Supabase Sync Queue)</h3>
+        </div>
+        <button onclick="closeSyncModal()" class="text-slate-400 hover:text-slate-700 dark:hover:text-white p-1">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+
+      <div class="p-4 flex-1 overflow-y-auto space-y-3">
+        <div class="flex items-center justify-between text-xs text-slate-500 dark:text-purple-300 px-1">
+          <span>Mutations stored locally in IndexedDB</span>
+          <span id="queueCounterText" class="font-mono text-tzion-orange-600 dark:text-tzion-orange-400 font-bold">0 Pending</span>
+        </div>
+
+        <!-- Sync Progress Bar -->
+        <div id="syncProgressBarContainer" class="hidden space-y-1 bg-purple-50 dark:bg-tzion-purple-950 p-3 rounded-2xl border border-purple-200 dark:border-purple-800">
+          <div class="flex justify-between text-[11px] text-slate-700 dark:text-purple-300">
+            <span>Executing remote RPC sync with Supabase PostgreSQL...</span>
+            <span id="syncProgressPercent" class="font-mono text-tzion-orange-500 font-bold">0%</span>
+          </div>
+          <div class="w-full bg-purple-200 dark:bg-tzion-purple-900 h-2 rounded-full overflow-hidden">
+            <div id="syncProgressBar" class="bg-gradient-to-r from-tzion-purple-600 to-tzion-orange-500 h-full w-0 transition-all duration-300"></div>
+          </div>
+        </div>
+
+        <div id="syncQueueList" class="space-y-2">
+          <!-- Populated dynamically -->
+        </div>
+      </div>
+
+      <div class="p-4 bg-purple-50/50 dark:bg-tzion-purple-950/40 border-t border-purple-100 dark:border-purple-900/60 flex items-center justify-between gap-3">
+        <button onclick="clearSyncQueue()" class="text-xs text-rose-500 hover:underline font-medium px-2 py-1">Purge Queue</button>
+        <div class="flex gap-2">
+          <button onclick="closeSyncModal()" class="px-4 py-2 rounded-xl text-slate-600 dark:text-purple-300 hover:text-slate-900 dark:hover:text-white bg-purple-100 dark:bg-tzion-purple-900/50 text-xs font-semibold">Close</button>
+          <button id="triggerSyncBtn" onclick="simulateCloudSync()" class="px-5 py-2 rounded-xl bg-tzion-purple-600 hover:bg-tzion-purple-700 text-white text-xs font-bold shadow-lg shadow-tzion-purple-900/20 flex items-center gap-1.5">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
+            <span>Sync to Supabase</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- SUPABASE BACKEND CONFIGURATION MODAL                                      -->
+  <!-- ========================================================================= -->
+  <div id="supabaseModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden items-center justify-center p-4">
+    <div class="bg-white dark:bg-[#1b0c3a] border border-purple-200 dark:border-purple-900/60 rounded-3xl w-full max-w-lg overflow-hidden shadow-2xl flex flex-col transition-colors">
+      <div class="p-4 border-b border-purple-100 dark:border-purple-900/60 flex items-center justify-between bg-purple-50/50 dark:bg-tzion-purple-950/40">
+        <div class="flex items-center space-x-2">
+          <span class="text-emerald-500 font-bold">⚡</span>
+          <h3 class="font-bold text-slate-900 dark:text-white text-sm">Supabase Backend Configuration</h3>
+        </div>
+        <button onclick="closeSupabaseModal()" class="text-slate-400 hover:text-slate-700 dark:hover:text-white p-1">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+
+      <div class="p-5 space-y-4 text-xs">
+        <div class="p-3 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-700 dark:text-emerald-300">
+          <strong>Backend Choice Approved:</strong> Supabase PostgreSQL is ideal for TzionStockly. The local outbox will sync delta adjustments via Supabase Edge Functions or REST API.
+        </div>
+
+        <div>
+          <label class="block font-semibold text-slate-700 dark:text-purple-200 mb-1">Project URL</label>
+          <input type="text" id="supabaseUrl" value="https://afchobaedwzvcdvexhtq.supabase.co" class="w-full bg-slate-50 dark:bg-tzion-purple-950 border border-purple-200 dark:border-purple-800 rounded-xl px-3 py-2 text-slate-900 dark:text-white font-mono text-xs focus:outline-none focus:border-tzion-orange-500">
+        </div>
+
+        <div>
+          <label class="block font-semibold text-slate-700 dark:text-purple-200 mb-1">Anon / Public API Key</label>
+          <input type="password" id="supabaseKey" value="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.tzionstockly_sample_token" class="w-full bg-slate-50 dark:bg-tzion-purple-950 border border-purple-200 dark:border-purple-800 rounded-xl px-3 py-2 text-slate-900 dark:text-white font-mono text-xs focus:outline-none focus:border-tzion-orange-500">
+        </div>
+
+        <div>
+          <span class="block font-semibold text-slate-700 dark:text-purple-200 mb-1">PostgreSQL Schema Target Tables:</span>
+          <div class="p-3 bg-purple-50 dark:bg-tzion-purple-950 rounded-xl border border-purple-200 dark:border-purple-800 font-mono text-[11px] text-tzion-purple-800 dark:text-purple-300 space-y-1">
+            <p>• <strong>public.products</strong> (id, sku, name, category, stock, min_stock, cost_tzs, sell_tzs)</p>
+            <p>• <strong>public.stock_transactions</strong> (id, product_id, type, qty, reason, user_id, created_at)</p>
+            <p>• <strong>public.users</strong> (id, email, role, pin_hash, full_name)</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="p-4 bg-purple-50/50 dark:bg-tzion-purple-950/40 border-t border-purple-100 dark:border-purple-900/60 flex justify-end gap-2">
+        <button onclick="closeSupabaseModal()" class="px-5 py-2 rounded-xl bg-tzion-purple-600 hover:bg-tzion-purple-700 text-white text-xs font-bold">Save Configuration</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- WHATSAPP DIGITAL RECEIPT MODAL (STAFF TERMINAL & ADMIN)                  -->
+  <!-- ========================================================================= -->
+  <div id="receiptModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden items-center justify-center p-4">
+    <div class="bg-white dark:bg-[#1b0c3a] border border-purple-200 dark:border-purple-900/60 rounded-3xl w-full max-w-md overflow-hidden shadow-2xl transition-colors flex flex-col">
+      <div class="p-4 border-b border-purple-100 dark:border-purple-900/60 flex items-center justify-between bg-purple-50/50 dark:bg-tzion-purple-950/40">
+        <div class="flex items-center space-x-2">
+          <span class="text-emerald-500 text-lg">🧾</span>
+          <div>
+            <h3 class="font-bold text-slate-900 dark:text-white text-sm">Official Electronic Receipt</h3>
+            <p class="text-[10px] text-slate-500 dark:text-purple-300 font-mono">TzionStockly POS • Direct WhatsApp Share</p>
+          </div>
+        </div>
+        <button onclick="closeReceiptModal()" class="text-slate-400 hover:text-slate-700 dark:hover:text-white p-1">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+
+      <div class="p-5 space-y-4 text-xs flex-1 overflow-y-auto">
+        <!-- Receipt Paper Styled Card -->
+        <div id="receiptPaperView" class="p-4 rounded-2xl bg-amber-50/40 dark:bg-tzion-purple-950/80 border border-dashed border-purple-300 dark:border-purple-800 space-y-3 font-mono">
+          <div class="text-center border-b border-dashed border-purple-200 dark:border-purple-800 pb-2">
+            <h4 class="font-bold text-sm text-tzion-purple-800 dark:text-tzion-purple-300">TZIONSTOCKLY STORE</h4>
+            <p class="text-[10px] text-slate-500 dark:text-purple-400">Offline-First Retail & POS • Tanzania</p>
+            <p id="receiptDateTime" class="text-[10px] text-slate-500 dark:text-purple-400 mt-1">2026-11-07 13:50</p>
+            <p id="receiptTxId" class="text-[10px] text-tzion-orange-600 dark:text-tzion-orange-400 font-bold">TX-8491</p>
+          </div>
+
+          <div class="space-y-1.5 text-[11px]">
+            <div class="flex justify-between">
+              <span class="text-slate-500 dark:text-purple-300">Cashier:</span>
+              <span id="receiptCashier" class="font-semibold text-slate-800 dark:text-white">Staff Terminal</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-slate-500 dark:text-purple-300">Item:</span>
+              <span id="receiptItemName" class="font-semibold text-slate-800 dark:text-white truncate max-w-[200px]">Product</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-slate-500 dark:text-purple-300">SKU / Code:</span>
+              <span id="receiptItemSku" class="text-slate-700 dark:text-purple-200">TZ-SKU-001</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-slate-500 dark:text-purple-300">Qty:</span>
+              <span id="receiptQty" class="font-bold text-slate-800 dark:text-white">1 units</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-slate-500 dark:text-purple-300">Unit Price:</span>
+              <span id="receiptUnitPrice" class="text-slate-800 dark:text-white">TZS 0</span>
+            </div>
+          </div>
+
+          <div class="border-t border-dashed border-purple-200 dark:border-purple-800 pt-2 flex justify-between items-center text-xs">
+            <span class="font-bold text-slate-800 dark:text-purple-200">GRAND TOTAL:</span>
+            <span id="receiptGrandTotal" class="text-base font-black text-tzion-orange-600 dark:text-tzion-orange-400">TZS 0</span>
+          </div>
+
+          <div class="text-center text-[10px] text-slate-400 pt-1">
+            Asante kwa kununua nasi! Karibu tena! 🇹🇿
+          </div>
+        </div>
+
+        <!-- WhatsApp Dispatch Control -->
+        <div class="space-y-2">
+          <label class="block text-xs font-semibold text-slate-700 dark:text-purple-200">
+            Customer WhatsApp Phone Number (TZ format):
+          </label>
+          <div class="flex space-x-2">
+            <input 
+              type="tel" 
+              id="receiptPhoneInput" 
+              placeholder="+255712345678" 
+              value="+255" 
+              class="flex-1 bg-slate-50 dark:bg-tzion-purple-950 border border-purple-200 dark:border-purple-800 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-white font-mono focus:outline-none focus:border-emerald-500"
+            >
+          </div>
+        </div>
+      </div>
+
+      <div class="p-4 bg-purple-50/50 dark:bg-tzion-purple-950/40 border-t border-purple-100 dark:border-purple-900/60 flex space-x-2">
+        <button onclick="copyReceiptToClipboard()" class="flex-1 py-2.5 rounded-xl bg-purple-100 dark:bg-tzion-purple-900/50 hover:bg-purple-200 text-slate-700 dark:text-purple-200 font-bold text-xs border border-purple-200 dark:border-purple-800 flex items-center justify-center gap-1.5 transition-all">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+          <span>Copy Text</span>
+        </button>
+        <button onclick="sendWhatsAppReceipt()" class="flex-1 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-lg shadow-emerald-600/20 flex items-center justify-center gap-1.5 transition-all">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/></svg>
+          <span>Share WhatsApp</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- MULTI-TENANT SAAS STORE MANAGEMENT MODAL                                  -->
+  <!-- ========================================================================= -->
+  <div id="storeModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden items-center justify-center p-4">
+    <div class="bg-white dark:bg-[#1b0c3a] border border-purple-200 dark:border-purple-900/60 rounded-3xl w-full max-w-lg overflow-hidden shadow-2xl flex flex-col transition-colors">
+      <div class="p-4 border-b border-purple-100 dark:border-purple-900/60 flex items-center justify-between bg-purple-50/50 dark:bg-tzion-purple-950/40">
+        <div class="flex items-center space-x-2">
+          <span class="text-xl">🏪</span>
+          <div>
+            <h3 class="font-bold text-slate-900 dark:text-white text-sm">Store & Tenant Management</h3>
+            <p class="text-[10px] text-slate-500 dark:text-purple-300">Multi-Tenant SaaS • Switch or Create Branches</p>
+          </div>
+        </div>
+        <button onclick="closeStoreModal()" class="text-slate-400 hover:text-slate-700 dark:hover:text-white p-1">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+
+      <!-- Store Tabs: Active Store, My Stores, Create Store, Join Store -->
+      <div class="flex border-b border-purple-100 dark:border-purple-900/60 bg-purple-50/30 dark:bg-tzion-purple-950/20 text-xs font-semibold">
+        <button onclick="setStoreTab('active')" id="tabBtnActiveStore" class="flex-1 py-2.5 border-b-2 border-tzion-purple-600 text-tzion-purple-700 dark:text-white transition-all">Current Store</button>
+        <button onclick="setStoreTab('list')" id="tabBtnListStores" class="flex-1 py-2.5 border-b-2 border-transparent text-slate-500 dark:text-purple-300 hover:text-purple-900 dark:hover:text-white transition-all">My Stores</button>
+        <button onclick="setStoreTab('create')" id="tabBtnCreateStore" class="flex-1 py-2.5 border-b-2 border-transparent text-slate-500 dark:text-purple-300 hover:text-purple-900 dark:hover:text-white transition-all">+ New Store</button>
+        <button onclick="setStoreTab('join')" id="tabBtnJoinStore" class="flex-1 py-2.5 border-b-2 border-transparent text-slate-500 dark:text-purple-300 hover:text-purple-900 dark:hover:text-white transition-all">Join Store</button>
+      </div>
+
+      <div class="p-5 space-y-4 text-xs overflow-y-auto max-h-[70vh]">
+        <!-- TAB 1: Current Active Store Details -->
+        <div id="storeTabActive" class="space-y-3">
+          <div class="p-4 rounded-2xl bg-gradient-to-br from-purple-500/10 to-orange-500/10 border border-purple-200 dark:border-purple-800 space-y-2">
+            <div class="flex justify-between items-start">
+              <div>
+                <span class="text-[10px] font-mono text-tzion-orange-500 uppercase font-bold">Active Branch</span>
+                <h4 id="activeStoreModalName" class="text-base font-extrabold text-slate-900 dark:text-white">Tzion Main Store</h4>
+                <p id="activeStoreModalAddress" class="text-xs text-slate-600 dark:text-purple-300">Kariakoo, Dar es Salaam</p>
+              </div>
+              <span id="activeStoreModalRoleBadge" class="text-[10px] font-mono uppercase px-2 py-0.5 rounded-full font-bold bg-tzion-purple-100 dark:bg-tzion-purple-900 text-tzion-purple-700 dark:text-purple-300 border border-tzion-purple-300">Owner</span>
+            </div>
+
+            <!-- Join Code Display with Copy Button -->
+            <div class="pt-2 border-t border-purple-200/60 dark:border-purple-800/60 flex items-center justify-between">
+              <div>
+                <span class="text-[10px] text-slate-500 dark:text-purple-300 block">Store Join Code (for Cashiers/Staff):</span>
+                <span id="activeStoreModalCode" class="text-lg font-black font-mono tracking-wider text-tzion-orange-600 dark:text-tzion-orange-400">TZ-MAIN</span>
+              </div>
+              <button onclick="copyStoreCode()" class="px-3 py-1.5 rounded-xl bg-tzion-orange-500 hover:bg-tzion-orange-600 text-white font-bold text-xs flex items-center gap-1 shadow-sm">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                <span>Copy Code</span>
+              </button>
+            </div>
+          </div>
+          <p class="text-[11px] text-slate-500 dark:text-purple-300/80">
+            💡 Share this <strong>Store Join Code</strong> with your cashier terminals or team members so they can connect directly to this store's inventory.
+          </p>
+        </div>
+
+        <!-- TAB 2: List of Stores / Switcher -->
+        <div id="storeTabList" class="space-y-3 hidden">
+          <p class="text-[11px] text-slate-500 dark:text-purple-300">Select a store branch to manage its inventory and sales:</p>
+          <div id="storeListContainer" class="space-y-2">
+            <!-- Populated dynamically by renderStoreList() -->
+          </div>
+        </div>
+
+        <!-- TAB 3: Create New Store -->
+        <div id="storeTabCreate" class="space-y-3 hidden">
+          <div>
+            <label class="block font-semibold text-slate-700 dark:text-purple-200 mb-1">Store / Branch Name</label>
+            <input type="text" id="newStoreNameInput" placeholder="e.g. Duka la Posta, Arusha Branch" class="w-full bg-slate-50 dark:bg-tzion-purple-950 border border-purple-200 dark:border-purple-800 rounded-xl px-3 py-2 text-slate-900 dark:text-white text-xs focus:outline-none focus:border-tzion-orange-500">
+          </div>
+          <div class="grid grid-cols-2 gap-2">
+            <div>
+              <label class="block font-semibold text-slate-700 dark:text-purple-200 mb-1">Phone Number</label>
+              <input type="tel" id="newStorePhoneInput" placeholder="+255 7..." class="w-full bg-slate-50 dark:bg-tzion-purple-950 border border-purple-200 dark:border-purple-800 rounded-xl px-3 py-2 text-slate-900 dark:text-white text-xs focus:outline-none focus:border-tzion-orange-500">
+            </div>
+            <div>
+              <label class="block font-semibold text-slate-700 dark:text-purple-200 mb-1">Currency</label>
+              <input type="text" value="TZS" readonly class="w-full bg-slate-100 dark:bg-tzion-purple-900/40 border border-purple-200 dark:border-purple-800 rounded-xl px-3 py-2 text-slate-500 dark:text-purple-300 text-xs font-mono font-bold">
+            </div>
+          </div>
+          <div>
+            <label class="block font-semibold text-slate-700 dark:text-purple-200 mb-1">Physical Location / Address</label>
+            <input type="text" id="newStoreAddressInput" placeholder="e.g. Samora Avenue, Dar es Salaam" class="w-full bg-slate-50 dark:bg-tzion-purple-950 border border-purple-200 dark:border-purple-800 rounded-xl px-3 py-2 text-slate-900 dark:text-white text-xs focus:outline-none focus:border-tzion-orange-500">
+          </div>
+          <button onclick="handleCreateStore()" class="w-full py-2.5 rounded-xl bg-tzion-purple-600 hover:bg-tzion-purple-700 text-white font-bold text-xs shadow-md transition-all flex items-center justify-center gap-1.5">
+            <span>✨ Create & Switch to New Store</span>
+          </button>
+        </div>
+
+        <!-- TAB 4: Join Existing Store -->
+        <div id="storeTabJoin" class="space-y-3 hidden">
+          <div class="p-3 rounded-2xl bg-purple-50/60 dark:bg-tzion-purple-950 border border-purple-200 dark:border-purple-800">
+            <label class="block font-semibold text-slate-700 dark:text-purple-200 mb-1">Enter 6-Digit Store Code</label>
+            <input type="text" id="joinStoreCodeInput" placeholder="e.g. TZ-7K9A2" class="w-full bg-white dark:bg-tzion-purple-900/60 border border-purple-200 dark:border-purple-700 rounded-xl px-3 py-2 text-slate-900 dark:text-white text-sm font-mono tracking-widest uppercase focus:outline-none focus:border-tzion-orange-500">
+            <p class="text-[10px] text-slate-500 dark:text-purple-300 mt-1.5">
+              Ask your shop owner or manager for the Store Code displayed in their Store Management screen.
+            </p>
+          </div>
+          <button onclick="handleJoinStore()" class="w-full py-2.5 rounded-xl bg-tzion-orange-500 hover:bg-tzion-orange-600 text-white font-bold text-xs shadow-md transition-all flex items-center justify-center gap-1.5">
+            <span>🚀 Join Store Team</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- JAVASCRIPT APPLICATION CORE (TZS Currency, RBAC, Excel & Themes)         -->
+  <!-- ========================================================================= -->
+  <script>
+    // --- Application State ---
+    const AppState = {
+      isDark: true,
+      isAuthenticated: false,
+      currentUser: null,   // { email, role, name }
+      authTabRole: 'admin',// tab selector on login screen
+      viewMode: 'desktop', // 'desktop' | 'mobile'
+      isOnline: true,
+      mobileTab: 'catalog',// 'catalog' | 'stats' | 'outbox'
+      searchQuery: '',
+      selectedCategory: 'All',
+
+      // Multi-Tenant SaaS Store Context
+      currentStore: {
+        id: "00000000-0000-0000-0000-000000000001",
+        name: "Tzion Main Store",
+        code: "TZ-MAIN",
+        currency: "TZS",
+        phone: "+255 712 345 678",
+        address: "Kariakoo, Dar es Salaam",
+        role: "owner"
+      },
+      userStores: [
+        {
+          id: "00000000-0000-0000-0000-000000000001",
+          name: "Tzion Main Store",
+          code: "TZ-MAIN",
+          currency: "TZS",
+          phone: "+255 712 345 678",
+          address: "Kariakoo, Dar es Salaam",
+          role: "owner"
+        }
+      ],
+      activeStoreTab: 'active',
+
+      // Stock adjustment modal active item
+      activeModalItem: null,
+      activeModalAction: 'out', // 'in' (admin only) | 'out' (admin & user)
+
+      // Staged Excel rows in TZS
+      stagedImportData: [],
+
+      // Master Catalog in Tanzanian Shillings (TZS)
+      products: [
+        { id: 1, uuid: "a9d7e324-118c-4f81-8d2b-635293414901", name: "Kilimanjaro Arabica Coffee 1kg", sku: "TZ-1001", category: "Beverages", stock: 24, minStock: 10, costPrice: 28000, sellingPrice: 45000, unit: "bags", velocity: 12 },
+        { id: 2, uuid: "a9d7e324-118c-4f81-8d2b-635293414902", name: "Azam Pure Sunflower Oil 5L", sku: "TZ-1002", category: "Household", stock: 58, minStock: 20, costPrice: 32000, sellingPrice: 42000, unit: "cans", velocity: 22 },
+        { id: 3, uuid: "a9d7e324-118c-4f81-8d2b-635293414903", name: "Asas Fresh Whole Milk 1L", sku: "TZ-1003", category: "Beverages", stock: 85, minStock: 25, costPrice: 2200, sellingPrice: 3000, unit: "cartons", velocity: 45 },
+        { id: 4, uuid: "a9d7e324-118c-4f81-8d2b-635293414904", name: "Kyela Super Aromatic Rice 25kg", sku: "TZ-1004", category: "Raw Materials", stock: 6, minStock: 12, costPrice: 75000, sellingPrice: 95000, unit: "sacks", velocity: 8 },
+        { id: 5, uuid: "a9d7e324-118c-4f81-8d2b-635293414905", name: "Kilombero Sugar 50kg Sack", sku: "TZ-1005", category: "Raw Materials", stock: 3, minStock: 8, costPrice: 140000, sellingPrice: 175000, unit: "sacks", velocity: 5 },
+        { id: 6, uuid: "a9d7e324-118c-4f81-8d2b-635293414906", name: "Mo Extra Spiced Tea 500g", sku: "TZ-1006", category: "Beverages", stock: 42, minStock: 15, costPrice: 4500, sellingPrice: 7000, unit: "boxes", velocity: 16 },
+        { id: 7, uuid: "a9d7e324-118c-4f81-8d2b-635293414907", name: "Zanzibar Organic Cinnamon 250g", sku: "TZ-1007", category: "Packaged Foods", stock: 19, minStock: 10, costPrice: 6500, sellingPrice: 11000, unit: "jars", velocity: 9 }
+      ],
+
+      // Offline Outbox Queue (Mutations waiting to push to Supabase)
+      syncQueue: [
+        {
+          client_mutation_id: "c1f7b770-9f22-4809-9f7a-8fce9b8e8890",
+          endpoint: "rpc/process_stock_mutation",
+          payload: {
+            p_product_id: "a9d7e324-118c-4f81-8d2b-635293414902",
+            p_user_id: "33b2a249-fceb-4179-8804-09ad695b21aa",
+            p_type: "CHECK_OUT",
+            p_quantity: 3,
+            p_unit_price_tzs: 45000.00,
+            p_notes: "Retail Counter POS",
+            p_device_created_at: "2026-11-07T10:45:00.000Z"
+          },
+          status: "PENDING", 
+          attempts: 0,
+          created_at: 1731000000,
+          productName: "Kilimanjaro Arabica Coffee 1kg",
+          sku: "TZ-1001",
+          unit: "bags"
+        }
+      ]
+    };
+
+    let desktopMovementChart = null;
+    let mobileMovementChart = null;
+
+    // --- Currency Formatter for Tanzanian Shillings (TZS) ---
+    function formatTZS(amount) {
+      return `TZS ${Math.round(amount).toLocaleString('en-US')}`;
+    }
+
+    // =========================================================================
+    // MULTI-TENANT SAAS STORE CONTROLLER
+    // =========================================================================
+    function openStoreModal() {
+      document.getElementById('storeModal').classList.remove('hidden');
+      document.getElementById('storeModal').classList.add('flex');
+      updateStoreModalUI();
+    }
+
+    function closeStoreModal() {
+      document.getElementById('storeModal').classList.add('hidden');
+      document.getElementById('storeModal').classList.remove('flex');
+    }
+
+    function setStoreTab(tab) {
+      AppState.activeStoreTab = tab;
+      const tabs = ['active', 'list', 'create', 'join'];
+      tabs.forEach(t => {
+        const el = document.getElementById(`storeTab${t.charAt(0).toUpperCase() + t.slice(1)}`);
+        const btn = document.getElementById(`tabBtn${t.charAt(0).toUpperCase() + t.slice(1)}Store`);
+        if (el && btn) {
+          if (t === tab) {
+            el.classList.remove('hidden');
+            btn.className = "flex-1 py-2.5 border-b-2 border-tzion-purple-600 text-tzion-purple-700 dark:text-white transition-all font-bold";
+          } else {
+            el.classList.add('hidden');
+            btn.className = "flex-1 py-2.5 border-b-2 border-transparent text-slate-500 dark:text-purple-300 hover:text-purple-900 dark:hover:text-white transition-all";
+          }
+        }
+      });
+      if (tab === 'list') renderStoreList();
+    }
+
+    function updateStoreModalUI() {
+      const store = AppState.currentStore;
+      const nameEl = document.getElementById('activeStoreModalName');
+      const addrEl = document.getElementById('activeStoreModalAddress');
+      const codeEl = document.getElementById('activeStoreModalCode');
+      const badgeEl = document.getElementById('activeStoreModalRoleBadge');
+      if (nameEl) nameEl.innerText = store.name;
+      if (addrEl) addrEl.innerText = store.address || 'Tanzania';
+      if (codeEl) codeEl.innerText = store.code;
+      if (badgeEl) badgeEl.innerText = (store.role || 'Staff').toUpperCase();
+      updateStoreHeaders();
+    }
+
+    function updateStoreHeaders() {
+      const store = AppState.currentStore;
+      const nameEl = document.getElementById('headerStoreName');
+      const codeEl = document.getElementById('headerStoreCode');
+      const mobCodeEl = document.getElementById('mobileStoreCode');
+      if (nameEl) nameEl.innerText = store.name;
+      if (codeEl) codeEl.innerText = store.code;
+      if (mobCodeEl) mobCodeEl.innerText = store.code;
+    }
+
+    function copyStoreCode() {
+      const code = AppState.currentStore.code;
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(code).then(() => {
+          showToast(`Store Join Code ${code} copied to clipboard!`, "success");
+        }).catch(() => {
+          showToast(`Store Code: ${code}`, "info");
+        });
+      } else {
+        showToast(`Store Code: ${code}`, "info");
+      }
+    }
+
+    function renderStoreList() {
+      const container = document.getElementById('storeListContainer');
+      if (!container) return;
+      container.innerHTML = AppState.userStores.map(s => {
+        const isActive = s.id === AppState.currentStore.id;
+        return `
+          <div class="p-3 rounded-2xl border ${isActive ? 'bg-tzion-purple-50 dark:bg-tzion-purple-900/40 border-tzion-purple-500' : 'bg-slate-50 dark:bg-tzion-purple-950 border-purple-200 dark:border-purple-800'} flex items-center justify-between transition-all">
+            <div>
+              <div class="flex items-center gap-2">
+                <span class="font-bold text-slate-900 dark:text-white text-xs">${s.name}</span>
+                <span class="text-[9px] font-mono px-1.5 py-0.2 rounded font-bold ${isActive ? 'bg-tzion-purple-600 text-white' : 'bg-purple-200 dark:bg-purple-800 text-purple-800 dark:text-purple-200'}">${s.code}</span>
+              </div>
+              <p class="text-[10px] text-slate-500 dark:text-purple-300">${s.address || 'Tanzania'} • Role: <strong class="uppercase text-tzion-orange-500">${s.role || 'Member'}</strong></p>
+            </div>
+            ${isActive ? `
+              <span class="text-xs font-bold text-emerald-500 flex items-center gap-1">
+                <span>✓</span> Active
+              </span>
+            ` : `
+              <button onclick="switchActiveStore('${s.id}')" class="px-3 py-1 rounded-xl bg-tzion-purple-600 hover:bg-tzion-purple-700 text-white font-bold text-xs shadow-sm transition-all">
+                Switch
+              </button>
+            `}
+          </div>
+        `;
+      }).join('');
+    }
+
+    function switchActiveStore(storeId) {
+      const target = AppState.userStores.find(s => s.id === storeId);
+      if (!target) return;
+      saveStateToStorage();
+      AppState.currentStore = target;
+
+      // Load specific catalog for this store
+      const savedProducts = localStorage.getItem(`tzion_products_${storeId}`);
+      if (savedProducts) {
+        AppState.products = JSON.parse(savedProducts);
+      } else {
+        AppState.products = [
+          { id: Date.now() + 1, uuid: "p-" + Date.now(), name: `${target.name} Demo Item 1`, sku: `${target.code}-101`, category: "General", stock: 25, minStock: 5, costPrice: 5000, sellingPrice: 8000, unit: "pcs", velocity: 4 }
+        ];
+      }
+
+      const savedOutbox = localStorage.getItem(`tzion_outbox_${storeId}`);
+      AppState.syncQueue = savedOutbox ? JSON.parse(savedOutbox) : [];
+
+      saveStateToStorage();
+      updateStoreModalUI();
+      closeStoreModal();
+      renderUI();
+      showToast(`Switched active store to: ${target.name}`, "success");
+    }
+
+    function handleCreateStore() {
+      const nameInput = document.getElementById('newStoreNameInput');
+      const phoneInput = document.getElementById('newStorePhoneInput');
+      const addressInput = document.getElementById('newStoreAddressInput');
+      const name = nameInput.value.trim();
+
+      if (!name) {
+        showToast("Please enter a valid store name.", "warning");
+        return;
+      }
+
+      const newId = "store_" + Date.now();
+      const randomCode = "TZ-" + Math.random().toString(36).substring(2, 6).toUpperCase();
+      const newStore = {
+        id: newId,
+        name: name,
+        code: randomCode,
+        currency: "TZS",
+        phone: phoneInput.value.trim() || "+255 700 000 000",
+        address: addressInput.value.trim() || "Tanzania",
+        role: "owner"
+      };
+
+      AppState.userStores.push(newStore);
+      nameInput.value = '';
+      phoneInput.value = '';
+      addressInput.value = '';
+
+      switchActiveStore(newId);
+      showToast(`Branch "${name}" created with code ${randomCode}!`, "success");
+    }
+
+    function handleJoinStore() {
+      const codeInput = document.getElementById('joinStoreCodeInput');
+      const code = codeInput.value.trim().toUpperCase();
+
+      if (!code) {
+        showToast("Please enter a valid store code.", "warning");
+        return;
+      }
+
+      const existing = AppState.userStores.find(s => s.code.toUpperCase() === code);
+      if (existing) {
+        switchActiveStore(existing.id);
+        return;
+      }
+
+      const joinedStore = {
+        id: "joined_" + Date.now(),
+        name: `Shop (${code})`,
+        code: code,
+        currency: "TZS",
+        phone: "+255",
+        address: "Tanzania",
+        role: "staff"
+      };
+
+      AppState.userStores.push(joinedStore);
+      codeInput.value = '';
+      switchActiveStore(joinedStore.id);
+      showToast(`Joined store ${code} as Staff Terminal!`, "success");
+    }
+
+    // --- Theme Controller (Light / Dark) ---
+    function toggleTheme() {
+      AppState.isDark = !AppState.isDark;
+      applyTheme();
+    }
+
+    function applyTheme() {
+      const html = document.documentElement;
+      const sun = document.getElementById('themeIconSun');
+      const moon = document.getElementById('themeIconMoon');
+
+      if (AppState.isDark) {
+        html.classList.add('dark');
+        sun.classList.remove('hidden');
+        moon.classList.add('hidden');
+      } else {
+        html.classList.remove('dark');
+        sun.classList.add('hidden');
+        moon.classList.remove('hidden');
+      }
+
+      if (AppState.isAuthenticated) renderUI();
+    }
+
+    // =========================================================================
+    // AUTHENTICATION ENGINE (ADMIN VS STAFF USER)
+    // =========================================================================
+
+    function setAuthRoleTab(role) {
+      AppState.authTabRole = role;
+      const tabAdmin = document.getElementById('authTabAdmin');
+      const tabStaff = document.getElementById('authTabStaff');
+      const notice = document.getElementById('authRoleNotice');
+      const emailInput = document.getElementById('loginEmail');
+
+      if (role === 'admin') {
+        tabAdmin.className = "py-2.5 rounded-xl font-bold text-xs transition-all flex items-center justify-center gap-1.5 bg-tzion-purple-600 text-white shadow-md";
+        tabStaff.className = "py-2.5 rounded-xl font-bold text-xs transition-all flex items-center justify-center gap-1.5 text-slate-600 dark:text-purple-300 hover:text-slate-900 dark:hover:text-white";
+        notice.innerHTML = `<strong class="text-tzion-orange-500">Administrator Clearance:</strong> Full control over stock check-in, check-out, valuations in TZS, profit reports, and Excel bulk imports.`;
+        emailInput.value = "admin@tzionstockly.com";
+      } else {
+        tabStaff.className = "py-2.5 rounded-xl font-bold text-xs transition-all flex items-center justify-center gap-1.5 bg-tzion-orange-500 text-white shadow-md";
+        tabAdmin.className = "py-2.5 rounded-xl font-bold text-xs transition-all flex items-center justify-center gap-1.5 text-slate-600 dark:text-purple-300 hover:text-slate-900 dark:hover:text-white";
+        notice.innerHTML = `<strong class="text-tzion-purple-600 dark:text-purple-400">Staff Checkout Mode:</strong> High-speed POS dispatch terminal. Staff can <strong>ONLY check out items</strong>. Cost prices and sensitive margins are strictly hidden.`;
+        emailInput.value = "staff@tzionstockly.com";
+      }
+    }
+
+    function quickLogin(role) {
+      setAuthRoleTab(role);
+      completeLogin(role === 'admin' ? 'admin@tzionstockly.com' : 'staff@tzionstockly.com', role);
+    }
+
+    function handleFormLogin(e) {
+      e.preventDefault();
+      const email = document.getElementById('loginEmail').value.trim();
+      const role = AppState.authTabRole;
+      completeLogin(email, role);
+    }
+
+    function completeLogin(email, role) {
+      AppState.isAuthenticated = true;
+      AppState.currentUser = {
+        email: email || (role === 'admin' ? 'admin@tzionstockly.com' : 'cashier@tzionstockly.com'),
+        role: role,
+        name: role === 'admin' ? 'Store Manager' : 'Cashier Terminal 1'
+      };
+
+      document.getElementById('authPortalScreen').classList.add('hidden');
+      document.getElementById('mainAppHeader').classList.remove('hidden');
+      document.getElementById('mainAppWorkspace').classList.remove('hidden');
+
+      // Update Header Identity
+      document.getElementById('headerUserName').innerText = AppState.currentUser.name;
+      document.getElementById('headerUserRole').innerText = role === 'admin' ? 'Administrator' : 'Staff Cashier';
+      
+      const badge = document.getElementById('roleHeaderBadge');
+      if (role === 'admin') {
+        badge.innerText = "Admin Clearance";
+        badge.className = "text-[10px] uppercase font-mono px-2 py-0.5 rounded-full font-bold bg-tzion-purple-100 dark:bg-tzion-purple-900/60 border border-tzion-purple-300 dark:border-tzion-purple-700 text-tzion-purple-700 dark:text-purple-300";
+      } else {
+        badge.innerText = "Checkout Only";
+        badge.className = "text-[10px] uppercase font-mono px-2 py-0.5 rounded-full font-bold bg-tzion-orange-500/15 border border-tzion-orange-500/30 text-tzion-orange-600 dark:text-tzion-orange-400";
+      }
+
+      saveStateToStorage();
+      showToast(`Welcome back, ${AppState.currentUser.name} (${role.toUpperCase()})`, "success");
+      renderUI();
+    }
+
+    function handleLogout() {
+      AppState.isAuthenticated = false;
+      AppState.currentUser = null;
+      saveStateToStorage();
+
+      document.getElementById('authPortalScreen').classList.remove('hidden');
+      document.getElementById('mainAppHeader').classList.add('hidden');
+      document.getElementById('mainAppWorkspace').classList.add('hidden');
+
+      showToast("Signed out successfully from TzionStockly.", "info");
+    }
+
+    function goToHome() {
+      if (AppState.isAuthenticated) {
+        AppState.searchQuery = '';
+        AppState.selectedCategory = 'All';
+        renderUI();
+      }
+    }
+
+    // --- View Mode (Desktop vs Mobile Mockup) ---
+    function setViewMode(mode) {
+      AppState.viewMode = mode;
+      const dBtn = document.getElementById('viewBtnDesktop');
+      const mBtn = document.getElementById('viewBtnMobile');
+      const dWrap = document.getElementById('desktopWrapper');
+      const mWrap = document.getElementById('mobileWrapper');
+
+      if (mode === 'desktop') {
+        dBtn.className = "px-2.5 py-1 rounded-lg bg-tzion-purple-600 text-white font-semibold shadow-sm transition-all flex items-center gap-1";
+        mBtn.className = "px-2.5 py-1 rounded-lg text-slate-600 dark:text-purple-300 hover:text-purple-950 dark:hover:text-white transition-all flex items-center gap-1";
+        dWrap.classList.remove('hidden');
+        mWrap.classList.add('hidden');
+        mWrap.classList.remove('flex');
+      } else {
+        mBtn.className = "px-2.5 py-1 rounded-lg bg-tzion-purple-600 text-white font-semibold shadow-sm transition-all flex items-center gap-1";
+        dBtn.className = "px-2.5 py-1 rounded-lg text-slate-600 dark:text-purple-300 hover:text-purple-950 dark:hover:text-white transition-all flex items-center gap-1";
+        dWrap.classList.add('hidden');
+        mWrap.classList.remove('hidden');
+        mWrap.classList.add('flex');
+      }
+      renderUI();
+    }
+
+    // --- Network Toggle ---
+    function toggleNetwork() {
+      AppState.isOnline = !AppState.isOnline;
+      const btn = document.getElementById('netToggleBtn');
+      const dot = document.getElementById('netDot');
+      const ping = document.getElementById('netPing');
+      const text = document.getElementById('netText');
+      const mPill = document.getElementById('mobileNetPill');
+
+      if (AppState.isOnline) {
+        btn.className = "px-3 py-1.5 rounded-xl border border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-xs font-semibold flex items-center gap-2 hover:bg-emerald-500/20 transition-all";
+        dot.className = "relative inline-flex rounded-full h-2 w-2 bg-emerald-500";
+        ping.className = "animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75";
+        text.innerText = "Online (Supabase Sync)";
+        if (mPill) {
+          mPill.className = "text-[9px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30";
+          mPill.innerText = "ONLINE";
+        }
+        showToast("Online: Connection restored to Supabase Cloud", "success");
+      } else {
+        btn.className = "px-3 py-1.5 rounded-xl border border-amber-500/40 bg-amber-500/15 text-amber-600 dark:text-amber-400 text-xs font-semibold flex items-center gap-2 hover:bg-amber-500/25 transition-all";
+        dot.className = "relative inline-flex rounded-full h-2 w-2 bg-amber-500";
+        ping.className = "hidden";
+        text.innerText = "Offline (Local Queue)";
+        if (mPill) {
+          mPill.className = "text-[9px] font-mono px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-600 dark:text-amber-400 border border-amber-500/40";
+          mPill.innerText = "OFFLINE";
+        }
+        showToast("Offline Active: Checkouts safely queued on device", "warning");
+      }
+
+      renderUI();
+    }
+
+    // --- Search & Filter ---
+    function handleSearch(val) {
+      AppState.searchQuery = val.toLowerCase().trim();
+      renderUI();
+    }
+
+    function setCategory(cat) {
+      AppState.selectedCategory = cat;
+      renderUI();
+    }
+
+    function getFilteredProducts() {
+      return AppState.products.filter(p => {
+        const matchesQuery = p.name.toLowerCase().includes(AppState.searchQuery) ||
+                             p.sku.toLowerCase().includes(AppState.searchQuery) ||
+                             p.category.toLowerCase().includes(AppState.searchQuery);
+        const matchesCategory = (AppState.selectedCategory === 'All') || (p.category === AppState.selectedCategory);
+        return matchesQuery && matchesCategory;
+      });
+    }
+
+    // =========================================================================
+    // EXCEL / SPREADSHEET BULK IMPORT (TZS PRICING)
+    // =========================================================================
+
+    function openImportModal() {
+      if (AppState.currentUser.role !== 'admin') {
+        showToast("Unauthorized: Bulk spreadsheet imports are restricted to Administrators.", "error");
+        return;
+      }
+      AppState.stagedImportData = [];
+      document.getElementById('importPreviewContainer').classList.add('hidden');
+      document.getElementById('confirmImportBtn').disabled = true;
+      document.getElementById('importExcelModal').classList.remove('hidden');
+      document.getElementById('importExcelModal').classList.add('flex');
+    }
+
+    function closeImportModal() {
+      document.getElementById('importExcelModal').classList.add('hidden');
+      document.getElementById('importExcelModal').classList.remove('flex');
+    }
+
+    function handleDragOver(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      document.getElementById('excelDropZone').classList.add('border-tzion-orange-500', 'bg-tzion-orange-500/5');
+    }
+
+    function handleDragLeave(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      document.getElementById('excelDropZone').classList.remove('border-tzion-orange-500', 'bg-tzion-orange-500/5');
+    }
+
+    function handleFileDrop(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      document.getElementById('excelDropZone').classList.remove('border-tzion-orange-500', 'bg-tzion-orange-500/5');
+      const files = e.dataTransfer.files;
+      if (files.length > 0) processSpreadsheetFile(files[0]);
+    }
+
+    function handleFileSelect(e) {
+      const files = e.target.files;
+      if (files.length > 0) processSpreadsheetFile(files[0]);
+    }
+
+    function processSpreadsheetFile(file) {
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          const data = new Uint8Array(e.target.result);
+          const workbook = XLSX.read(data, { type: 'array' });
+          const firstSheet = workbook.SheetNames[0];
+          const rawRows = XLSX.utils.sheet_to_json(workbook.Sheets[firstSheet], { defval: '' });
+          
+          if (!rawRows || rawRows.length === 0) {
+            showToast("Spreadsheet has no readable data rows.", "error");
+            return;
+          }
+          parseAndStageRows(rawRows);
+        } catch (err) {
+          console.error(err);
+          showToast("Failed to parse file. Please use the valid TZS template.", "error");
+        }
+      };
+      reader.readAsArrayBuffer(file);
+    }
+
+    function parseAndStageRows(rawRows) {
+      const parsed = rawRows.map((row, idx) => {
+        const getVal = (possibleKeys, fallback = '') => {
+          for (let k of possibleKeys) {
+            const matchedKey = Object.keys(row).find(x => x.trim().toLowerCase() === k.toLowerCase());
+            if (matchedKey && row[matchedKey] !== '') return row[matchedKey];
+          }
+          return fallback;
+        };
+
+        // Canonical Key & Accepted Aliases Contract (Section 6)
+        const sku = String(getVal(['sku', 'item code', 'code', 'barcode'], `TZ-SKU-${idx+100}`)).trim();
+        const name = String(getVal(['name', 'product name', 'item', 'title'], 'Unnamed Product')).trim();
+        const category = String(getVal(['category', 'group', 'department'], 'General')).trim() || 'General';
+        const stock = parseInt(getVal(['stockqty', 'quantity', 'qty', 'initial stock', 'stock'], 0)) || 0;
+        const minStock = parseInt(getVal(['min_threshold', 'alert level', 'min qty', 'min stock', 'minstock'], 5)) || 5;
+        const costPrice = parseFloat(getVal(['cost_price_tzs', 'cost', 'cost price', 'buying price'], 0)) || 0;
+        const sellingPrice = parseFloat(getVal(['selling_price_tzs', 'price', 'retail price', 'selling price'], 0)) || 0;
+        const unit = String(getVal(['unit', 'uom'], 'units')).trim();
+
+        // Validation Rules
+        const isValid = sku.length > 0 && name.length > 0 && stock >= 0 && minStock >= 1 && costPrice >= 0 && sellingPrice >= costPrice;
+        let validationMsg = 'Valid';
+        if (!sku) validationMsg = 'Missing SKU';
+        else if (!name) validationMsg = 'Missing Name';
+        else if (stock < 0) validationMsg = 'Invalid Stock (Negative)';
+        else if (minStock < 1) validationMsg = 'Min Threshold < 1';
+        else if (costPrice < 0) validationMsg = 'Negative Cost';
+        else if (sellingPrice < costPrice) validationMsg = 'Price < Cost (Margin Negative)';
+
+        return {
+          id: Date.now() + idx,
+          uuid: (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : 'a9d7e324-118c-4f81-8d2b-' + Math.random().toString(16).substring(2, 14),
+          sku,
+          name,
+          category,
+          stock,
+          minStock,
+          costPrice,
+          sellingPrice,
+          unit,
+          velocity: Math.floor(Math.random() * 20) + 1,
+          isValid,
+          validationMsg
+        };
+      });
+
+      AppState.stagedImportData = parsed;
+      renderImportPreview();
+    }
+
+    function renderImportPreview() {
+      const container = document.getElementById('importPreviewContainer');
+      const tableBody = document.getElementById('importPreviewTableBody');
+      const badge = document.getElementById('previewCountBadge');
+      const confirmBtn = document.getElementById('confirmImportBtn');
+
+      container.classList.remove('hidden');
+      const validCount = AppState.stagedImportData.filter(d => d.isValid).length;
+      badge.innerText = `${validCount} Valid of ${AppState.stagedImportData.length} Rows`;
+
+      tableBody.innerHTML = AppState.stagedImportData.map(row => `
+        <tr class="hover:bg-purple-50/50 dark:hover:bg-tzion-purple-900/30">
+          <td class="py-2 px-3">
+            <span class="px-1.5 py-0.5 rounded text-[9px] font-bold ${row.isValid ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30' : 'bg-rose-500/15 text-rose-600 border border-rose-500/30'}" title="${row.validationMsg}">
+              ${row.isValid ? 'VALID' : row.validationMsg}
+            </span>
+          </td>
+          <td class="py-2 px-3 font-mono font-medium">${row.sku}</td>
+          <td class="py-2 px-3 font-semibold">${row.name}</td>
+          <td class="py-2 px-3">${row.category}</td>
+          <td class="py-2 px-3 font-mono font-bold">${row.stock} <span class="text-slate-400 font-normal text-[10px]">${row.unit}</span></td>
+          <td class="py-2 px-3 font-mono text-slate-400">${row.minStock}</td>
+          <td class="py-2 px-3 font-mono">${formatTZS(row.costPrice)}</td>
+          <td class="py-2 px-3 font-mono text-tzion-orange-500 font-semibold">${formatTZS(row.sellingPrice)}</td>
+        </tr>
+      `).join('');
+
+      confirmBtn.disabled = validCount === 0;
+    }
+
+    function loadDemoExcelData() {
+      const sampleRows = [
+        { sku: "TZ-2001", name: "Mbeya Green Tea 500g", category: "Beverages", stockQty: 50, min_threshold: 15, cost_price_tzs: 3500, selling_price_tzs: 6000, unit: "packs" },
+        { sku: "TZ-2002", name: "Kilwa Rock Salt 1kg", category: "Raw Materials", stockQty: 120, min_threshold: 30, cost_price_tzs: 800, selling_price_tzs: 1500, unit: "bags" },
+        { sku: "TZ-2003", name: "Pemba Pure Clove Oil 100ml", category: "Packaged Foods", stockQty: 15, min_threshold: 6, cost_price_tzs: 14000, selling_price_tzs: 25000, unit: "bottles" },
+        { sku: "TZ-2004", name: "Dodoma Dry Red Wine 750ml", category: "Beverages", stockQty: 28, min_threshold: 10, cost_price_tzs: 18000, selling_price_tzs: 30000, unit: "bottles" }
+      ];
+      parseAndStageRows(sampleRows);
+      showToast("Loaded 4 canonical spreadsheet rows with TZS valuations", "info");
+    }
+
+    function downloadExcelTemplate() {
+      const templateData = [
+        {
+          "sku": "TZ-SAMPLE-01",
+          "name": "Sample Tanzania Product",
+          "category": "Beverages",
+          "stockQty": 100,
+          "min_threshold": 20,
+          "cost_price_tzs": 15000,
+          "selling_price_tzs": 22000,
+          "unit": "units"
+        }
+      ];
+
+      const ws = XLSX.utils.json_to_sheet(templateData);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "TzionStockly_Template");
+      XLSX.writeFile(wb, "TzionStockly_Template.xlsx");
+      showToast("Downloaded TzionStockly_Template.xlsx", "success");
+    }
+
+    function commitExcelImport() {
+      const validItems = AppState.stagedImportData.filter(d => d.isValid);
+      if (validItems.length === 0) return;
+
+      validItems.forEach(item => {
+        const existingIdx = AppState.products.findIndex(p => p.sku === item.sku);
+        if (existingIdx >= 0) {
+          AppState.products[existingIdx].stock += item.stock;
+          AppState.products[existingIdx].costPrice = item.costPrice;
+          AppState.products[existingIdx].sellingPrice = item.sellingPrice;
+        } else {
+          AppState.products.unshift(item);
+        }
+
+        // Section 4: Outbox Record Specification
+        const mutationId = (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : 'c1f7b770-9f22-4809-9f7a-' + Math.random().toString(16).substring(2, 10);
+        AppState.syncQueue.unshift({
+          client_mutation_id: mutationId,
+          endpoint: "rpc/process_stock_mutation",
+          payload: {
+            p_product_id: item.uuid || ("a9d7e324-118c-4f81-8d2b-" + String(item.id).padStart(12, '0')),
+            p_user_id: AppState.currentUser ? (AppState.currentUser.id || "33b2a249-fceb-4179-8804-09ad695b21aa") : "33b2a249-fceb-4179-8804-09ad695b21aa",
+            p_type: "CHECK_IN",
+            p_quantity: item.stock,
+            p_unit_price_tzs: item.sellingPrice,
+            p_notes: "Excel Bulk Import Ingestion",
+            p_device_created_at: new Date().toISOString()
+          },
+          status: "PENDING",
+          attempts: 0,
+          created_at: Math.floor(Date.now() / 1000),
+          productName: item.name,
+          sku: item.sku,
+          unit: item.unit,
+          user: AppState.currentUser ? AppState.currentUser.email : 'admin@tzionstockly.com'
+        });
+      });
+
+      saveStateToStorage();
+      closeImportModal();
+      showToast(`Imported ${validItems.length} products to TzionStockly local database!`, "success");
+      renderUI();
+    }
+
+    // =========================================================================
+    // STOCK CHECK-IN / CHECK-OUT ENGINE
+    // =========================================================================
+
+    function openStockModal(productId, action) {
+      // Permission Enforcement:
+      if (action === 'in' && AppState.currentUser.role !== 'admin') {
+        showToast("Access Denied: Only Administrators can Check In stock.", "error");
+        return;
+      }
+
+      const prod = AppState.products.find(p => p.id === productId);
+      if (!prod) return;
+
+      AppState.activeModalItem = prod;
+      AppState.activeModalAction = action;
+
+      const modal = document.getElementById('stockActionModal');
+      const badge = document.getElementById('stockActionBadge');
+      const title = document.getElementById('stockModalTitle');
+      const current = document.getElementById('stockModalCurrent');
+      const unit = document.getElementById('stockModalUnit');
+      const price = document.getElementById('stockModalPrice');
+      const subtotal = document.getElementById('stockModalSubtotal');
+      const submitBtn = document.getElementById('stockModalSubmitBtn');
+      const reasonSelect = document.getElementById('stockModalReason');
+      const qtyInput = document.getElementById('stockModalQty');
+
+      qtyInput.value = 1;
+      title.innerText = prod.name;
+      current.innerText = prod.stock;
+      unit.innerText = prod.unit;
+      price.innerText = formatTZS(prod.sellingPrice);
+      subtotal.innerText = formatTZS(prod.sellingPrice * 1);
+
+      qtyInput.oninput = () => {
+        const q = parseInt(qtyInput.value) || 0;
+        subtotal.innerText = formatTZS(prod.sellingPrice * q);
+      };
+
+      if (action === 'in') {
+        badge.className = "px-2.5 py-0.5 rounded-full text-xs font-mono font-bold uppercase bg-tzion-purple-600/20 text-tzion-purple-700 dark:text-purple-300 border border-tzion-purple-600/30";
+        badge.innerText = "ADMIN: CHECK IN (+)";
+        submitBtn.className = "flex-1 py-2 rounded-xl bg-tzion-purple-600 hover:bg-tzion-purple-700 text-white text-xs font-bold shadow-lg shadow-tzion-purple-900/20";
+        submitBtn.innerText = "Confirm Stock Check In";
+        reasonSelect.innerHTML = `
+          <option value="Supplier Delivery">Supplier Shipment Received</option>
+          <option value="Physical Audit Correction">Inventory Audit Adjustment</option>
+          <option value="Return to Shelf">Customer Return to Stock</option>
+        `;
+      } else {
+        badge.className = "px-2.5 py-0.5 rounded-full text-xs font-mono font-bold uppercase bg-tzion-orange-500/20 text-tzion-orange-600 dark:text-tzion-orange-400 border border-tzion-orange-500/30";
+        badge.innerText = AppState.currentUser.role === 'admin' ? "ADMIN: CHECK OUT (-)" : "STAFF CHECKOUT (-)";
+        submitBtn.className = "flex-1 py-2 rounded-xl bg-tzion-orange-500 hover:bg-tzion-orange-600 text-white text-xs font-bold shadow-lg shadow-tzion-orange-500/20";
+        submitBtn.innerText = "Complete Customer Checkout";
+        reasonSelect.innerHTML = `
+          <option value="Customer Sale">Direct Customer Sale / Cash POS</option>
+          <option value="Store Dispatch">Wholesale / Order Dispatch</option>
+          <option value="Damaged / Expired">Damaged or Expired Stock</option>
+        `;
+      }
+
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
+
+    function closeStockModal() {
+      document.getElementById('stockActionModal').classList.add('hidden');
+      document.getElementById('stockActionModal').classList.remove('flex');
+      AppState.activeModalItem = null;
+    }
+
+    function adjustInputQty(delta) {
+      const input = document.getElementById('stockModalQty');
+      let val = parseInt(input.value) || 0;
+      val = Math.max(1, val + delta);
+      input.value = val;
+      if (AppState.activeModalItem) {
+        document.getElementById('stockModalSubtotal').innerText = formatTZS(AppState.activeModalItem.sellingPrice * val);
+      }
+    }
+
+    let lastReceiptData = null;
+    let outboxFilter = 'ALL'; // 'ALL' | 'PENDING' | 'CONFLICT' | 'SYNCED'
+
+    function showReceiptModal(product, qty, reason, txId) {
+      lastReceiptData = {
+        txId: txId || ('TX-' + Math.floor(1000 + Math.random() * 9000)),
+        date: new Date().toLocaleString('en-GB', { dateStyle: 'short', timeStyle: 'short' }),
+        cashier: AppState.currentUser ? AppState.currentUser.name : 'Cashier Terminal',
+        item: product.name,
+        sku: product.sku,
+        qty: qty,
+        unit: product.unit,
+        unitPrice: product.sellingPrice,
+        total: product.sellingPrice * qty
+      };
+
+      document.getElementById('receiptDateTime').innerText = lastReceiptData.date;
+      document.getElementById('receiptTxId').innerText = lastReceiptData.txId;
+      document.getElementById('receiptCashier').innerText = lastReceiptData.cashier;
+      document.getElementById('receiptItemName').innerText = lastReceiptData.item;
+      document.getElementById('receiptItemSku').innerText = lastReceiptData.sku;
+      document.getElementById('receiptQty').innerText = `${lastReceiptData.qty} ${lastReceiptData.unit}`;
+      document.getElementById('receiptUnitPrice').innerText = formatTZS(lastReceiptData.unitPrice);
+      document.getElementById('receiptGrandTotal').innerText = formatTZS(lastReceiptData.total);
+
+      const modal = document.getElementById('receiptModal');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
+
+    function closeReceiptModal() {
+      const modal = document.getElementById('receiptModal');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    }
+
+    function generateReceiptText() {
+      if (!lastReceiptData) return '';
+      const store = AppState.currentStore || { name: 'TzionStockly POS', code: 'TZ-MAIN', address: 'Tanzania', phone: '+255' };
+      return `🛒 *${store.name.toUpperCase()} - DIGITAL RECEIPT*\n` +
+             `🏪 Store Code: ${store.code}\n` +
+             `📍 Location: ${store.address || 'Tanzania'}\n` +
+             `📞 Tel: ${store.phone || '+255'}\n` +
+             `📅 Date: ${lastReceiptData.date}\n` +
+             `🧾 Receipt No: ${lastReceiptData.txId}\n` +
+             `👤 Served By: ${lastReceiptData.cashier}\n` +
+             `--------------------------------\n` +
+             `📦 Item: ${lastReceiptData.item} (${lastReceiptData.sku})\n` +
+             `🔢 Quantity: ${lastReceiptData.qty} ${lastReceiptData.unit}\n` +
+             `💵 Unit Price: ${formatTZS(lastReceiptData.unitPrice)}\n` +
+             `💰 *GRAND TOTAL: ${formatTZS(lastReceiptData.total)}*\n` +
+             `--------------------------------\n` +
+             `Thank you for shopping with us!\n` +
+             `Asante kwa kununua nasi! Karibu tena! 🇹🇿\n` +
+             `Powered by TzionStockly Multi-Tenant POS`;
+    }
+
+    function sendWhatsAppReceipt() {
+      const phoneInput = document.getElementById('receiptPhoneInput').value.trim();
+      const cleanPhone = phoneInput.replace(/[^0-9]/g, '');
+      const text = generateReceiptText();
+      const url = `https://api.whatsapp.com/send?phone=${cleanPhone}&text=${encodeURIComponent(text)}`;
+      window.open(url, '_blank');
+      showToast('Opening WhatsApp with electronic receipt...', 'success');
+    }
+
+    function copyReceiptToClipboard() {
+      const text = generateReceiptText();
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(() => {
+          showToast('Receipt text copied to clipboard!', 'success');
+        }).catch(() => {
+          showToast('Copied to clipboard', 'info');
+        });
+      } else {
+        showToast('Receipt text ready to send', 'info');
+      }
+    }
+
+    function submitStockAdjustment() {
+      if (!AppState.activeModalItem) return;
+
+      const qty = parseInt(document.getElementById('stockModalQty').value) || 1;
+      const reason = document.getElementById('stockModalReason').value;
+      const prod = AppState.activeModalItem;
+
+      if (AppState.activeModalAction === 'out' && prod.stock < qty) {
+        showToast(`Checkout failed: Only ${prod.stock} ${prod.unit} available in stock!`, "error");
+        return;
+      }
+
+      // 1. Immediate local write (0ms latency local-first guarantee)
+      if (AppState.activeModalAction === 'in') {
+        prod.stock += qty;
+      } else {
+        prod.stock -= qty;
+      }
+
+      // 2. Queue mutation for Supabase Background Sync (Section 4 Outbox Record Specification)
+      const mutationId = (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : 'c1f7b770-9f22-4809-9f7a-' + Math.random().toString(16).substring(2, 10);
+      const queueRecord = {
+        client_mutation_id: mutationId,
+        endpoint: "rpc/process_stock_mutation",
+        payload: {
+          p_product_id: prod.uuid || ("a9d7e324-118c-4f81-8d2b-" + String(prod.id).padStart(12, '0')),
+          p_user_id: AppState.currentUser ? (AppState.currentUser.id || "33b2a249-fceb-4179-8804-09ad695b21aa") : "33b2a249-fceb-4179-8804-09ad695b21aa",
+          p_type: AppState.activeModalAction === 'in' ? 'CHECK_IN' : 'CHECK_OUT',
+          p_quantity: qty,
+          p_unit_price_tzs: prod.sellingPrice,
+          p_notes: reason,
+          p_device_created_at: new Date().toISOString()
+        },
+        status: "PENDING", 
+        attempts: 0,
+        created_at: Math.floor(Date.now() / 1000),
+        productName: prod.name,
+        sku: prod.sku,
+        unit: prod.unit,
+        user: AppState.currentUser.email
+      };
+
+      AppState.syncQueue.unshift(queueRecord);
+      saveStateToStorage();
+
+      closeStockModal();
+      showToast(`Processed ${AppState.activeModalAction === 'in' ? 'Check In' : 'Checkout'}: ${prod.name} (${AppState.activeModalAction === 'in' ? '+' : '-'}${qty} ${prod.unit})`, "success");
+      renderUI();
+
+      // Launch electronic receipt on checkout
+      if (AppState.activeModalAction === 'out') {
+        showReceiptModal(prod, qty, reason, mutationId);
+      }
+    }
+
+    // =========================================================================
+    // OUTBOX SYNC & SUPABASE INTEGRATION
+    // =========================================================================
+
+    function openSyncModal() {
+      document.getElementById('syncModal').classList.remove('hidden');
+      document.getElementById('syncModal').classList.add('flex');
+      renderSyncQueueList();
+    }
+
+    function closeSyncModal() {
+      document.getElementById('syncModal').classList.add('hidden');
+      document.getElementById('syncModal').classList.remove('flex');
+    }
+
+    function openSupabaseModal() {
+      document.getElementById('supabaseModal').classList.remove('hidden');
+      document.getElementById('supabaseModal').classList.add('flex');
+    }
+
+    function closeSupabaseModal() {
+      document.getElementById('supabaseModal').classList.add('hidden');
+      document.getElementById('supabaseModal').classList.remove('flex');
+      showToast("Supabase configuration verified.", "info");
+    }
+
+    function setOutboxFilter(filter) {
+      outboxFilter = filter;
+      renderSyncQueueList();
+    }
+
+    function renderSyncQueueList() {
+      const list = document.getElementById('syncQueueList');
+      const countEl = document.getElementById('queueCounterText');
+
+      const pendingCount = AppState.syncQueue.filter(i => i.status === 'PENDING').length;
+      const conflictCount = AppState.syncQueue.filter(i => i.status === 'CONFLICT').length;
+      const syncedCount = AppState.syncQueue.filter(i => i.status === 'SYNCED').length;
+
+      countEl.innerText = `${pendingCount} Pending • ${conflictCount} Conflicts`;
+
+      let displayQueue = AppState.syncQueue;
+      if (outboxFilter === 'PENDING') displayQueue = AppState.syncQueue.filter(i => i.status === 'PENDING');
+      else if (outboxFilter === 'CONFLICT') displayQueue = AppState.syncQueue.filter(i => i.status === 'CONFLICT');
+      else if (outboxFilter === 'SYNCED') displayQueue = AppState.syncQueue.filter(i => i.status === 'SYNCED');
+
+      if (AppState.syncQueue.length === 0) {
+        list.innerHTML = `
+          <div class="text-center py-8 text-slate-400 dark:text-purple-300/50">
+            <svg class="w-10 h-10 mx-auto text-emerald-500/60 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            <p class="text-xs">Outbox is clean. All device writes are synchronized with Supabase PostgreSQL.</p>
+          </div>
+        `;
+        return;
+      }
+
+      list.innerHTML = `
+        <!-- Filter Tabs -->
+        <div class="flex items-center gap-1.5 pb-2 border-b border-purple-100 dark:border-purple-900/60 text-[10px] font-mono">
+          <button onclick="setOutboxFilter('ALL')" class="px-2.5 py-1 rounded-lg ${outboxFilter === 'ALL' ? 'bg-tzion-purple-600 text-white font-bold' : 'bg-purple-100 dark:bg-tzion-purple-950 text-slate-600 dark:text-purple-300'}">All (${AppState.syncQueue.length})</button>
+          <button onclick="setOutboxFilter('PENDING')" class="px-2.5 py-1 rounded-lg ${outboxFilter === 'PENDING' ? 'bg-tzion-orange-500 text-white font-bold' : 'bg-purple-100 dark:bg-tzion-purple-950 text-slate-600 dark:text-purple-300'}">Pending (${pendingCount})</button>
+          <button onclick="setOutboxFilter('CONFLICT')" class="px-2.5 py-1 rounded-lg ${outboxFilter === 'CONFLICT' ? 'bg-rose-500 text-white font-bold' : 'bg-purple-100 dark:bg-tzion-purple-950 text-slate-600 dark:text-purple-300'}">Conflict (${conflictCount})</button>
+          <button onclick="setOutboxFilter('SYNCED')" class="px-2.5 py-1 rounded-lg ${outboxFilter === 'SYNCED' ? 'bg-emerald-600 text-white font-bold' : 'bg-purple-100 dark:bg-tzion-purple-950 text-slate-600 dark:text-purple-300'}">Synced (${syncedCount})</button>
+        </div>
+
+        <div class="space-y-2 mt-2">
+          ${displayQueue.map((item, idx) => {
+            const isConflict = item.status === 'CONFLICT';
+            const isSynced = item.status === 'SYNCED';
+            const statusClass = isConflict 
+              ? 'bg-rose-500/20 text-rose-600 dark:text-rose-400 border border-rose-500/40' 
+              : (isSynced 
+                  ? 'bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/40' 
+                  : 'bg-tzion-orange-500/20 text-tzion-orange-600 dark:text-tzion-orange-400 border border-tzion-orange-500/30');
+
+            const typeLabel = item.payload ? item.payload.p_type : (item.type || 'MUTATION');
+            const qty = item.payload ? item.payload.p_quantity : (item.qty || 1);
+            const notes = item.payload ? item.payload.p_notes : (item.reason || '');
+
+            return `
+              <div class="p-3 bg-purple-50/70 dark:bg-tzion-purple-950 border ${isConflict ? 'border-rose-500/50' : 'border-purple-200 dark:border-purple-800'} rounded-2xl space-y-2">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center space-x-2">
+                    <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold ${typeLabel === 'CHECK_IN' || typeLabel === 'ADD' ? 'bg-tzion-purple-600/20 text-tzion-purple-700 dark:text-purple-300 border border-tzion-purple-600/30' : 'bg-tzion-orange-500/20 text-tzion-orange-600 dark:text-tzion-orange-400 border border-tzion-orange-500/30'}">
+                      ${typeLabel === 'CHECK_OUT' || typeLabel === 'DEDUCT' ? '-' : '+'}${qty}
+                    </span>
+                    <div>
+                      <p class="text-xs font-semibold text-slate-900 dark:text-white">${item.productName || 'Inventory Mutation'}</p>
+                      <p class="text-[10px] text-slate-500 dark:text-purple-300/60 font-mono">${notes} • ${item.user || 'terminal'}</p>
+                    </div>
+                  </div>
+                  <div class="text-right">
+                    <span class="text-[9px] font-mono px-2 py-0.5 rounded uppercase font-bold ${statusClass}">
+                      ${item.status}
+                    </span>
+                  </div>
+                </div>
+
+                ${isConflict ? `
+                  <div class="p-2 rounded-xl bg-rose-500/10 border border-rose-500/30 text-[10px] text-rose-700 dark:text-rose-300 flex items-start gap-1.5">
+                    <span class="font-bold">⚠️ Conflict Alert:</span>
+                    <span>${item.last_error || 'Negative stock constraint: remote inventory depleted by concurrent cashier.'}</span>
+                  </div>
+                ` : ''}
+
+                <!-- Expandable RPC JSON Payload (Section 4 Contract) -->
+                <details class="text-[10px] font-mono">
+                  <summary class="cursor-pointer text-slate-400 hover:text-tzion-orange-500 select-none py-0.5">
+                    View Outbox Payload (UUID: ${(item.client_mutation_id || '').substring(0, 13)}...)
+                  </summary>
+                  <pre class="mt-1 p-2 bg-slate-900 text-purple-200 rounded-xl overflow-x-auto text-[9px]">${JSON.stringify({
+                    client_mutation_id: item.client_mutation_id,
+                    endpoint: item.endpoint || "rpc/process_stock_mutation",
+                    payload: item.payload,
+                    status: item.status,
+                    attempts: item.attempts,
+                    created_at: item.created_at
+                  }, null, 2)}</pre>
+                </details>
+
+                <!-- Action Bar -->
+                <div class="flex items-center justify-end gap-2 pt-1 border-t border-purple-100 dark:border-purple-900/40 text-[10px]">
+                  ${item.status === 'PENDING' ? `
+                    <button onclick="simulateConflictItem('${item.client_mutation_id}')" class="text-rose-600 dark:text-rose-400 hover:underline">
+                      Simulate Conflict
+                    </button>
+                  ` : ''}
+                  ${isConflict && AppState.currentUser.role === 'admin' ? `
+                    <button onclick="resolveConflictItem('${item.client_mutation_id}', 'retry')" class="px-2 py-1 rounded bg-tzion-purple-600 text-white font-bold">
+                      Admin Force Push
+                    </button>
+                    <button onclick="resolveConflictItem('${item.client_mutation_id}', 'discard')" class="px-2 py-1 rounded bg-slate-200 dark:bg-purple-900 text-slate-700 dark:text-purple-200">
+                      Discard
+                    </button>
+                  ` : ''}
+                </div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      `;
+    }
+
+    function simulateConflictItem(mutationId) {
+      const item = AppState.syncQueue.find(i => i.client_mutation_id === mutationId);
+      if (item) {
+        item.status = "CONFLICT";
+        item.attempts = (item.attempts || 0) + 1;
+        item.last_error = "PostgreSQL RPC process_stock_mutation: Insufficient stock quantity available (remote constraint violation).";
+        saveStateToStorage();
+        renderSyncQueueList();
+        renderUI();
+        showToast("Simulated conflict constraint: Item flagged for Admin review.", "warning");
+      }
+    }
+
+    function resolveConflictItem(mutationId, action) {
+      if (action === 'discard') {
+        AppState.syncQueue = AppState.syncQueue.filter(i => i.client_mutation_id !== mutationId);
+        showToast("Discarded conflicting mutation from outbox.", "info");
+      } else {
+        const item = AppState.syncQueue.find(i => i.client_mutation_id === mutationId);
+        if (item) {
+          item.status = "PENDING";
+          item.attempts = 0;
+          delete item.last_error;
+          showToast("Reset mutation for re-sync by Administrator.", "success");
+        }
+      }
+      saveStateToStorage();
+      renderSyncQueueList();
+      renderUI();
+    }
+
+    function simulateCloudSync() {
+      const pendingItems = AppState.syncQueue.filter(i => i.status === 'PENDING');
+      const conflictItems = AppState.syncQueue.filter(i => i.status === 'CONFLICT');
+
+      if (pendingItems.length === 0) {
+        if (conflictItems.length > 0) {
+          showToast(`Cannot drain outbox: ${conflictItems.length} conflict(s) require Admin review.`, "warning");
+        } else {
+          showToast("Outbox is already empty. Nothing pending to sync.", "info");
+        }
+        return;
+      }
+
+      const pContainer = document.getElementById('syncProgressBarContainer');
+      const bar = document.getElementById('syncProgressBar');
+      const pText = document.getElementById('syncProgressPercent');
+      const syncBtn = document.getElementById('triggerSyncBtn');
+
+      pContainer.classList.remove('hidden');
+      syncBtn.disabled = true;
+
+      let progress = 0;
+      const interval = setInterval(() => {
+        progress += 25;
+        bar.style.width = `${progress}%`;
+        pText.innerText = `${progress}%`;
+
+        if (progress >= 100) {
+          clearInterval(interval);
+          setTimeout(() => {
+            // Replay FIFO: Transition pending items to SYNCED
+            pendingItems.forEach(i => i.status = 'SYNCED');
+            // Remove SYNCED items to drain queue
+            AppState.syncQueue = AppState.syncQueue.filter(i => i.status !== 'SYNCED');
+            
+            pContainer.classList.add('hidden');
+            bar.style.width = '0%';
+            syncBtn.disabled = false;
+            
+            saveStateToStorage();
+            renderSyncQueueList();
+            renderUI();
+            
+            if (conflictItems.length > 0) {
+              showToast(`Synced ${pendingItems.length} mutations. ${conflictItems.length} conflict(s) preserved for Admin.`, "warning");
+            } else {
+              showToast("Successfully synchronized all queue mutations with Supabase Cloud!", "success");
+            }
+          }, 300);
+        }
+      }, 150);
+    }
+
+    function clearSyncQueue() {
+      AppState.syncQueue = [];
+      saveStateToStorage();
+      renderSyncQueueList();
+      renderUI();
+      showToast("Purged local synchronization outbox.", "warning");
+    }
+
+    // --- Local Storage Persistence (Partitioned per Tenant Store) ---
+    function saveStateToStorage() {
+      try {
+        const storeId = (AppState.currentStore && AppState.currentStore.id) ? AppState.currentStore.id : '00000000-0000-0000-0000-000000000001';
+        localStorage.setItem(`tzionstockly_products_${storeId}`, JSON.stringify(AppState.products));
+        localStorage.setItem(`tzionstockly_outbox_${storeId}`, JSON.stringify(AppState.syncQueue));
+        localStorage.setItem('tzionstockly_current_store', JSON.stringify(AppState.currentStore));
+        localStorage.setItem('tzionstockly_user_stores', JSON.stringify(AppState.userStores));
+        if (AppState.currentUser) {
+          localStorage.setItem('tzionstockly_user', JSON.stringify(AppState.currentUser));
+        } else {
+          localStorage.removeItem('tzionstockly_user');
+        }
+        localStorage.setItem('tzionstockly_dark', AppState.isDark ? '1' : '0');
+      } catch (e) {
+        console.warn('LocalStorage save error:', e);
+      }
+    }
+
+    function loadStateFromStorage() {
+      try {
+        const storedStores = localStorage.getItem('tzionstockly_user_stores');
+        if (storedStores) AppState.userStores = JSON.parse(storedStores);
+
+        const storedCurrent = localStorage.getItem('tzionstockly_current_store');
+        if (storedCurrent) AppState.currentStore = JSON.parse(storedCurrent);
+
+        const storeId = (AppState.currentStore && AppState.currentStore.id) ? AppState.currentStore.id : '00000000-0000-0000-0000-000000000001';
+        const p = localStorage.getItem(`tzionstockly_products_${storeId}`) || localStorage.getItem('tzionstockly_products');
+        if (p) AppState.products = JSON.parse(p);
+
+        const q = localStorage.getItem(`tzionstockly_outbox_${storeId}`) || localStorage.getItem('tzionstockly_outbox');
+        if (q) AppState.syncQueue = JSON.parse(q);
+
+        const d = localStorage.getItem('tzionstockly_dark');
+        if (d !== null) AppState.isDark = (d === '1');
+
+        const u = localStorage.getItem('tzionstockly_user');
+        if (u) {
+          const user = JSON.parse(u);
+          completeLogin(user.email, user.role, false);
+        }
+
+        updateStoreHeaders();
+      } catch (e) {
+        console.warn('LocalStorage load error:', e);
+      }
+    }
+
+    // =========================================================================
+    // PRODUCT CREATION (ADMIN SINGLE SKU)
+    // =========================================================================
+
+    function openAddItemModal() {
+      if (AppState.currentUser.role !== 'admin') {
+        showToast("Unauthorized: Only Administrators can create new SKUs.", "error");
+        return;
+      }
+      document.getElementById('addItemModal').classList.remove('hidden');
+      document.getElementById('addItemModal').classList.add('flex');
+    }
+
+    function closeAddItemModal() {
+      document.getElementById('addItemModal').classList.add('hidden');
+      document.getElementById('addItemModal').classList.remove('flex');
+    }
+
+    function handleCreateProduct(e) {
+      e.preventDefault();
+      const name = document.getElementById('newProdName').value;
+      const sku = document.getElementById('newProdSku').value;
+      const cat = document.getElementById('newProdCat').value;
+      const stock = parseInt(document.getElementById('newProdStock').value) || 0;
+      const minStock = parseInt(document.getElementById('newProdMin').value) || 5;
+      const unit = document.getElementById('newProdUnit').value || 'units';
+      const cost = parseFloat(document.getElementById('newProdCost').value) || 0;
+      const sell = parseFloat(document.getElementById('newProdSell').value) || 0;
+
+      const newProd = {
+        id: Date.now(),
+        uuid: (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : 'a9d7e324-118c-4f81-8d2b-' + Math.random().toString(16).substring(2, 14),
+        name,
+        sku,
+        category: cat,
+        stock,
+        minStock,
+        costPrice: cost,
+        sellingPrice: sell,
+        unit,
+        velocity: Math.floor(Math.random() * 20) + 2
+      };
+
+      AppState.products.unshift(newProd);
+
+      // Section 4 Outbox Record Specification
+      const mutationId = (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : 'c1f7b770-9f22-4809-9f7a-' + Math.random().toString(16).substring(2, 10);
+      AppState.syncQueue.unshift({
+        client_mutation_id: mutationId,
+        endpoint: "rpc/process_stock_mutation",
+        payload: {
+          p_product_id: newProd.uuid,
+          p_user_id: AppState.currentUser ? (AppState.currentUser.id || "33b2a249-fceb-4179-8804-09ad695b21aa") : "33b2a249-fceb-4179-8804-09ad695b21aa",
+          p_type: "CHECK_IN",
+          p_quantity: stock,
+          p_unit_price_tzs: sell,
+          p_notes: "Initial SKU Stock Ingestion",
+          p_device_created_at: new Date().toISOString()
+        },
+        status: "PENDING",
+        attempts: 0,
+        created_at: Math.floor(Date.now() / 1000),
+        productName: newProd.name,
+        sku: newProd.sku,
+        unit: newProd.unit,
+        user: AppState.currentUser.email
+      });
+
+      saveStateToStorage();
+      closeAddItemModal();
+      showToast(`SKU ${sku} created and saved in local database.`, "success");
+      renderUI();
+    }
+
+    function exportCatalogCSV() {
+      const headers = ["ID", "SKU", "Product Name", "Category", "Current Stock", "Min Alert", "Unit", "Cost Price (TZS)", "Selling Price (TZS)", "Total Valuation (TZS)"];
+      const rows = AppState.products.map(p => [
+        p.id,
+        `"${p.sku}"`,
+        `"${p.name}"`,
+        `"${p.category}"`,
+        p.stock,
+        p.minStock,
+        `"${p.unit}"`,
+        p.costPrice,
+        p.sellingPrice,
+        p.stock * p.costPrice
+      ]);
+
+      const csvContent = "data:text/csv;charset=utf-8," + [headers.join(","), ...rows.map(e => e.join(","))].join("\n");
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement("a");
+      link.setAttribute("href", encodedUri);
+      link.setAttribute("download", `TzionStockly_Inventory_${new Date().toISOString().slice(0, 10)}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      showToast("Downloaded TzionStockly CSV snapshot.", "info");
+    }
+
+    // --- Toast Notifications ---
+    function showToast(msg, type = 'info') {
+      const container = document.getElementById('toastContainer');
+      const toast = document.createElement('div');
+      
+      let border = "border-purple-200 dark:border-purple-800 text-slate-800 dark:text-purple-200 bg-white dark:bg-[#1b0c3a]";
+      let icon = "⚡";
+      if (type === 'success') {
+        border = "border-emerald-500/40 text-emerald-800 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/90";
+        icon = "✓";
+      } else if (type === 'warning') {
+        border = "border-amber-500/40 text-amber-800 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/90";
+        icon = "⚠";
+      } else if (type === 'error') {
+        border = "border-rose-500/40 text-rose-800 dark:text-rose-300 bg-rose-50 dark:bg-rose-950/90";
+        icon = "✕";
+      }
+
+      toast.className = `p-3.5 rounded-2xl border backdrop-blur-md shadow-2xl text-xs flex items-center space-x-2.5 transition-all transform duration-200 translate-y-2 opacity-0 font-medium ${border}`;
+      toast.innerHTML = `<span class="font-bold">${icon}</span><span>${msg}</span>`;
+
+      container.appendChild(toast);
+      
+      requestAnimationFrame(() => {
+        toast.classList.remove('translate-y-2', 'opacity-0');
+      });
+
+      setTimeout(() => {
+        toast.classList.add('opacity-0', 'translate-y-2');
+        setTimeout(() => toast.remove(), 200);
+      }, 3500);
+    }
+
+    // =========================================================================
+    // UI RENDERING ENGINE (SEPARATE ADMIN VS USER INTERFACES)
+    // =========================================================================
+
+    function calculateMetrics() {
+      const totalSkus = AppState.products.length;
+      const totalUnits = AppState.products.reduce((acc, p) => acc + p.stock, 0);
+      const lowStockCount = AppState.products.filter(p => p.stock <= p.minStock).length;
+      const totalValuationTZS = AppState.products.reduce((acc, p) => acc + (p.stock * p.costPrice), 0);
+      const totalRetailValuationTZS = AppState.products.reduce((acc, p) => acc + (p.stock * p.sellingPrice), 0);
+      const projectedProfitTZS = totalRetailValuationTZS - totalValuationTZS;
+
+      return { totalSkus, totalUnits, lowStockCount, totalValuationTZS, totalRetailValuationTZS, projectedProfitTZS };
+    }
+
+    function renderUI() {
+      if (!AppState.isAuthenticated) return;
+
+      document.getElementById('queueBadge').innerText = AppState.syncQueue.length;
+
+      renderDesktopView();
+      renderMobileView();
+
+      setTimeout(renderCharts, 40);
+    }
+
+    // --- Render Desktop View (Admin Interface vs Staff User Checkout Interface) ---
+    function renderDesktopView() {
+      const dWrap = document.getElementById('desktopWrapper');
+      const metrics = calculateMetrics();
+      const filtered = getFilteredProducts();
+      const isAdmin = AppState.currentUser.role === 'admin';
+
+      if (isAdmin) {
+        // =====================================================================
+        // ADMIN DESKTOP DASHBOARD INTERFACE
+        // =====================================================================
+        dWrap.innerHTML = `
+          <div class="space-y-6">
+            
+            <!-- ADMIN WELCOME & OFFLINE BANNER -->
+            <div class="flex flex-wrap items-center justify-between gap-3 p-4 bg-gradient-to-r from-tzion-purple-900/90 to-tzion-purple-950 text-white rounded-3xl border border-tzion-purple-700/50 shadow-xl">
+              <div>
+                <span class="text-xs font-mono font-bold px-2 py-0.5 rounded bg-tzion-orange-500 text-white uppercase">Administrator Dashboard</span>
+                <h2 class="text-xl font-black mt-1">TzionStockly Master Inventory</h2>
+                <p class="text-xs text-purple-200">Full stock authority, TZS financial valuation, and Supabase cloud outbox control.</p>
+              </div>
+              <div class="flex items-center gap-2">
+                <button onclick="openImportModal()" class="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow flex items-center gap-1.5 transition-all">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                  <span>Bulk Excel Import</span>
+                </button>
+                <button onclick="openAddItemModal()" class="px-3.5 py-2 rounded-xl bg-tzion-orange-500 hover:bg-tzion-orange-600 text-white text-xs font-bold shadow flex items-center gap-1.5 transition-all">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                  <span>Add SKU</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- FINANCIAL METRICS ROW IN TZS -->
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+              <div class="bg-white dark:bg-[#1b0c3a] p-4 rounded-3xl border border-purple-200 dark:border-purple-900/60 shadow-sm">
+                <div class="flex justify-between items-start text-slate-500 dark:text-purple-300 mb-1">
+                  <span class="text-xs font-semibold">Total Inventory Value</span>
+                  <span class="text-xs p-1.5 rounded-xl bg-purple-100 dark:bg-tzion-purple-900 text-tzion-purple-600 dark:text-purple-300">💰</span>
+                </div>
+                <div class="text-xl font-bold font-mono text-tzion-purple-700 dark:text-purple-200">${formatTZS(metrics.totalValuationTZS)}</div>
+                <span class="text-[10px] text-slate-500 dark:text-purple-300/70 font-mono">Cost Basis in TZS</span>
+              </div>
+
+              <div class="bg-white dark:bg-[#1b0c3a] p-4 rounded-3xl border border-purple-200 dark:border-purple-900/60 shadow-sm">
+                <div class="flex justify-between items-start text-slate-500 dark:text-purple-300 mb-1">
+                  <span class="text-xs font-semibold">Projected Retail Value</span>
+                  <span class="text-xs p-1.5 rounded-xl bg-tzion-orange-500/10 text-tzion-orange-500">📈</span>
+                </div>
+                <div class="text-xl font-bold font-mono text-tzion-orange-600 dark:text-tzion-orange-400">${formatTZS(metrics.totalRetailValuationTZS)}</div>
+                <span class="text-[10px] text-emerald-600 dark:text-emerald-400 font-mono">Profit: +${formatTZS(metrics.projectedProfitTZS)}</span>
+              </div>
+
+              <div class="bg-white dark:bg-[#1b0c3a] p-4 rounded-3xl border border-purple-200 dark:border-purple-900/60 shadow-sm">
+                <div class="flex justify-between items-start text-slate-500 dark:text-purple-300 mb-1">
+                  <span class="text-xs font-semibold">Total Stock Units</span>
+                  <span class="text-xs p-1.5 rounded-xl bg-purple-100 dark:bg-tzion-purple-900 text-tzion-purple-600 dark:text-purple-300">📦</span>
+                </div>
+                <div class="text-xl font-bold font-mono text-slate-900 dark:text-white">${metrics.totalUnits.toLocaleString()}</div>
+                <span class="text-[10px] text-slate-500 dark:text-purple-300/70 font-mono">Across ${metrics.totalSkus} active SKUs</span>
+              </div>
+
+              <div class="bg-white dark:bg-[#1b0c3a] p-4 rounded-3xl border ${metrics.lowStockCount > 0 ? 'border-amber-500/40 bg-amber-500/5' : 'border-purple-200 dark:border-purple-900/60'} shadow-sm">
+                <div class="flex justify-between items-start text-slate-500 dark:text-purple-300 mb-1">
+                  <span class="text-xs font-semibold">Low Stock Depletion</span>
+                  <span class="text-xs p-1.5 rounded-xl bg-amber-500/10 text-amber-500">⚠️</span>
+                </div>
+                <div class="text-xl font-bold font-mono ${metrics.lowStockCount > 0 ? 'text-amber-500' : 'text-slate-900 dark:text-white'}">${metrics.lowStockCount} SKUs</div>
+                <span class="text-[10px] text-amber-600 dark:text-amber-400 font-mono">Require supplier reorder</span>
+              </div>
+            </div>
+
+            <!-- ANALYTICS ROW -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+              <div class="lg:col-span-2 bg-white dark:bg-[#1b0c3a] p-5 rounded-3xl border border-purple-200 dark:border-purple-900/60 shadow-sm">
+                <div class="flex items-center justify-between mb-4">
+                  <div>
+                    <h3 class="text-sm font-bold text-slate-900 dark:text-white">7-Day Stock In vs Check Out Flow (TZS Context)</h3>
+                    <p class="text-xs text-slate-500 dark:text-purple-300/70">Client-side offline chart rendering</p>
+                  </div>
+                  <span class="text-[10px] font-mono px-2 py-0.5 rounded-full bg-purple-100 dark:bg-tzion-purple-900 text-tzion-purple-700 dark:text-purple-300">Offline Analytics</span>
+                </div>
+                <div class="h-60 w-full">
+                  <canvas id="desktopMovementCanvas"></canvas>
+                </div>
+              </div>
+
+              <div class="bg-white dark:bg-[#1b0c3a] p-5 rounded-3xl border border-purple-200 dark:border-purple-900/60 shadow-sm flex flex-col justify-between">
+                <div>
+                  <h3 class="text-sm font-bold text-slate-900 dark:text-white mb-1">Fast-Moving Items</h3>
+                  <p class="text-xs text-slate-500 dark:text-purple-300/70 mb-4">Highest turnover units/day</p>
+                  <div class="space-y-3">
+                    ${AppState.products.slice(0, 4).sort((a,b) => b.velocity - a.velocity).map(p => `
+                      <div>
+                        <div class="flex justify-between text-xs mb-1">
+                          <span class="font-medium text-slate-800 dark:text-purple-200 truncate pr-2">${p.name}</span>
+                          <span class="font-mono text-tzion-orange-500 font-bold">${p.velocity} / day</span>
+                        </div>
+                        <div class="w-full bg-purple-100 dark:bg-tzion-purple-900 h-1.5 rounded-full overflow-hidden">
+                          <div class="bg-gradient-to-r from-tzion-purple-600 to-tzion-orange-500 h-full rounded-full" style="width: ${Math.min(100, p.velocity * 2.5)}%"></div>
+                        </div>
+                      </div>
+                    `).join('')}
+                  </div>
+                </div>
+
+                <div class="mt-4 p-3 rounded-2xl bg-purple-50 dark:bg-tzion-purple-950 border border-purple-200 dark:border-purple-800 flex items-center justify-between">
+                  <span class="text-xs font-semibold text-slate-700 dark:text-purple-200">Catalog CSV Export:</span>
+                  <button onclick="exportCatalogCSV()" class="px-3 py-1.5 rounded-xl bg-white dark:bg-tzion-purple-900 hover:bg-purple-100 text-xs font-bold text-tzion-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-700 transition-all">
+                    Export
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- INVENTORY MANAGEMENT TABLE (ADMIN HAS BOTH + IN AND - OUT) -->
+            <div class="bg-white dark:bg-[#1b0c3a] rounded-3xl border border-purple-200 dark:border-purple-900/60 shadow-sm overflow-hidden">
+              <div class="p-4 border-b border-purple-100 dark:border-purple-900/60 flex flex-wrap items-center justify-between gap-3 bg-purple-50/40 dark:bg-tzion-purple-950/40">
+                <div class="flex flex-wrap items-center gap-2 flex-1 min-w-[280px]">
+                  <div class="relative flex-1 min-w-[200px]">
+                    <input 
+                      type="text" 
+                      placeholder="Search SKU, item name, or category..." 
+                      value="${AppState.searchQuery}"
+                      oninput="handleSearch(this.value)"
+                      class="w-full bg-white dark:bg-tzion-purple-950 border border-purple-200 dark:border-purple-800 rounded-xl pl-9 pr-3 py-2 text-xs text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:border-tzion-orange-500"
+                    >
+                    <svg class="w-4 h-4 text-purple-400 absolute left-3 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                  </div>
+                  <div class="flex items-center space-x-1">
+                    ${['All', 'Beverages', 'Raw Materials', 'Household', 'Packaged Foods'].map(cat => `
+                      <button 
+                        onclick="setCategory('${cat}')" 
+                        class="px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all ${AppState.selectedCategory === cat ? 'bg-tzion-purple-600 text-white font-semibold' : 'bg-white dark:bg-tzion-purple-950 text-slate-600 dark:text-purple-300 border border-purple-200 dark:border-purple-800'}"
+                      >
+                        ${cat}
+                      </button>
+                    `).join('')}
+                  </div>
+                </div>
+              </div>
+
+              <!-- Table -->
+              <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse text-xs">
+                  <thead>
+                    <tr class="border-b border-purple-100 dark:border-purple-900/60 text-slate-500 dark:text-purple-300 bg-purple-50/50 dark:bg-tzion-purple-950 uppercase font-mono text-[10px]">
+                      <th class="py-3 px-4">Item SKU / Name</th>
+                      <th class="py-3 px-4">Category</th>
+                      <th class="py-3 px-4">Stock on Hand</th>
+                      <th class="py-3 px-4">Cost Price (TZS)</th>
+                      <th class="py-3 px-4">Retail Price (TZS)</th>
+                      <th class="py-3 px-4">Asset Value (TZS)</th>
+                      <th class="py-3 px-4 text-right">Admin Stock Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-purple-100 dark:divide-purple-900/60">
+                    ${filtered.length === 0 ? `
+                      <tr><td colspan="7" class="text-center py-8 text-slate-400">No items match your filter.</td></tr>
+                    ` : filtered.map(p => {
+                      const isLow = p.stock <= p.minStock;
+                      return `
+                        <tr class="hover:bg-purple-50/60 dark:hover:bg-tzion-purple-900/30 transition-colors">
+                          <td class="py-3 px-4">
+                            <div class="font-bold text-slate-900 dark:text-white text-xs">${p.name}</div>
+                            <div class="font-mono text-[10px] text-tzion-orange-500">SKU: ${p.sku}</div>
+                          </td>
+                          <td class="py-3 px-4">
+                            <span class="px-2 py-0.5 rounded-full text-[10px] bg-purple-100 dark:bg-tzion-purple-900 text-tzion-purple-700 dark:text-purple-300">
+                              ${p.category}
+                            </span>
+                          </td>
+                          <td class="py-3 px-4">
+                            <span class="font-mono font-bold text-sm ${isLow ? 'text-amber-500' : 'text-slate-900 dark:text-white'}">${p.stock}</span>
+                            <span class="text-[10px] text-slate-400 ml-1">${p.unit}</span>
+                            ${isLow ? `<span class="ml-1 text-[9px] font-bold text-amber-500 font-mono">(MIN ${p.minStock})</span>` : ''}
+                          </td>
+                          <td class="py-3 px-4 font-mono text-slate-600 dark:text-purple-300">${formatTZS(p.costPrice)}</td>
+                          <td class="py-3 px-4 font-mono font-bold text-tzion-orange-500">${formatTZS(p.sellingPrice)}</td>
+                          <td class="py-3 px-4 font-mono font-bold text-slate-900 dark:text-white">${formatTZS(p.stock * p.costPrice)}</td>
+                          <td class="py-3 px-4 text-right">
+                            <div class="inline-flex items-center space-x-1.5">
+                              <!-- Admin can Check In AND Check Out -->
+                              <button onclick="openStockModal(${p.id}, 'in')" class="px-2.5 py-1.5 rounded-xl bg-tzion-purple-600/15 hover:bg-tzion-purple-600/30 text-tzion-purple-700 dark:text-purple-300 border border-tzion-purple-600/30 font-semibold text-xs transition-all">
+                                + Check In
+                              </button>
+                              <button onclick="openStockModal(${p.id}, 'out')" class="px-2.5 py-1.5 rounded-xl bg-tzion-orange-500/15 hover:bg-tzion-orange-500/30 text-tzion-orange-600 dark:text-tzion-orange-400 border border-tzion-orange-500/30 font-semibold text-xs transition-all">
+                                - Check Out
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      `;
+                    }).join('')}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+          </div>
+        `;
+      } else {
+        // =====================================================================
+        // STAFF USER DESKTOP CHECKOUT TERMINAL INTERFACE
+        // (Checkout ONLY - No check-in, no cost prices, no SKU deletion)
+        // =====================================================================
+        dWrap.innerHTML = `
+          <div class="space-y-6">
+            
+            <!-- STAFF BANNER (CHECKOUT TERMINAL) -->
+            <div class="p-5 bg-gradient-to-r from-tzion-orange-600 to-amber-600 text-white rounded-3xl shadow-xl flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <span class="text-xs font-mono font-bold px-2 py-0.5 rounded bg-white text-tzion-orange-600 uppercase">Staff Checkout Terminal</span>
+                <h2 class="text-xl font-black mt-1">High-Speed POS Checkout & Dispatch</h2>
+                <p class="text-xs text-orange-100">Select any item to record sales or stock deductions. All prices shown in Tanzanian Shillings (TZS).</p>
+              </div>
+              <div class="bg-white/20 backdrop-blur-md px-3.5 py-2 rounded-2xl text-xs font-mono">
+                Operator: <span class="font-bold">${AppState.currentUser.name}</span>
+              </div>
+            </div>
+
+            <!-- SEARCH & CATEGORY SELECTOR -->
+            <div class="bg-white dark:bg-[#1b0c3a] p-4 rounded-3xl border border-purple-200 dark:border-purple-900/60 shadow-sm flex flex-wrap items-center justify-between gap-3">
+              <div class="relative flex-1 min-w-[260px]">
+                <input 
+                  type="text" 
+                  placeholder="Search item to check out..." 
+                  value="${AppState.searchQuery}"
+                  oninput="handleSearch(this.value)"
+                  class="w-full bg-purple-50/50 dark:bg-tzion-purple-950 border border-purple-200 dark:border-purple-800 rounded-2xl pl-10 pr-3 py-2.5 text-xs text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:border-tzion-orange-500"
+                >
+                <svg class="w-4 h-4 text-tzion-orange-500 absolute left-3.5 top-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+              </div>
+              <div class="flex items-center space-x-1.5">
+                ${['All', 'Beverages', 'Raw Materials', 'Household', 'Packaged Foods'].map(cat => `
+                  <button 
+                    onclick="setCategory('${cat}')" 
+                    class="px-3 py-1.5 rounded-xl text-xs font-medium transition-all ${AppState.selectedCategory === cat ? 'bg-tzion-orange-500 text-white font-semibold' : 'bg-purple-100 dark:bg-tzion-purple-950 text-slate-600 dark:text-purple-300 border border-purple-200 dark:border-purple-800'}"
+                  >
+                    ${cat}
+                  </button>
+                `).join('')}
+              </div>
+            </div>
+
+            <!-- STAFF ITEM GRID (LARGE CLICKABLE CHECKOUT CARDS) -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              ${filtered.length === 0 ? `
+                <div class="col-span-3 text-center py-12 text-slate-400">No items match your checkout search.</div>
+              ` : filtered.map(p => {
+                const isOutOfStock = p.stock <= 0;
+                return `
+                  <div class="bg-white dark:bg-[#1b0c3a] p-5 rounded-3xl border border-purple-200 dark:border-purple-900/60 shadow-sm flex flex-col justify-between hover:border-tzion-orange-500/50 transition-all">
+                    <div>
+                      <div class="flex justify-between items-start mb-2">
+                        <span class="text-[10px] font-mono px-2 py-0.5 rounded-full bg-purple-100 dark:bg-tzion-purple-900 text-tzion-purple-700 dark:text-purple-300 font-semibold">${p.sku}</span>
+                        <span class="text-xs font-mono font-bold ${p.stock <= p.minStock ? 'text-amber-500' : 'text-slate-600 dark:text-purple-300'}">${p.stock} ${p.unit} in stock</span>
+                      </div>
+                      <h3 class="font-bold text-sm text-slate-900 dark:text-white leading-snug">${p.name}</h3>
+                      <p class="text-xs text-slate-400 mt-0.5">${p.category}</p>
+                    </div>
+
+                    <div class="mt-4 pt-3 border-t border-purple-100 dark:border-purple-900/60 flex items-center justify-between">
+                      <div>
+                        <span class="text-[10px] text-slate-400 block">Retail Price:</span>
+                        <span class="text-base font-bold font-mono text-tzion-orange-500">${formatTZS(p.sellingPrice)}</span>
+                      </div>
+                      
+                      <!-- STAFF CAN ONLY CHECK OUT -->
+                      <button 
+                        onclick="openStockModal(${p.id}, 'out')" 
+                        ${isOutOfStock ? 'disabled' : ''} 
+                        class="px-4 py-2.5 rounded-2xl bg-gradient-to-r from-tzion-orange-500 to-amber-600 hover:from-tzion-orange-600 hover:to-amber-700 text-white font-bold text-xs shadow-md shadow-tzion-orange-500/20 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed transition-all flex items-center gap-1.5"
+                      >
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
+                        <span>Check Out</span>
+                      </button>
+                    </div>
+                  </div>
+                `;
+              }).join('')}
+            </div>
+
+          </div>
+        `;
+      }
+    }
+
+    // --- Render Mobile View (Mockup Shell) ---
+    function renderMobileView() {
+      const container = document.getElementById('mobileScrollContainer');
+      const navBar = document.getElementById('mobileNavBar');
+      const filtered = getFilteredProducts();
+      const isAdmin = AppState.currentUser.role === 'admin';
+
+      // Update mobile clock
+      const clk = document.getElementById('mobileClock');
+      if (clk) clk.innerText = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+      // Update Role Label in Mockup Header
+      const mRole = document.getElementById('mobileRoleLabel');
+      if (mRole) {
+        mRole.innerText = isAdmin ? "ADMINISTRATOR" : "STAFF CHECKOUT";
+        mRole.className = isAdmin ? "text-[9px] text-tzion-purple-400 font-mono font-bold" : "text-[9px] text-tzion-orange-500 font-mono font-bold";
+      }
+
+      // Populate Mobile Bottom Navigation
+      if (isAdmin) {
+        navBar.innerHTML = `
+          <button onclick="setMobileSubTab('catalog')" class="flex flex-col items-center justify-center ${AppState.mobileTab === 'catalog' ? 'text-tzion-purple-600 dark:text-purple-300' : 'text-slate-400'} flex-1 py-1">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7"/></svg>
+            <span class="text-[10px] font-bold mt-0.5">Catalog</span>
+          </button>
+          <button onclick="openImportModal()" class="flex flex-col items-center justify-center text-slate-400 flex-1 py-1">
+            <svg class="w-5 h-5 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+            <span class="text-[10px] font-bold mt-0.5">Excel</span>
+          </button>
+          <button onclick="openSyncModal()" class="flex flex-col items-center justify-center text-slate-400 flex-1 py-1 relative">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+            <span class="text-[10px] font-bold mt-0.5">Outbox</span>
+            <span class="absolute top-1 right-3 w-4 h-4 bg-tzion-orange-500 text-white rounded-full text-[9px] font-bold flex items-center justify-center">${AppState.syncQueue.length}</span>
+          </button>
+        `;
+      } else {
+        navBar.innerHTML = `
+          <button onclick="setMobileSubTab('catalog')" class="flex flex-col items-center justify-center text-tzion-orange-500 flex-1 py-1">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
+            <span class="text-[10px] font-bold mt-0.5">Quick Checkout</span>
+          </button>
+          <button onclick="openSyncModal()" class="flex flex-col items-center justify-center text-slate-400 flex-1 py-1 relative">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+            <span class="text-[10px] font-bold mt-0.5">Outbox</span>
+            <span class="absolute top-1 right-6 w-4 h-4 bg-tzion-orange-500 text-white rounded-full text-[9px] font-bold flex items-center justify-center">${AppState.syncQueue.length}</span>
+          </button>
+        `;
+      }
+
+      // Render Mobile Items List
+      container.innerHTML = `
+        <div class="space-y-2">
+          <input 
+            type="text" 
+            placeholder="Search items in TZS..." 
+            value="${AppState.searchQuery}"
+            oninput="handleSearch(this.value)"
+            class="w-full bg-white dark:bg-[#1b0c3a] border border-purple-200 dark:border-purple-800 rounded-2xl px-3 py-2 text-xs text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:border-tzion-orange-500 shadow-sm"
+          >
+        </div>
+
+        <div class="space-y-2.5">
+          ${filtered.length === 0 ? `
+            <div class="text-center py-10 text-slate-400 text-xs">No matching inventory found.</div>
+          ` : filtered.map(p => {
+            const isLow = p.stock <= p.minStock;
+            return `
+              <div class="p-3 bg-white dark:bg-[#1b0c3a] border ${isLow ? 'border-amber-500/40' : 'border-purple-200 dark:border-purple-900/60'} rounded-2xl space-y-2 shadow-sm">
+                <div class="flex justify-between items-start">
+                  <div>
+                    <h4 class="font-bold text-xs text-slate-900 dark:text-white leading-tight">${p.name}</h4>
+                    <span class="text-[9px] text-tzion-orange-500 font-mono">#${p.sku}</span>
+                  </div>
+                  <span class="text-xs font-mono font-bold text-tzion-orange-500">${formatTZS(p.sellingPrice)}</span>
+                </div>
+
+                <div class="flex justify-between items-center text-xs pt-1 border-t border-purple-100 dark:border-purple-900/60">
+                  <div class="text-[11px]">
+                    <span class="text-slate-400">Stock: </span>
+                    <span class="font-mono font-bold ${isLow ? 'text-amber-500' : 'text-slate-900 dark:text-white'}">${p.stock}</span>
+                    <span class="text-[10px] text-slate-400">${p.unit}</span>
+                  </div>
+
+                  <div class="flex items-center space-x-1.5">
+                    ${isAdmin ? `
+                      <button onclick="openStockModal(${p.id}, 'in')" class="px-2.5 py-1 rounded-xl bg-tzion-purple-600/15 text-tzion-purple-700 dark:text-purple-300 font-bold text-xs border border-tzion-purple-600/30">
+                        + In
+                      </button>
+                    ` : ''}
+                    <button onclick="openStockModal(${p.id}, 'out')" class="px-3 py-1 rounded-xl bg-tzion-orange-500 text-white font-bold text-xs shadow-sm">
+                      - Check Out
+                    </button>
+                  </div>
+                </div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      `;
+    }
+
+    function setMobileSubTab(tab) {
+      AppState.mobileTab = tab;
+      renderMobileView();
+    }
+
+    // --- Chart.js Rendering in TZS Context ---
+    function renderCharts() {
+      if (!AppState.isAuthenticated || AppState.currentUser.role !== 'admin') return;
+
+      const labels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Today'];
+      const stockInData = [120000, 45000, 320000, 85000, 420000, 110000, 215000];
+      const stockOutData = [95000, 110000, 240000, 180000, 310000, 195000, 175000];
+
+      const isDarkMode = AppState.isDark;
+      const gridColor = isDarkMode ? '#2e1065' : '#ede9fe';
+      const textColor = isDarkMode ? '#c4b5fd' : '#6b21a8';
+
+      const desktopCtx = document.getElementById('desktopMovementCanvas');
+      if (desktopCtx) {
+        if (desktopMovementChart) desktopMovementChart.destroy();
+        desktopMovementChart = new Chart(desktopCtx, {
+          type: 'bar',
+          data: {
+            labels: labels,
+            datasets: [
+              {
+                label: 'Stock In (TZS)',
+                data: stockInData,
+                backgroundColor: 'rgba(124, 58, 237, 0.85)',
+                borderRadius: 8,
+              },
+              {
+                label: 'Check Out (TZS)',
+                data: stockOutData,
+                backgroundColor: 'rgba(249, 115, 22, 0.85)',
+                borderRadius: 8,
+              }
+            ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                labels: { color: textColor, font: { family: 'Inter', size: 11, weight: 'bold' } }
+              },
+              tooltip: {
+                callbacks: {
+                  label: (ctx) => ` ${ctx.dataset.label}: ${formatTZS(ctx.raw)}`
+                }
+              }
+            },
+            scales: {
+              x: {
+                grid: { color: gridColor },
+                ticks: { color: textColor, font: { family: 'JetBrains Mono', size: 10 } }
+              },
+              y: {
+                grid: { color: gridColor },
+                ticks: {
+                  color: textColor,
+                  font: { family: 'JetBrains Mono', size: 10 },
+                  callback: (val) => `${(val / 1000).toFixed(0)}k`
+                }
+              }
+            }
+          }
+        });
+      }
+    }
+
+    // --- Window Onload Initializer ---
+    window.onload = function() {
+      loadStateFromStorage();
+      applyTheme();
+      if (!AppState.isAuthenticated) {
+        setAuthRoleTab('admin');
+      }
+      setInterval(() => {
+        const clk = document.getElementById('mobileClock');
+        if (clk) clk.innerText = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      }, 30000);
+
+      // Register PWA Service Worker for offline execution
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('./sw.js').catch(err => {
+          console.log('SW registration note:', err);
+        });
+      }
+    };
+  </script>
+</body>
+</html>
