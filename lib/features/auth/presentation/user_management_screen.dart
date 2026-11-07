@@ -159,7 +159,7 @@ class _UserManagementScreenState extends ConsumerState<UserManagementScreen> {
                               'TZ-MAIN',
                               style: TextStyle(
                                 fontSize: 22,
-                                fontWeight: FontWeight.black,
+                                fontWeight: FontWeight.w900,
                                 letterSpacing: 2,
                                 fontFamily: 'monospace',
                                 color: AppTheme.primaryNavy,

@@ -6,10 +6,11 @@ class NotificationService {
 
   static Future<void> init() async {
     const androidInit = AndroidInitializationSettings('@mipmap/ic_launcher');
-    const iosInit = IOSInitializationSettings();
+    const darwinInit = DarwinInitializationSettings();
     const initSettings = InitializationSettings(
       android: androidInit,
-      iOS: iosInit,
+      iOS: darwinInit,
+      macOS: darwinInit,
     );
 
     await _notificationsPlugin.initialize(initSettings);
@@ -23,7 +24,7 @@ class NotificationService {
     const androidDetails = AndroidNotificationDetails(
       'low_stock_channel',
       'Low Stock Alerts',
-      'Notifications for products that reached reorder level',
+      channelDescription: 'Notifications for products that reached reorder level',
       importance: Importance.high,
       priority: Priority.high,
     );
@@ -46,7 +47,7 @@ class NotificationService {
     const androidDetails = AndroidNotificationDetails(
       'daily_summary_channel',
       'Daily Restock Summary',
-      'Daily overview of items needing restock',
+      channelDescription: 'Daily overview of items needing restock',
       importance: Importance.defaultImportance,
       priority: Priority.defaultPriority,
     );
