@@ -190,6 +190,19 @@
           <span class="hidden sm:inline">Fleet</span>
         </a>
 
+        <!-- Sales History Global Button -->
+        <button onclick="openSalesHistoryModal()" class="px-2.5 py-1.5 rounded-xl border border-tzion-orange-500/30 bg-tzion-orange-500/10 hover:bg-tzion-orange-500/20 text-tzion-orange-600 dark:text-tzion-orange-400 text-xs font-bold flex items-center gap-1.5 transition-all shadow-sm" title="Tazama Historia ya Mauzo (Day, Month, Year)">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+          <span class="hidden sm:inline">Sales History</span>
+        </button>
+
+        <!-- Cart Quick Drawer Button (Staff / Cashier) -->
+        <button onclick="openPosCartModal()" id="headerCartBtn" class="relative px-3 py-1.5 rounded-xl bg-gradient-to-r from-tzion-orange-500 to-amber-600 text-white text-xs font-bold flex items-center gap-1.5 shadow-md shadow-tzion-orange-500/20 active:scale-95 transition-all" title="Fungua Kikapu cha Mauzo">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+          <span>Kikapu</span>
+          <span id="headerCartBadge" class="bg-white text-tzion-orange-600 text-[10px] font-mono font-black px-1.5 py-0.2 rounded-full">0</span>
+        </button>
+
         <!-- Outbox Queue Drawer Button -->
         <button onclick="openSyncModal()" class="relative px-3 py-1.5 rounded-xl border border-purple-200 dark:border-purple-900/60 bg-white dark:bg-tzion-purple-950 hover:bg-purple-100 dark:hover:bg-purple-900/50 text-xs font-medium flex items-center gap-1.5 transition-all text-slate-700 dark:text-purple-200 shadow-sm">
           <svg class="w-3.5 h-3.5 text-tzion-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
@@ -682,6 +695,701 @@
     </div>
   </div>
 
+  
+  <!-- ========================================================================= -->
+  <!-- SUBSCRIPTION LEASE / LOCKOUT MODAL                                        -->
+  <!-- ========================================================================= -->
+  <div id="subscriptionLockModal" class="fixed inset-0 z-50 bg-black/85 backdrop-blur-md hidden items-center justify-center p-4">
+    <div class="bg-white dark:bg-[#1b0c3a] border-2 border-rose-500/50 rounded-3xl w-full max-w-md overflow-hidden shadow-2xl transition-colors">
+      <div class="p-5 border-b border-rose-500/30 bg-rose-500/10 flex items-center justify-between">
+        <div class="flex items-center space-x-2.5">
+          <span class="text-2xl">🔒</span>
+          <div>
+            <h3 class="font-extrabold text-slate-900 dark:text-white text-base">Account Locked / Imefungwa</h3>
+            <p id="lockModalStoreName" class="text-xs text-rose-600 dark:text-rose-400 font-mono font-bold">Store Name</p>
+          </div>
+        </div>
+      </div>
+      <div class="p-6 space-y-4 text-xs">
+        <div class="p-3.5 rounded-2xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/60 text-rose-700 dark:text-rose-300">
+          <p id="lockModalReasonText" class="font-semibold text-xs leading-relaxed">Monthly subscription payment overdue. Transactions are temporarily locked until subscription is renewed.</p>
+        </div>
+        <div class="p-4 rounded-2xl bg-purple-50 dark:bg-tzion-purple-950 border border-purple-200 dark:border-purple-800 flex justify-between items-center">
+          <div>
+            <span class="text-slate-500 dark:text-purple-300 block text-[11px]">Ada ya Mwezi (Monthly Fee)</span>
+            <span id="lockModalFeeDisplay" class="text-lg font-black font-mono text-tzion-orange-500">TZS 50,000</span>
+          </div>
+          <span class="px-2 py-1 rounded-lg bg-amber-500/20 text-amber-600 dark:text-amber-400 font-bold font-mono text-[10px]">LIPA SASA</span>
+        </div>
+        <p class="text-slate-600 dark:text-purple-300/80 leading-relaxed">
+          Ili kufungua duka lako, fanya malipo ya ada ya leseni ya kila mwezi, kisha wasiliana na Super Administrator kwa WhatsApp kwa ajili ya kufunguliwa mara moja.
+        </p>
+      </div>
+      <div class="p-4 bg-purple-50/50 dark:bg-tzion-purple-950/40 border-t border-purple-100 dark:border-purple-900/60 flex flex-col sm:flex-row gap-2">
+        <button onclick="closeSubscriptionLockModal()" class="px-4 py-2.5 rounded-xl text-slate-600 dark:text-purple-300 hover:text-slate-900 dark:hover:text-white bg-purple-100 dark:bg-tzion-purple-900/50 border border-purple-200 dark:border-purple-800 text-xs font-semibold">Funga (Dismiss)</button>
+        <a id="lockModalWhatsAppBtn" href="#" target="_blank" class="flex-1 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow flex items-center justify-center gap-2 transition-all">
+          <span>📲 Wasiliana na Super Admin (WhatsApp)</span>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- END-OF-DAY CLOSEOUT ("FUNGA HESABU" / Z-REPORT) MODAL                    -->
+  <!-- ========================================================================= -->
+  <div id="shiftCloseoutModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden items-center justify-center p-3 sm:p-5">
+    <div class="bg-white dark:bg-[#1b0c3a] border border-purple-200 dark:border-purple-900/60 rounded-3xl w-full max-w-2xl overflow-hidden shadow-2xl flex flex-col max-h-[92vh] transition-colors">
+      <div class="p-4 sm:p-5 border-b border-purple-100 dark:border-purple-900/60 flex items-center justify-between bg-purple-50/50 dark:bg-tzion-purple-950/40">
+        <div class="flex items-center space-x-2.5">
+          <div class="w-10 h-10 rounded-2xl bg-amber-500/20 text-amber-500 flex items-center justify-center text-xl font-bold shadow-inner">
+            🧾
+          </div>
+          <div>
+            <h3 class="font-extrabold text-slate-900 dark:text-white text-base">Funga Hesabu ya Siku (Z-Report Closeout)</h3>
+            <p id="closeoutHeaderSub" class="text-xs text-slate-500 dark:text-purple-300/70 font-mono">Duka: Tzion Main Store • Tarehe: Leo</p>
+          </div>
+        </div>
+        <button onclick="closeCloseoutModal()" class="text-slate-400 hover:text-slate-700 dark:hover:text-white p-1 rounded-lg">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+
+      <div class="p-5 sm:p-6 overflow-y-auto space-y-5 text-xs">
+        <!-- Sales breakdown cards -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div class="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-700 dark:text-emerald-300">
+            <span class="text-[10px] uppercase font-bold tracking-wider block text-emerald-600 dark:text-emerald-400">💵 Pesa Taslimu (Cash)</span>
+            <div id="closeoutCashSalesDisplay" class="text-lg font-black font-mono mt-1 text-slate-900 dark:text-white">TZS 0</div>
+            <span id="closeoutCashCountBadge" class="text-[10px] text-slate-500 dark:text-purple-300/70 font-mono">0 mauzo</span>
+          </div>
+
+          <div class="p-4 rounded-2xl bg-tzion-orange-500/10 border border-tzion-orange-500/20 text-tzion-orange-700 dark:text-tzion-orange-300">
+            <span class="text-[10px] uppercase font-bold tracking-wider block text-tzion-orange-600 dark:text-tzion-orange-400">📱 Mauzo ya Simu (M-Pesa)</span>
+            <div id="closeoutMobileSalesDisplay" class="text-lg font-black font-mono mt-1 text-slate-900 dark:text-white">TZS 0</div>
+            <span id="closeoutMobileCountBadge" class="text-[10px] text-slate-500 dark:text-purple-300/70 font-mono">0 miamala</span>
+          </div>
+
+          <div class="p-4 rounded-2xl bg-purple-500/10 border border-purple-500/20 text-purple-700 dark:text-purple-300">
+            <span class="text-[10px] uppercase font-bold tracking-wider block text-tzion-purple-600 dark:text-purple-400">📈 Jumla Kuu ya Mauzo</span>
+            <div id="closeoutTotalSalesDisplay" class="text-lg font-black font-mono mt-1 text-tzion-purple-700 dark:text-purple-200">TZS 0</div>
+            <span id="closeoutTotalTxCount" class="text-[10px] text-slate-500 dark:text-purple-300/70 font-mono">0 miamala leo</span>
+          </div>
+        </div>
+
+        <!-- Cash drawer reconciliation inputs -->
+        <div class="p-4 rounded-2xl bg-purple-50/70 dark:bg-tzion-purple-950/70 border border-purple-200 dark:border-purple-800 space-y-4">
+          <h4 class="font-bold text-slate-900 dark:text-white text-xs uppercase tracking-wider flex items-center gap-1.5">
+            <span>📥</span>
+            <span>Upatanisho wa Fedha Drooni (Cash Drawer Float & Count)</span>
+          </h4>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-[11px] font-semibold text-slate-700 dark:text-purple-200 mb-1">
+                Kianzio cha Pesa Asubuhi (Opening Float):
+              </label>
+              <input 
+                type="number" 
+                id="closeoutOpeningFloatInput" 
+                value="50000" 
+                oninput="calculateCloseoutDiscrepancy()" 
+                class="w-full bg-white dark:bg-[#120726] border border-purple-200 dark:border-purple-800 rounded-xl px-3 py-2 text-xs font-mono font-bold text-slate-900 dark:text-white focus:outline-none focus:border-amber-500"
+                placeholder="Mf. 50000"
+              >
+              <span class="text-[10px] text-slate-400 block mt-1">Pesa za chenji zilizowekwa drooni kabla ya duka kufunguliwa.</span>
+            </div>
+
+            <div>
+              <label class="block text-[11px] font-semibold text-slate-700 dark:text-purple-200 mb-1">
+                Pesa Zilizopo Drooni Jioni (Physical Cash Counted):
+              </label>
+              <input 
+                type="number" 
+                id="closeoutCountedCashInput" 
+                oninput="calculateCloseoutDiscrepancy()" 
+                class="w-full bg-white dark:bg-[#120726] border border-purple-200 dark:border-purple-800 rounded-xl px-3 py-2 text-xs font-mono font-bold text-slate-900 dark:text-white focus:outline-none focus:border-amber-500"
+                placeholder="Weka jumla ya pesa ulizohesabu"
+              >
+              <span class="text-[10px] text-slate-400 block mt-1">Hesabu noti na sarafu halisi zilizopo mikononi.</span>
+            </div>
+          </div>
+
+          <div class="p-3 rounded-xl bg-white dark:bg-tzion-purple-900/40 border border-purple-200 dark:border-purple-800 flex justify-between items-center text-xs">
+            <span class="text-slate-600 dark:text-purple-300 font-medium">Pesa Zinazotakiwa Drooni (Float + Taslimu):</span>
+            <span id="closeoutExpectedDrawerCash" class="font-mono font-black text-slate-900 dark:text-white text-sm">TZS 50,000</span>
+          </div>
+
+          <!-- Discrepancy Alert Banner -->
+          <div id="closeoutDiscrepancyBanner" class="p-3 rounded-xl border border-purple-200 dark:border-purple-800 bg-purple-50/50 dark:bg-tzion-purple-950/40 text-slate-500 dark:text-purple-300 flex items-center justify-between text-xs font-mono font-bold">
+            <span id="closeoutDiscrepancyText">Hesabu pesa zilizopo drooni uziweke hapa.</span>
+            <span id="closeoutDiscrepancyAmount">TZS 0</span>
+          </div>
+
+          <div>
+            <label class="block text-[11px] font-semibold text-slate-700 dark:text-purple-200 mb-1">Maelezo ya Ziada / Sababu ya Tofauti (Notes):</label>
+            <textarea 
+              id="closeoutNotesInput" 
+              rows="2" 
+              placeholder="Mf. Nililipa mafuta ya jenereta TZS 10,000 kutoka kwenye droo..." 
+              class="w-full bg-white dark:bg-[#120726] border border-purple-200 dark:border-purple-800 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-amber-500"
+            ></textarea>
+          </div>
+        </div>
+
+        <!-- Previous Z-Reports accordion toggle -->
+        <div>
+          <button onclick="toggleCloseoutHistory()" class="flex items-center justify-between w-full p-2 text-xs font-bold text-slate-700 dark:text-purple-300 hover:text-amber-500 transition-colors">
+            <span>📋 Historia ya Z-Reports za Siku Zilizopita</span>
+            <span id="historyToggleIcon">▶</span>
+          </button>
+          <div id="closeoutHistoryContainer" class="hidden mt-2 space-y-2 max-h-40 overflow-y-auto">
+            <!-- Populated via renderCloseoutHistory() -->
+          </div>
+        </div>
+
+      </div>
+
+      <div class="p-4 bg-purple-50/50 dark:bg-tzion-purple-950/40 border-t border-purple-100 dark:border-purple-900/60 flex flex-wrap gap-2 justify-end">
+        <button onclick="closeCloseoutModal()" class="px-4 py-2.5 rounded-xl text-slate-600 dark:text-purple-300 hover:text-slate-900 dark:hover:text-white bg-purple-100 dark:bg-tzion-purple-900/50 border border-purple-200 dark:border-purple-800 text-xs font-semibold">Ghairi (Cancel)</button>
+        <button onclick="printCloseoutZReport()" class="px-4 py-2.5 rounded-xl bg-purple-700 hover:bg-purple-800 text-white text-xs font-bold flex items-center gap-1.5 shadow">
+          <span>🖨️ Chapisha Z-Report</span>
+        </button>
+        <button onclick="submitAndSendCloseoutWhatsApp()" class="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-lg shadow-emerald-900/20 flex items-center gap-1.5">
+          <span>📲 Funga Hesabu & Tuma WhatsApp kwa Mmiliki</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- STAFF & CASHIER PIN MANAGEMENT MODAL (ADMIN ONLY)                         -->
+  <!-- ========================================================================= -->
+  <div id="staffModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden items-center justify-center p-3 sm:p-5">
+    <div class="bg-white dark:bg-[#1b0c3a] border border-purple-200 dark:border-purple-900/60 rounded-3xl w-full max-w-xl overflow-hidden shadow-2xl flex flex-col max-h-[90vh] transition-colors">
+      <div class="p-4 sm:p-5 border-b border-purple-100 dark:border-purple-900/60 flex items-center justify-between bg-purple-50/50 dark:bg-tzion-purple-950/40">
+        <div class="flex items-center space-x-2.5">
+          <div class="w-10 h-10 rounded-2xl bg-tzion-purple-600/20 text-tzion-purple-600 dark:text-purple-300 flex items-center justify-center text-xl font-bold">
+            👥
+          </div>
+          <div>
+            <h3 class="font-extrabold text-slate-900 dark:text-white text-base">Staff & Cashier PINs Management</h3>
+            <p class="text-xs text-slate-500 dark:text-purple-300/70">Weka na ubadilishe PIN za wauzaji na msimamizi wa duka hili</p>
+          </div>
+        </div>
+        <button onclick="closeStaffModal()" class="text-slate-400 hover:text-slate-700 dark:hover:text-white p-1 rounded-lg">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+
+      <div class="p-5 sm:p-6 overflow-y-auto space-y-5 text-xs">
+        <!-- Update Admin's Own PIN -->
+        <div class="p-4 rounded-2xl bg-purple-50 dark:bg-tzion-purple-950/70 border border-purple-200 dark:border-purple-800">
+          <h4 class="font-bold text-slate-900 dark:text-white text-xs mb-1.5 flex items-center gap-1.5">
+            <span>🔑</span>
+            <span>Badilisha PIN ya Msimamizi (Admin PIN)</span>
+          </h4>
+          <form onsubmit="handleUpdateAdminPin(event)" class="flex items-center gap-2 mt-2">
+            <input 
+              type="text" 
+              id="newAdminPinInput" 
+              placeholder="Weka PIN mpya (mf. 1234)" 
+              class="flex-1 bg-white dark:bg-[#120726] border border-purple-200 dark:border-purple-800 rounded-xl px-3 py-2 text-xs font-mono font-bold text-slate-900 dark:text-white focus:outline-none focus:border-tzion-orange-500"
+              required
+            >
+            <button type="submit" class="px-4 py-2 rounded-xl bg-tzion-purple-600 hover:bg-tzion-purple-700 text-white font-bold text-xs shadow transition-all">
+              Hifadhi PIN
+            </button>
+          </form>
+        </div>
+
+        <!-- Cashier accounts list -->
+        <div>
+          <h4 class="font-bold text-slate-900 dark:text-white text-xs mb-2 flex items-center gap-1.5">
+            <span>🛒</span>
+            <span>Wauzaji Waliopo (Active Cashiers):</span>
+          </h4>
+          <div id="cashierListContainer" class="space-y-2 max-h-48 overflow-y-auto">
+            <!-- Populated via renderStaffList() -->
+          </div>
+        </div>
+
+        <!-- Add new cashier account -->
+        <div class="p-4 rounded-2xl bg-slate-50 dark:bg-tzion-purple-950/50 border border-purple-200 dark:border-purple-800">
+          <h4 class="font-bold text-slate-900 dark:text-white text-xs mb-2 flex items-center gap-1.5">
+            <span>➕</span>
+            <span>Ongeza Muuzaji Mpya (Add New Cashier)</span>
+          </h4>
+          <form onsubmit="handleCreateCashier(event)" class="space-y-3">
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+              <div>
+                <label class="block text-[10px] text-slate-500 dark:text-purple-300 font-medium mb-1">Jina Kamili</label>
+                <input 
+                  type="text" 
+                  id="newCashierName" 
+                  placeholder="Mf. Sarah Juma" 
+                  class="w-full bg-white dark:bg-[#120726] border border-purple-200 dark:border-purple-800 rounded-xl px-3 py-1.5 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-tzion-orange-500"
+                  required
+                >
+              </div>
+              <div>
+                <label class="block text-[10px] text-slate-500 dark:text-purple-300 font-medium mb-1">ID / Barua Pepe</label>
+                <input 
+                  type="text" 
+                  id="newCashierId" 
+                  placeholder="Mf. sarah@duka" 
+                  class="w-full bg-white dark:bg-[#120726] border border-purple-200 dark:border-purple-800 rounded-xl px-3 py-1.5 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-tzion-orange-500"
+                  required
+                >
+              </div>
+              <div>
+                <label class="block text-[10px] text-slate-500 dark:text-purple-300 font-medium mb-1">PIN ya Kuingia</label>
+                <input 
+                  type="text" 
+                  id="newCashierPin" 
+                  value="1234" 
+                  class="w-full bg-white dark:bg-[#120726] border border-purple-200 dark:border-purple-800 rounded-xl px-3 py-1.5 text-xs font-mono font-bold text-slate-900 dark:text-white focus:outline-none focus:border-tzion-orange-500"
+                  required
+                >
+              </div>
+            </div>
+            <button type="submit" class="w-full py-2 rounded-xl bg-tzion-orange-500 hover:bg-tzion-orange-600 text-white font-bold text-xs shadow-md transition-all">
+              + Sajili Muuzaji Mpya
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <div class="p-4 bg-purple-50/50 dark:bg-tzion-purple-950/40 border-t border-purple-100 dark:border-purple-900/60 flex justify-end">
+        <button onclick="closeStaffModal()" class="px-5 py-2 rounded-xl bg-tzion-purple-600 hover:bg-tzion-purple-700 text-white text-xs font-bold">Imekamilika (Done)</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- STORE ADMIN INVENTORY ACTION MODAL (RECEIVE STOCK / WRITE-OFF ADJUSTMENT) -->
+  <!-- ========================================================================= -->
+  <div id="adminStockModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden items-center justify-center p-4">
+    <div class="bg-white dark:bg-[#1b0c3a] border border-purple-200 dark:border-purple-900/60 rounded-3xl w-full max-w-md overflow-hidden shadow-2xl transition-colors">
+      <div class="p-4 border-b border-purple-100 dark:border-purple-900/60 flex items-center justify-between bg-purple-50/50 dark:bg-tzion-purple-950/40">
+        <div class="flex items-center space-x-2">
+          <span id="adminStockBadge" class="px-2 py-0.5 rounded text-xs font-mono font-bold uppercase bg-tzion-purple-600/20 text-tzion-purple-700 dark:text-purple-300 border border-tzion-purple-600/30">ADMIN: RECEIVE STOCK</span>
+          <h3 id="adminStockModalTitle" class="font-bold text-slate-900 dark:text-white text-sm truncate">Product Name</h3>
+        </div>
+        <button onclick="closeAdminStockModal()" class="text-slate-400 hover:text-slate-700 dark:hover:text-white p-1">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+
+      <div class="p-5 space-y-4">
+        <!-- Explanatory role badge -->
+        <div id="adminRoleNotice" class="p-2.5 rounded-xl bg-purple-100 dark:bg-tzion-purple-950/80 border border-purple-200 dark:border-purple-800 text-tzion-purple-900 dark:text-purple-300 text-[11px] leading-relaxed">
+          <strong class="text-tzion-orange-500">Store Admin Role:</strong> Adding stock from suppliers or adjusting inventory write-offs (damage/spoilage/audit). Daily retail customer checkouts are processed in the Cashier Terminal.
+        </div>
+
+        <!-- Current stock info -->
+        <div class="flex justify-between items-center p-3 rounded-2xl bg-purple-50/80 dark:bg-tzion-purple-950 border border-purple-200 dark:border-purple-800">
+          <div>
+            <span class="text-xs text-slate-500 dark:text-purple-300 block">Available Quantity</span>
+            <span id="adminStockCurrentQty" class="text-xl font-bold font-mono text-slate-900 dark:text-white">45</span> <span id="adminStockUnit" class="text-xs text-slate-500 dark:text-purple-300">units</span>
+          </div>
+          <div class="text-right">
+            <span class="text-xs text-slate-500 dark:text-purple-300 block">Cost Basis (TZS)</span>
+            <span id="adminStockCostPrice" class="text-xs font-mono text-tzion-purple-700 dark:text-purple-300 font-bold">TZS 12,000</span>
+          </div>
+        </div>
+
+        <!-- Quantity input with quick increment buttons -->
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 dark:text-purple-200 mb-1.5">Quantity to Adjust</label>
+          <div class="flex items-center space-x-2">
+            <button onclick="adjustAdminInputQty(-10)" class="w-10 h-10 rounded-xl bg-purple-100 dark:bg-tzion-purple-900/60 hover:bg-purple-200 text-slate-900 dark:text-white font-bold text-sm border border-purple-200 dark:border-purple-800">-10</button>
+            <button onclick="adjustAdminInputQty(-1)" class="w-10 h-10 rounded-xl bg-purple-100 dark:bg-tzion-purple-900/60 hover:bg-purple-200 text-slate-900 dark:text-white font-bold text-sm border border-purple-200 dark:border-purple-800">-1</button>
+            <input type="number" id="adminStockQty" min="1" value="1" class="flex-1 bg-slate-50 dark:bg-tzion-purple-950 border border-purple-200 dark:border-purple-800 rounded-xl text-center font-mono font-bold text-lg text-slate-900 dark:text-white focus:outline-none focus:border-tzion-purple-600 h-10">
+            <button onclick="adjustAdminInputQty(1)" class="w-10 h-10 rounded-xl bg-purple-100 dark:bg-tzion-purple-900/60 hover:bg-purple-200 text-slate-900 dark:text-white font-bold text-sm border border-purple-200 dark:border-purple-800">+1</button>
+            <button onclick="adjustAdminInputQty(10)" class="w-10 h-10 rounded-xl bg-purple-100 dark:bg-tzion-purple-900/60 hover:bg-purple-200 text-slate-900 dark:text-white font-bold text-sm border border-purple-200 dark:border-purple-800">+10</button>
+          </div>
+        </div>
+
+        <!-- Reason -->
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 dark:text-purple-200 mb-1.5">Adjustment Reason / Sababu</label>
+          <select id="adminStockReason" class="w-full bg-slate-50 dark:bg-tzion-purple-950 border border-purple-200 dark:border-purple-800 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-purple-200 focus:outline-none focus:border-tzion-purple-600">
+            <!-- Dynamically populated based on 'in' vs 'out' -->
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 dark:text-purple-200 mb-1.5">Reference Note / Maelezo (Supplier / Invoice #)</label>
+          <input type="text" id="adminStockNotes" placeholder="Mf. Delivery Note #DN-492, Msambazaji Azam..." class="w-full bg-slate-50 dark:bg-tzion-purple-950 border border-purple-200 dark:border-purple-800 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-tzion-purple-600">
+        </div>
+      </div>
+
+      <div class="p-4 bg-purple-50/50 dark:bg-tzion-purple-950/40 border-t border-purple-100 dark:border-purple-900/60 flex space-x-3">
+        <button onclick="closeAdminStockModal()" class="flex-1 py-2 rounded-xl text-slate-600 dark:text-purple-300 hover:text-slate-900 dark:hover:text-white bg-purple-100 dark:bg-tzion-purple-900/50 border border-purple-200 dark:border-purple-800 text-xs font-semibold">Ghairi</button>
+        <button id="adminStockSubmitBtn" onclick="submitAdminStockAction()" class="flex-1 py-2 rounded-xl bg-tzion-purple-600 hover:bg-tzion-purple-700 text-white text-xs font-bold shadow-lg shadow-tzion-purple-900/20">Confirm Adjustment</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- MULTI-ITEM POS CART CHECKOUT MODAL                                        -->
+  <!-- ========================================================================= -->
+  <div id="posCartModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden items-center justify-center p-3 sm:p-5">
+    <div class="bg-white dark:bg-[#1b0c3a] border border-purple-200 dark:border-purple-900/60 rounded-3xl w-full max-w-2xl overflow-hidden shadow-2xl flex flex-col max-h-[92vh] transition-colors">
+      
+      <!-- Cart Header -->
+      <div class="p-4 sm:p-5 border-b border-purple-100 dark:border-purple-900/60 flex items-center justify-between bg-purple-50/50 dark:bg-tzion-purple-950/40">
+        <div class="flex items-center space-x-2.5">
+          <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-tzion-orange-500 to-amber-500 text-white flex items-center justify-center text-xl font-bold shadow-md shadow-tzion-orange-500/20">
+            🛒
+          </div>
+          <div>
+            <h3 class="font-black text-slate-900 dark:text-white text-base sm:text-lg">Kikapu cha Mauzo (POS Cart)</h3>
+            <p class="text-xs text-slate-500 dark:text-purple-300/70">Weka bidhaa nyingi mara moja, chagua njia ya malipo, kisha kamilisha mauzo</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-2">
+          <button onclick="clearCart()" class="px-2.5 py-1 text-rose-500 hover:bg-rose-500/10 rounded-xl text-xs font-bold transition-colors" title="Futa Vitu Vyote Kikapuni">
+            🗑️ Futa Vyote
+          </button>
+          <button onclick="closePosCartModal()" class="text-slate-400 hover:text-slate-700 dark:hover:text-white p-1 rounded-lg">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Cart Body -->
+      <div class="p-4 sm:p-6 overflow-y-auto space-y-5 text-xs">
+        <!-- List of items in cart -->
+        <div id="posCartItemsList" class="space-y-2.5">
+          <!-- Dynamically populated via renderPosCart() -->
+        </div>
+
+        <!-- Order Financial Summary -->
+        <div class="p-4 rounded-2xl bg-purple-50/80 dark:bg-tzion-purple-950/70 border border-purple-200 dark:border-purple-800 space-y-2">
+          <div class="flex justify-between items-center text-slate-600 dark:text-purple-300">
+            <span>Idadi ya Bidhaa (Line Items):</span>
+            <span id="posCartTotalItemsCount" class="font-mono font-bold">0</span>
+          </div>
+          <div class="flex justify-between items-center text-slate-600 dark:text-purple-300">
+            <span>Jumla ya Vipande (Total Units):</span>
+            <span id="posCartTotalUnits" class="font-mono font-bold">0</span>
+          </div>
+          <div class="pt-2 border-t border-purple-200 dark:border-purple-800/80 flex justify-between items-center">
+            <span class="text-sm font-extrabold text-slate-900 dark:text-white">JUMLA KUU (Grand Total):</span>
+            <span id="posCartTotalAmount" class="text-xl sm:text-2xl font-black font-mono text-tzion-orange-500">TZS 0</span>
+          </div>
+        </div>
+
+        <!-- Payment Method Tender Selection -->
+        <div class="space-y-3">
+          <label class="block text-xs font-bold text-slate-900 dark:text-white">Njia ya Malipo (Payment Method):</label>
+          <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
+            <button type="button" onclick="selectCartPayment('Cash')" id="payTabCash" class="p-2.5 rounded-xl border border-tzion-orange-500 bg-tzion-orange-500/15 text-tzion-orange-600 dark:text-tzion-orange-400 font-bold text-xs flex items-center justify-center gap-1.5 shadow-sm">
+              <span>💵 Taslimu (Cash)</span>
+            </button>
+            <button type="button" onclick="selectCartPayment('Vodacom Lipa Namba')" id="payTabMpesa" class="p-2.5 rounded-xl border border-purple-200 dark:border-purple-800 bg-purple-50 dark:bg-tzion-purple-950 text-slate-700 dark:text-purple-300 font-medium text-xs flex items-center justify-center gap-1.5">
+              <span>📱 Lipa Namba</span>
+            </button>
+            <button type="button" onclick="selectCartPayment('Airtel Money')" id="payTabAirtel" class="p-2.5 rounded-xl border border-purple-200 dark:border-purple-800 bg-purple-50 dark:bg-tzion-purple-950 text-slate-700 dark:text-purple-300 font-medium text-xs flex items-center justify-center gap-1.5">
+              <span>📱 Airtel Money</span>
+            </button>
+            <button type="button" onclick="selectCartPayment('Tigo Pesa')" id="payTabTigo" class="p-2.5 rounded-xl border border-purple-200 dark:border-purple-800 bg-purple-50 dark:bg-tzion-purple-950 text-slate-700 dark:text-purple-300 font-medium text-xs flex items-center justify-center gap-1.5">
+              <span>📱 Tigo Pesa</span>
+            </button>
+            <button type="button" onclick="selectCartPayment('Bank Transfer')" id="payTabBank" class="p-2.5 rounded-xl border border-purple-200 dark:border-purple-800 bg-purple-50 dark:bg-tzion-purple-950 text-slate-700 dark:text-purple-300 font-medium text-xs flex items-center justify-center gap-1.5">
+              <span>🏦 Benki (CRDB/NMB)</span>
+            </button>
+          </div>
+          <input type="hidden" id="posCartPaymentMethod" value="Cash">
+
+          <!-- Cash change calculator (visible when payment method is Cash) -->
+          <div id="posCartCashCalculator" class="p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/20 space-y-3">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+              <label class="text-[11px] font-bold text-amber-600 dark:text-amber-400">Pesa Aliyotoa Mteja (Amount Tendered):</label>
+              <div class="flex items-center gap-1.5">
+                <input 
+                  type="number" 
+                  id="posCartTenderedInput" 
+                  oninput="handleCartTenderChange()" 
+                  placeholder="Mf. 50000" 
+                  class="w-36 bg-white dark:bg-[#120726] border border-amber-500/40 rounded-xl px-3 py-1.5 text-xs font-mono font-bold text-slate-900 dark:text-white focus:outline-none focus:border-amber-500 text-right"
+                >
+                <button type="button" onclick="setCartExactTender()" class="px-2 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-600 text-white text-[10px] font-bold">
+                  Sawasawa
+                </button>
+              </div>
+            </div>
+
+            <div class="flex justify-between items-center pt-2 border-t border-amber-500/20 text-xs">
+              <span class="text-slate-600 dark:text-purple-300 font-semibold">Chenji ya Kurudisha kwa Mteja:</span>
+              <span id="posCartChangeDisplay" class="font-mono font-black text-emerald-600 dark:text-emerald-400 text-sm">TZS 0</span>
+            </div>
+          </div>
+
+          <!-- Customer details (Optional for digital receipt & WhatsApp delivery) -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+            <div>
+              <label class="block text-[11px] font-semibold text-slate-700 dark:text-purple-200 mb-1">Jina la Mteja (Customer Name - Optional):</label>
+              <input 
+                type="text" 
+                id="posCartCustomerName" 
+                placeholder="Mf. John Doe" 
+                class="w-full bg-slate-50 dark:bg-tzion-purple-950 border border-purple-200 dark:border-purple-800 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-tzion-orange-500"
+              >
+            </div>
+            <div>
+              <label class="block text-[11px] font-semibold text-slate-700 dark:text-purple-200 mb-1">Namba ya WhatsApp/Simu (Optional):</label>
+              <input 
+                type="tel" 
+                id="posCartCustomerPhone" 
+                placeholder="Mf. 0755123456 au +255..." 
+                class="w-full bg-slate-50 dark:bg-tzion-purple-950 border border-purple-200 dark:border-purple-800 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-tzion-orange-500"
+              >
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Cart Footer -->
+      <div class="p-4 bg-purple-50/50 dark:bg-tzion-purple-950/40 border-t border-purple-100 dark:border-purple-900/60 flex space-x-3">
+        <button onclick="closePosCartModal()" class="flex-1 py-3 rounded-2xl text-slate-600 dark:text-purple-300 hover:text-slate-900 dark:hover:text-white bg-purple-100 dark:bg-tzion-purple-900/50 border border-purple-200 dark:border-purple-800 text-xs font-semibold">
+          Endelea na Ununuzi
+        </button>
+        <button id="posCartSubmitBtn" onclick="submitCartCheckout()" class="flex-2 py-3 px-6 rounded-2xl bg-gradient-to-r from-tzion-orange-500 to-amber-600 hover:from-tzion-orange-600 hover:to-amber-700 text-white font-extrabold text-xs sm:text-sm shadow-xl shadow-tzion-orange-500/30 flex items-center justify-center gap-2 active:scale-95 transition-all">
+          <span>✅ Kamilisha Mauzo (Checkout)</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- DIGITAL SALES RECEIPT POPUP (WHATSAPP & PRINT)                            -->
+  <!-- ========================================================================= -->
+  <div id="digitalReceiptModal" class="fixed inset-0 z-50 bg-black/85 backdrop-blur-md hidden items-center justify-center p-3 sm:p-5">
+    <div class="bg-white text-slate-900 rounded-3xl w-full max-w-md overflow-hidden shadow-2xl flex flex-col max-h-[92vh] border border-purple-200">
+      
+      <!-- Receipt Header -->
+      <div class="p-4 bg-purple-50 border-b border-purple-100 flex items-center justify-between">
+        <span class="text-xs font-mono font-bold text-tzion-purple-700 uppercase tracking-wider">Risiti Rasmi ya Mauzo</span>
+        <button onclick="closeDigitalReceiptModal()" class="text-slate-400 hover:text-slate-700 p-1">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+
+      <!-- Printable Receipt Canvas -->
+      <div id="printableReceiptArea" class="p-6 overflow-y-auto space-y-4 font-mono text-xs">
+        <div class="text-center pb-3 border-b border-dashed border-slate-300">
+          <h2 id="receiptStoreName" class="text-base font-black text-slate-900">TZION MAIN STORE</h2>
+          <p class="text-[10px] text-slate-500">Kariakoo Wholesale & Retail Hub • Dar es Salaam</p>
+          <p class="text-[10px] text-slate-500">Simu: +255 755 123 456</p>
+          <div class="mt-2 inline-block px-2.5 py-0.5 rounded-full bg-slate-100 font-bold text-[10px] text-slate-700">
+            RISITI YA MAUZO / CASH SALE
+          </div>
+        </div>
+
+        <div class="space-y-1 text-[11px] text-slate-600">
+          <div class="flex justify-between">
+            <span>Namba ya Risiti:</span>
+            <span id="receiptNoDisplay" class="font-bold text-slate-900">RCP-20261109-1001</span>
+          </div>
+          <div class="flex justify-between">
+            <span>Tarehe & Saa:</span>
+            <span id="receiptDateTime">09/11/2026 14:35</span>
+          </div>
+          <div class="flex justify-between">
+            <span>Mhudumu (Cashier):</span>
+            <span id="receiptCashierName" class="font-bold text-slate-900">Cashier Sarah</span>
+          </div>
+          <div class="flex justify-between">
+            <span>Mteja (Customer):</span>
+            <span id="receiptCustomerName">Walk-in Customer</span>
+          </div>
+        </div>
+
+        <!-- Items table -->
+        <div class="pt-2 border-t border-dashed border-slate-300">
+          <table class="w-full text-[11px]">
+            <thead>
+              <tr class="text-slate-500 border-b border-slate-200">
+                <th class="text-left pb-1">Bidhaa</th>
+                <th class="text-center pb-1">Idadi</th>
+                <th class="text-right pb-1">Bei</th>
+                <th class="text-right pb-1">Jumla</th>
+              </tr>
+            </thead>
+            <tbody id="receiptItemsList" class="divide-y divide-slate-100">
+              <!-- Rendered dynamically -->
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Financial Totals -->
+        <div class="pt-3 border-t-2 border-slate-900 space-y-1 text-[11px]">
+          <div class="flex justify-between items-center text-sm font-black text-slate-900">
+            <span>JUMLA KUU:</span>
+            <span id="receiptTotalAmount" class="text-base text-tzion-orange-600 font-black">TZS 0</span>
+          </div>
+          <div class="flex justify-between text-slate-600">
+            <span>Njia ya Malipo:</span>
+            <span id="receiptPaymentMethod" class="font-bold text-slate-900">Pesa Taslimu (Cash)</span>
+          </div>
+          <div class="flex justify-between text-slate-600">
+            <span>Pesa Aliyotoa:</span>
+            <span id="receiptTendered" class="font-bold text-slate-900">TZS 0</span>
+          </div>
+          <div class="flex justify-between text-slate-600">
+            <span>Chenji:</span>
+            <span id="receiptChange" class="font-bold text-emerald-600">TZS 0</span>
+          </div>
+        </div>
+
+        <!-- Receipt Footer Note -->
+        <div class="text-center pt-3 border-t border-dashed border-slate-300 text-[10px] text-slate-500">
+          <p class="font-bold">ASANTE KWA KUFANYA BIASHARA NASI!</p>
+          <p>Bidhaa zilizouzwa hazirudishwi baada ya siku 2.</p>
+          <p class="mt-1 text-[9px] text-slate-400">Powered by TzionStockly • Offline-First POS</p>
+        </div>
+      </div>
+
+      <!-- Action buttons -->
+      <div class="p-4 bg-slate-50 border-t border-slate-200 flex flex-col gap-2">
+        <a id="receiptWhatsAppBtn" href="#" target="_blank" class="w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-md transition-all">
+          <span>📲 Tuma Risiti kwa WhatsApp</span>
+        </a>
+        <div class="flex gap-2">
+          <button onclick="printReceiptDirect()" class="flex-1 py-2.5 rounded-xl bg-purple-700 hover:bg-purple-800 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow transition-all">
+            <span>🖨️ Chapisha (Print)</span>
+          </button>
+          <button onclick="closeDigitalReceiptModal()" class="flex-1 py-2.5 rounded-xl bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold text-xs flex items-center justify-center transition-all">
+            <span>➕ Mauzo Mapya</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- SALES HISTORY (DAY, MONTH, YEAR) FULL DASHBOARD MODAL                     -->
+  <!-- ========================================================================= -->
+  <div id="salesHistoryModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden items-center justify-center p-3 sm:p-5">
+    <div class="bg-white dark:bg-[#1b0c3a] border border-purple-200 dark:border-purple-900/60 rounded-3xl w-full max-w-4xl overflow-hidden shadow-2xl flex flex-col max-h-[92vh] transition-colors">
+      
+      <!-- Modal Header -->
+      <div class="p-4 sm:p-5 border-b border-purple-100 dark:border-purple-900/60 flex items-center justify-between bg-purple-50/50 dark:bg-tzion-purple-950/40">
+        <div class="flex items-center space-x-2.5">
+          <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-tzion-purple-600 to-tzion-orange-500 text-white flex items-center justify-center text-xl font-bold shadow-md">
+            📊
+          </div>
+          <div>
+            <h3 class="font-extrabold text-slate-900 dark:text-white text-base sm:text-lg">Historia ya Mauzo (Sales History)</h3>
+            <p class="text-xs text-slate-500 dark:text-purple-300/70">Tazama na uchunguze mauzo yote kwa siku, mwezi, au mwaka</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-2">
+          <button onclick="exportSalesHistoryCSV()" class="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow flex items-center gap-1 transition-all">
+            <span>📥 Pakua CSV</span>
+          </button>
+          <button onclick="closeSalesHistoryModal()" class="text-slate-400 hover:text-slate-700 dark:hover:text-white p-1 rounded-lg">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Time Period Filter Tabs -->
+      <div class="px-4 pt-3 pb-2 border-b border-purple-100 dark:border-purple-900/60 bg-purple-50/20 dark:bg-tzion-purple-950/20 flex flex-wrap items-center justify-between gap-2">
+        <div class="flex items-center space-x-1.5 overflow-x-auto pb-1 sm:pb-0">
+          <button onclick="setSalesHistoryFilter('today')" id="histTabToday" class="px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all bg-tzion-orange-500 text-white shadow">
+            📅 Leo (Today)
+          </button>
+          <button onclick="setSalesHistoryFilter('month')" id="histTabMonth" class="px-3.5 py-1.5 rounded-xl text-xs font-medium transition-all bg-purple-100 dark:bg-tzion-purple-900/60 text-slate-700 dark:text-purple-300">
+            🗓️ Mwezi Huu (This Month)
+          </button>
+          <button onclick="setSalesHistoryFilter('year')" id="histTabYear" class="px-3.5 py-1.5 rounded-xl text-xs font-medium transition-all bg-purple-100 dark:bg-tzion-purple-900/60 text-slate-700 dark:text-purple-300">
+            📈 Mwaka Huu (This Year)
+          </button>
+          <button onclick="setSalesHistoryFilter('all')" id="histTabAll" class="px-3.5 py-1.5 rounded-xl text-xs font-medium transition-all bg-purple-100 dark:bg-tzion-purple-900/60 text-slate-700 dark:text-purple-300">
+            🌐 Yote (All Time)
+          </button>
+        </div>
+        <span id="historyActivePeriodLabel" class="text-xs font-mono font-bold text-tzion-orange-500 px-2.5 py-1 rounded-lg bg-tzion-orange-500/10">Leo</span>
+      </div>
+
+      <!-- Financial Metrics KPI Cards for the active filter -->
+      <div class="p-4 sm:p-5 border-b border-purple-100 dark:border-purple-900/60 bg-slate-50/50 dark:bg-[#120726]/50">
+        <div class="grid grid-cols-2 sm:grid-cols-5 gap-2.5">
+          <div class="p-3 rounded-2xl bg-white dark:bg-[#1b0c3a] border border-purple-200 dark:border-purple-800 shadow-sm col-span-2 sm:col-span-1">
+            <span class="text-[10px] text-slate-500 dark:text-purple-300/80 block font-semibold">Jumla ya Mauzo</span>
+            <span id="historyTotalRevenue" class="text-base sm:text-lg font-black font-mono text-tzion-orange-500 block mt-0.5">TZS 0</span>
+            <span class="text-[9px] text-slate-400 font-mono">Gross Sales</span>
+          </div>
+          <div class="p-3 rounded-2xl bg-white dark:bg-[#1b0c3a] border border-purple-200 dark:border-purple-800 shadow-sm">
+            <span class="text-[10px] text-slate-500 dark:text-purple-300/80 block font-semibold">💵 Pesa Taslimu</span>
+            <span id="historyCashSales" class="text-sm sm:text-base font-bold font-mono text-emerald-600 dark:text-emerald-400 block mt-0.5">TZS 0</span>
+            <span class="text-[9px] text-slate-400 font-mono">Cash Sales</span>
+          </div>
+          <div class="p-3 rounded-2xl bg-white dark:bg-[#1b0c3a] border border-purple-200 dark:border-purple-800 shadow-sm">
+            <span class="text-[10px] text-slate-500 dark:text-purple-300/80 block font-semibold">📱 Simu / Lipa Namba</span>
+            <span id="historyMobileSales" class="text-sm sm:text-base font-bold font-mono text-purple-600 dark:text-purple-300 block mt-0.5">TZS 0</span>
+            <span class="text-[9px] text-slate-400 font-mono">M-Pesa / Airtel</span>
+          </div>
+          <div class="p-3 rounded-2xl bg-white dark:bg-[#1b0c3a] border border-purple-200 dark:border-purple-800 shadow-sm">
+            <span class="text-[10px] text-slate-500 dark:text-purple-300/80 block font-semibold">📦 Bidhaa Zilizouzwa</span>
+            <span id="historyUnitsSold" class="text-sm sm:text-base font-bold font-mono text-slate-900 dark:text-white block mt-0.5">0 pcs</span>
+            <span class="text-[9px] text-slate-400 font-mono">Total Units</span>
+          </div>
+          <div class="p-3 rounded-2xl bg-white dark:bg-[#1b0c3a] border border-purple-200 dark:border-purple-800 shadow-sm">
+            <span class="text-[10px] text-slate-500 dark:text-purple-300/80 block font-semibold">🧾 Idadi ya Risiti</span>
+            <span id="historyTxCount" class="text-sm sm:text-base font-bold font-mono text-slate-900 dark:text-white block mt-0.5">0 mauzo</span>
+            <span class="text-[9px] text-slate-400 font-mono">Transactions</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Search & Payment Method Filter Bar -->
+      <div class="p-3 sm:p-4 border-b border-purple-100 dark:border-purple-900/60 flex flex-col sm:flex-row gap-2">
+        <div class="relative flex-1">
+          <input 
+            type="text" 
+            id="historySearchInput" 
+            placeholder="Tafuta risiti #, bidhaa, mhudumu, au mteja..." 
+            oninput="handleSalesHistorySearch(this.value)" 
+            class="w-full bg-slate-50 dark:bg-tzion-purple-950 border border-purple-200 dark:border-purple-800 rounded-xl pl-9 pr-3 py-2 text-xs text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:border-tzion-orange-500"
+          >
+          <svg class="w-4 h-4 text-slate-400 absolute left-3 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+        </div>
+        <select 
+          id="historyPaymentFilter" 
+          onchange="handleSalesHistoryPaymentFilter(this.value)" 
+          class="bg-slate-50 dark:bg-tzion-purple-950 border border-purple-200 dark:border-purple-800 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-tzion-orange-500"
+        >
+          <option value="All">Njia Zote za Malipo</option>
+          <option value="Cash">💵 Taslimu (Cash)</option>
+          <option value="Vodacom Lipa Namba">📱 Vodacom Lipa Namba</option>
+          <option value="Airtel Money">📱 Airtel Money</option>
+          <option value="Tigo Pesa">📱 Tigo Pesa</option>
+          <option value="Bank Transfer">🏦 Benki (CRDB/NMB)</option>
+        </select>
+      </div>
+
+      <!-- Sales List (Responsive Table / Cards) -->
+      <div class="p-4 sm:p-5 overflow-y-auto flex-1">
+        <div id="salesHistoryListContainer">
+          <!-- Dynamically populated via renderSalesHistory() -->
+        </div>
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="p-4 bg-purple-50/50 dark:bg-tzion-purple-950/40 border-t border-purple-100 dark:border-purple-900/60 flex justify-between items-center text-xs">
+        <span class="text-slate-500 dark:text-purple-300 font-mono">Hesabu na ripoti zote zimejumuishwa kwa sarafu ya TZS.</span>
+        <button onclick="closeSalesHistoryModal()" class="px-5 py-2 rounded-xl bg-tzion-purple-600 hover:bg-tzion-purple-700 text-white font-bold text-xs">
+          Funga (Close)
+        </button>
+      </div>
+
+    </div>
+  </div>
+
   <!-- ========================================================================= -->
   <!-- JAVASCRIPT APPLICATION CORE (TZS Currency, RBAC, Excel & Themes)         -->
   <!-- ========================================================================= -->
@@ -696,6 +1404,14 @@
       searchQuery: '',
       selectedCategory: 'All',
 
+      // Multi-Item POS Shopping Cart
+      posCart: [], // [ { id, name, sku, unitPrice, qty, unit, maxStock } ]
+
+      // Sales History & Time Filters
+      salesHistoryFilter: 'today', // 'today' | 'month' | 'year' | 'all'
+      salesHistorySearch: '',
+      salesHistoryPaymentFilter: 'All',
+      lastCompletedReceipt: null,
       
       // Store Staff Accounts & Passwords
       staffAccounts: [
@@ -703,11 +1419,23 @@
         { id: 'usr-2', name: 'Cashier Sarah (Till 1)', email: 'staff@tzionstockly.com', pin: '1234', role: 'staff' },
         { id: 'usr-3', name: 'Cashier Juma (Till 2)', email: 'juma@store', pin: '5678', role: 'staff' }
       ],
-      // Shift Closeout & Sales Reconciliation
+      // Shift Closeout & Daily Sales Reconciliation
       todaySales: [
-        { id: 'tx-tz-101', productName: 'Kilimanjaro Arabica Coffee 1kg', qty: 2, amount: 90000, paymentMethod: 'Cash', timestamp: '10:45 AM', cashier: 'Cashier Sarah' },
-        { id: 'tx-tz-102', productName: 'Azam Pure Sunflower Oil 5L', qty: 1, amount: 42000, paymentMethod: 'Vodacom Lipa Namba', timestamp: '11:15 AM', cashier: 'Cashier Sarah' },
-        { id: 'tx-tz-103', productName: 'Asas Fresh Whole Milk 1L', qty: 5, amount: 15000, paymentMethod: 'Cash', timestamp: '01:20 PM', cashier: 'Cashier Sarah' }
+        { id: 'tx-tz-101', receiptNo: 'RCP-20261109-1001', productName: 'Kilimanjaro Arabica Coffee 1kg', qty: 2, amount: 90000, paymentMethod: 'Cash', timestamp: '10:45 AM', cashier: 'Cashier Sarah (Till 1)', date: new Date().toISOString().slice(0, 10), items: [{ id: 1, name: 'Kilimanjaro Arabica Coffee 1kg', sku: 'BEV-KIL-001', qty: 2, unitPrice: 45000, subtotal: 90000, unit: 'kg' }] },
+        { id: 'tx-tz-102', receiptNo: 'RCP-20261109-1002', productName: 'Azam Pure Sunflower Oil 5L', qty: 1, amount: 42000, paymentMethod: 'Vodacom Lipa Namba', timestamp: '11:15 AM', cashier: 'Cashier Sarah (Till 1)', date: new Date().toISOString().slice(0, 10), items: [{ id: 3, name: 'Azam Pure Sunflower Oil 5L', sku: 'PKG-AZM-005', qty: 1, unitPrice: 42000, subtotal: 42000, unit: 'jerrycan' }] },
+        { id: 'tx-tz-103', receiptNo: 'RCP-20261109-1003', productName: 'Asas Fresh Whole Milk 1L', qty: 5, amount: 15000, paymentMethod: 'Cash', timestamp: '01:20 PM', cashier: 'Cashier Sarah (Till 1)', date: new Date().toISOString().slice(0, 10), items: [{ id: 4, name: 'Asas Fresh Whole Milk 1L', sku: 'BEV-ASA-001', qty: 5, unitPrice: 3000, subtotal: 15000, unit: 'packet' }] }
+      ],
+      salesHistory: [
+        // Realistic multi-period sample records for immediate Day, Month, Year testing:
+        { id: 'tx-tz-101', receiptNo: 'RCP-20261109-1001', date: new Date().toISOString().slice(0, 10), time: '10:45 AM', timestamp: new Date(Date.now() - 3600000 * 5).toISOString(), cashier: 'Cashier Sarah (Till 1)', customerName: 'Juma Hamisi', customerPhone: '+255712345678', paymentMethod: 'Cash', items: [{ id: 1, name: 'Kilimanjaro Arabica Coffee 1kg', sku: 'BEV-KIL-001', qty: 2, unitPrice: 45000, subtotal: 90000, unit: 'kg' }], totalUnits: 2, totalAmount: 90000, tendered: 100000, change: 10000 },
+        { id: 'tx-tz-102', receiptNo: 'RCP-20261109-1002', date: new Date().toISOString().slice(0, 10), time: '11:15 AM', timestamp: new Date(Date.now() - 3600000 * 4).toISOString(), cashier: 'Cashier Sarah (Till 1)', customerName: 'Mama Neema', customerPhone: '+255784990011', paymentMethod: 'Vodacom Lipa Namba', items: [{ id: 3, name: 'Azam Pure Sunflower Oil 5L', sku: 'PKG-AZM-005', qty: 1, unitPrice: 42000, subtotal: 42000, unit: 'jerrycan' }], totalUnits: 1, totalAmount: 42000, tendered: 42000, change: 0 },
+        { id: 'tx-tz-103', receiptNo: 'RCP-20261109-1003', date: new Date().toISOString().slice(0, 10), time: '01:20 PM', timestamp: new Date(Date.now() - 3600000 * 2).toISOString(), cashier: 'Cashier Sarah (Till 1)', customerName: 'Bakari Ali', customerPhone: '', paymentMethod: 'Cash', items: [{ id: 4, name: 'Asas Fresh Whole Milk 1L', sku: 'BEV-ASA-001', qty: 5, unitPrice: 3000, subtotal: 15000, unit: 'packet' }], totalUnits: 5, totalAmount: 15000, tendered: 20000, change: 5000 },
+        // Earlier this month
+        { id: 'tx-tz-098', receiptNo: 'RCP-20261105-0988', date: new Date(Date.now() - 4 * 86400000).toISOString().slice(0, 10), time: '03:40 PM', timestamp: new Date(Date.now() - 4 * 86400000).toISOString(), cashier: 'Cashier Juma (Till 2)', customerName: 'Rashid Khalfan', customerPhone: '+255755443322', paymentMethod: 'Airtel Money', items: [{ id: 2, name: 'Azam Extra Wheat Flour 25kg', sku: 'RAW-FLR-025', qty: 1, unitPrice: 58000, subtotal: 58000, unit: 'bag' }, { id: 4, name: 'Asas Fresh Whole Milk 1L', sku: 'BEV-ASA-001', qty: 2, unitPrice: 3000, subtotal: 6000, unit: 'packet' }], totalUnits: 3, totalAmount: 64000, tendered: 64000, change: 0 },
+        { id: 'tx-tz-095', receiptNo: 'RCP-20261102-0951', date: new Date(Date.now() - 7 * 86400000).toISOString().slice(0, 10), time: '11:10 AM', timestamp: new Date(Date.now() - 7 * 86400000).toISOString(), cashier: 'Cashier Sarah (Till 1)', customerName: 'Safari Supermarket', customerPhone: '+255788112233', paymentMethod: 'Bank Transfer', items: [{ id: 1, name: 'Kilimanjaro Arabica Coffee 1kg', sku: 'BEV-KIL-001', qty: 3, unitPrice: 45000, subtotal: 135000, unit: 'kg' }, { id: 3, name: 'Azam Pure Sunflower Oil 5L', sku: 'PKG-AZM-005', qty: 2, unitPrice: 42000, subtotal: 84000, unit: 'jerrycan' }], totalUnits: 5, totalAmount: 219000, tendered: 219000, change: 0 },
+        // Earlier this year
+        { id: 'tx-tz-080', receiptNo: 'RCP-20261015-0802', date: new Date(Date.now() - 25 * 86400000).toISOString().slice(0, 10), time: '02:15 PM', timestamp: new Date(Date.now() - 25 * 86400000).toISOString(), cashier: 'Cashier Juma (Till 2)', customerName: 'Zainab Stores', customerPhone: '', paymentMethod: 'Tigo Pesa', items: [{ id: 5, name: 'White Granulated Sugar 50kg', sku: 'RAW-SGR-050', qty: 1, unitPrice: 135000, subtotal: 135000, unit: 'bag' }], totalUnits: 1, totalAmount: 135000, tendered: 135000, change: 0 },
+        { id: 'tx-tz-062', receiptNo: 'RCP-20260910-0621', date: new Date(Date.now() - 60 * 86400000).toISOString().slice(0, 10), time: '09:30 AM', timestamp: new Date(Date.now() - 60 * 86400000).toISOString(), cashier: 'Cashier Sarah (Till 1)', customerName: 'Mwanza Retailers', customerPhone: '+255714009988', paymentMethod: 'Cash', items: [{ id: 2, name: 'Azam Extra Wheat Flour 25kg', sku: 'RAW-FLR-025', qty: 5, unitPrice: 58000, subtotal: 290000, unit: 'bag' }], totalUnits: 5, totalAmount: 290000, tendered: 300000, change: 10000 }
       ],
       closeoutHistory: [],
 
@@ -724,7 +1452,9 @@
           owner_phone: "+255755123456",
           monthly_fee_tzs: 50000,
           status: "active",
-          subscription_renews_at: new Date(Date.now() + 18 * 86400000).toISOString(),
+          subscription_renews_at: new Date(Date.now() + 30 * 86400000).toISOString(),
+          is_locked: false,
+          status: "active",
           grace_period_days: 3,
           is_locked: false,
           lock_reason: ""
@@ -1223,6 +1953,869 @@
     // STOCK CHECK-IN / CHECK-OUT ENGINE
     // =========================================================================
 
+    
+    // =========================================================================
+    // LOCAL PERSISTENCE HELPERS
+    // =========================================================================
+    function initProductsState() {
+      const savedProds = localStorage.getItem('tzion_products');
+      if (savedProds) {
+        try { AppState.products = JSON.parse(savedProds); } catch(e){}
+      }
+    }
+
+    function saveProductsLocally() {
+      localStorage.setItem('tzion_products', JSON.stringify(AppState.products));
+    }
+
+    function initCartState() {
+      const savedCart = localStorage.getItem('tzion_pos_cart');
+      if (savedCart) {
+        try { AppState.posCart = JSON.parse(savedCart); } catch(e){}
+      }
+      updateCartBadgeDisplays();
+    }
+
+    function saveCartLocally() {
+      localStorage.setItem('tzion_pos_cart', JSON.stringify(AppState.posCart));
+      updateCartBadgeDisplays();
+    }
+
+    function updateCartBadgeDisplays() {
+      const totalUnits = (AppState.posCart || []).reduce((sum, i) => sum + i.qty, 0);
+      const headerBadge = document.getElementById('headerCartBadge');
+      if (headerBadge) headerBadge.innerText = totalUnits;
+      const bannerBadge = document.getElementById('staffBannerCartBadge');
+      if (bannerBadge) bannerBadge.innerText = totalUnits;
+    }
+
+    function initSalesHistoryState() {
+      const savedHistory = localStorage.getItem('tzion_sales_history');
+      if (savedHistory) {
+        try { AppState.salesHistory = JSON.parse(savedHistory); } catch(e){}
+      }
+    }
+
+    function saveSalesHistoryLocally() {
+      localStorage.setItem('tzion_sales_history', JSON.stringify(AppState.salesHistory));
+    }
+
+    // =========================================================================
+    // MULTI-ITEM POS CART & CHECKOUT CONTROLLER
+    // =========================================================================
+    function addToCart(productId, qtyDelta = 1) {
+      const prod = AppState.products.find(p => p.id === productId);
+      if (!prod) return;
+      if (prod.stock <= 0) {
+        showToast(`"${prod.name}" haina mzigo kwa sasa (Out of stock)!`, "error");
+        return;
+      }
+
+      if (!AppState.posCart) AppState.posCart = [];
+      const existing = AppState.posCart.find(i => i.id === productId);
+
+      if (existing) {
+        if (existing.qty + qtyDelta > prod.stock) {
+          showToast(`Mzigo uliobaki dukani ni ${prod.stock} ${prod.unit} tu!`, "warning");
+          return;
+        }
+        existing.qty += qtyDelta;
+        if (existing.qty <= 0) {
+          removeFromCart(productId);
+          return;
+        }
+      } else {
+        AppState.posCart.push({
+          id: prod.id,
+          name: prod.name,
+          sku: prod.sku,
+          unitPrice: prod.sellingPrice,
+          costPrice: prod.costPrice,
+          qty: Math.min(qtyDelta, prod.stock),
+          unit: prod.unit,
+          category: prod.category,
+          maxStock: prod.stock
+        });
+      }
+
+      saveCartLocally();
+      showToast(`Imeongezwa kikapuni: ${prod.name}`, "info");
+      renderUI();
+    }
+
+    function quickSaleSingle(productId) {
+      addToCart(productId, 1);
+      openPosCartModal();
+    }
+
+    function removeFromCart(productId) {
+      AppState.posCart = (AppState.posCart || []).filter(item => item.id !== productId);
+      saveCartLocally();
+      renderPosCart();
+      renderUI();
+    }
+
+    function updateCartItemQty(productId, newQty) {
+      const item = (AppState.posCart || []).find(i => i.id === productId);
+      if (!item) return;
+      const prod = AppState.products.find(p => p.id === productId);
+      const max = prod ? prod.stock : item.maxStock;
+
+      if (newQty <= 0) {
+        removeFromCart(productId);
+        return;
+      }
+      if (newQty > max) {
+        showToast(`Mzigo uliobaki dukani ni ${max} ${item.unit}!`, "warning");
+        item.qty = max;
+      } else {
+        item.qty = newQty;
+      }
+      saveCartLocally();
+      renderPosCart();
+      renderUI();
+    }
+
+    function clearCart() {
+      if (!AppState.posCart || AppState.posCart.length === 0) return;
+      AppState.posCart = [];
+      saveCartLocally();
+      renderPosCart();
+      renderUI();
+      showToast("Kikapu cha mauzo kimesafishwa", "info");
+    }
+
+    function openPosCartModal() {
+      renderPosCart();
+      const modal = document.getElementById('posCartModal');
+      if (modal) {
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+      }
+    }
+
+    function closePosCartModal() {
+      const modal = document.getElementById('posCartModal');
+      if (modal) {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+      }
+    }
+
+    function selectCartPayment(method) {
+      const input = document.getElementById('posCartPaymentMethod');
+      if (input) input.value = method;
+
+      const tabs = {
+        'Cash': document.getElementById('payTabCash'),
+        'Vodacom Lipa Namba': document.getElementById('payTabMpesa'),
+        'Airtel Money': document.getElementById('payTabAirtel'),
+        'Tigo Pesa': document.getElementById('payTabTigo'),
+        'Bank Transfer': document.getElementById('payTabBank')
+      };
+
+      const activeClass = "p-2.5 rounded-xl border border-tzion-orange-500 bg-tzion-orange-500/15 text-tzion-orange-600 dark:text-tzion-orange-400 font-bold text-xs flex items-center justify-center gap-1.5 shadow-sm";
+      const inactiveClass = "p-2.5 rounded-xl border border-purple-200 dark:border-purple-800 bg-purple-50 dark:bg-tzion-purple-950 text-slate-700 dark:text-purple-300 font-medium text-xs flex items-center justify-center gap-1.5";
+
+      Object.keys(tabs).forEach(m => {
+        if (tabs[m]) tabs[m].className = (m === method) ? activeClass : inactiveClass;
+      });
+
+      const cashCalc = document.getElementById('posCartCashCalculator');
+      if (cashCalc) {
+        if (method === 'Cash') {
+          cashCalc.classList.remove('hidden');
+        } else {
+          cashCalc.classList.add('hidden');
+        }
+      }
+
+      handleCartTenderChange();
+    }
+
+    function handleCartTenderChange() {
+      const grandTotal = (AppState.posCart || []).reduce((sum, i) => sum + (i.unitPrice * i.qty), 0);
+      const tenderedInput = parseFloat(document.getElementById('posCartTenderedInput').value);
+      const changeEl = document.getElementById('posCartChangeDisplay');
+      if (!changeEl) return;
+
+      if (isNaN(tenderedInput) || tenderedInput === '') {
+        changeEl.innerText = formatTZS(0);
+        changeEl.className = "font-mono font-black text-slate-400 text-sm";
+        return;
+      }
+
+      const change = tenderedInput - grandTotal;
+      if (change >= 0) {
+        changeEl.innerText = formatTZS(change);
+        changeEl.className = "font-mono font-black text-emerald-600 dark:text-emerald-400 text-sm";
+      } else {
+        changeEl.innerText = `Upungufu: -${formatTZS(Math.abs(change))}`;
+        changeEl.className = "font-mono font-black text-rose-500 text-sm";
+      }
+    }
+
+    function setCartExactTender() {
+      const grandTotal = (AppState.posCart || []).reduce((sum, i) => sum + (i.unitPrice * i.qty), 0);
+      const tenderedInput = document.getElementById('posCartTenderedInput');
+      if (tenderedInput) {
+        tenderedInput.value = grandTotal;
+        handleCartTenderChange();
+      }
+    }
+
+    function renderPosCart() {
+      const container = document.getElementById('posCartItemsList');
+      if (!container) return;
+
+      const items = AppState.posCart || [];
+      const totalUnits = items.reduce((sum, i) => sum + i.qty, 0);
+      const grandTotal = items.reduce((sum, i) => sum + (i.unitPrice * i.qty), 0);
+
+      const itemsCountEl = document.getElementById('posCartTotalItemsCount');
+      const unitsEl = document.getElementById('posCartTotalUnits');
+      const amountEl = document.getElementById('posCartTotalAmount');
+
+      if (itemsCountEl) itemsCountEl.innerText = items.length;
+      if (unitsEl) unitsEl.innerText = `${totalUnits} pcs`;
+      if (amountEl) amountEl.innerText = formatTZS(grandTotal);
+
+      updateCartBadgeDisplays();
+
+      if (items.length === 0) {
+        container.innerHTML = `
+          <div class="text-center py-10 text-slate-400">
+            <span class="text-4xl block mb-2">🛒</span>
+            <p class="font-bold text-xs text-slate-600 dark:text-purple-300">Kikapu kiko tupu kwa sasa</p>
+            <p class="text-[11px] mt-1">Bofya "+ Kikapuni" kwenye bidhaa yoyote kuongeza mauzo.</p>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = items.map(item => {
+        const prod = AppState.products.find(p => p.id === item.id);
+        const max = prod ? prod.stock : item.maxStock;
+        const lineTotal = item.unitPrice * item.qty;
+
+        return `
+          <div class="p-3 bg-white dark:bg-tzion-purple-900/40 rounded-2xl border border-purple-200 dark:border-purple-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-sm">
+            <div class="flex-1">
+              <div class="flex items-center gap-2">
+                <span class="font-bold text-slate-900 dark:text-white text-xs leading-snug">${item.name}</span>
+                <span class="text-[9px] font-mono px-1.5 py-0.2 rounded bg-purple-100 dark:bg-tzion-purple-900 text-tzion-purple-700 dark:text-purple-300 font-bold">${item.sku}</span>
+              </div>
+              <div class="text-[11px] text-slate-500 dark:text-purple-300/80 font-mono mt-0.5">
+                Bei ya Kipande: <strong class="text-tzion-orange-500">${formatTZS(item.unitPrice)}</strong> / ${item.unit}
+              </div>
+            </div>
+
+            <!-- Quantity Stepper -->
+            <div class="flex items-center justify-between sm:justify-end gap-3">
+              <div class="flex items-center space-x-1.5 bg-purple-50 dark:bg-tzion-purple-950 p-1 rounded-xl border border-purple-200 dark:border-purple-800">
+                <button onclick="updateCartItemQty(${item.id}, ${item.qty - 1})" class="w-7 h-7 rounded-lg bg-white dark:bg-tzion-purple-900 text-slate-800 dark:text-white font-bold text-xs flex items-center justify-center hover:bg-purple-100 transition-colors shadow-sm">-</button>
+                <input 
+                  type="number" 
+                  value="${item.qty}" 
+                  min="1" 
+                  max="${max}" 
+                  onchange="updateCartItemQty(${item.id}, parseInt(this.value) || 1)" 
+                  class="w-12 text-center bg-transparent font-mono font-bold text-xs text-slate-900 dark:text-white focus:outline-none"
+                >
+                <button onclick="updateCartItemQty(${item.id}, ${item.qty + 1})" class="w-7 h-7 rounded-lg bg-white dark:bg-tzion-purple-900 text-slate-800 dark:text-white font-bold text-xs flex items-center justify-center hover:bg-purple-100 transition-colors shadow-sm">+</button>
+              </div>
+
+              <div class="text-right min-w-[90px]">
+                <span class="text-xs font-mono font-bold text-slate-900 dark:text-white block">${formatTZS(lineTotal)}</span>
+                <span class="text-[10px] text-slate-400 font-mono">${item.qty} ${item.unit}</span>
+              </div>
+
+              <button onclick="removeFromCart(${item.id})" class="p-1.5 text-rose-500 hover:bg-rose-500/10 rounded-lg text-xs transition-colors" title="Ondoa bidhaa hii">
+                🗑️
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      handleCartTenderChange();
+    }
+
+    function submitCartCheckout() {
+      const items = AppState.posCart || [];
+      if (items.length === 0) {
+        showToast("Kikapu kiko tupu! Ongeza bidhaa kabla ya kulipa.", "warning");
+        return;
+      }
+
+      // Check Subscription Lock
+      if (!validateStoreSubscription()) {
+        showToast("Transaction Blocked: Store subscription is suspended or past grace period.", "error");
+        return;
+      }
+
+      // Validate stock for all items
+      for (const item of items) {
+        const prod = AppState.products.find(p => p.id === item.id);
+        if (!prod || prod.stock < item.qty) {
+          showToast(`Mzigo hautoshi kwa "${item.name}"! Uliobaki: ${prod ? prod.stock : 0}`, "error");
+          return;
+        }
+      }
+
+      const grandTotal = items.reduce((sum, i) => sum + (i.unitPrice * i.qty), 0);
+      const paymentMethod = document.getElementById('posCartPaymentMethod') ? document.getElementById('posCartPaymentMethod').value : 'Cash';
+      const customerName = (document.getElementById('posCartCustomerName') ? document.getElementById('posCartCustomerName').value.trim() : '') || 'Walk-in Customer';
+      const customerPhone = document.getElementById('posCartCustomerPhone') ? document.getElementById('posCartCustomerPhone').value.trim() : '';
+
+      let tendered = grandTotal;
+      let change = 0;
+      if (paymentMethod === 'Cash') {
+        const tenderedInput = parseFloat(document.getElementById('posCartTenderedInput') ? document.getElementById('posCartTenderedInput').value : grandTotal);
+        tendered = isNaN(tenderedInput) || tenderedInput < grandTotal ? grandTotal : tenderedInput;
+        change = tendered - grandTotal;
+      }
+
+      const now = new Date();
+      const dateStr = now.toISOString().slice(0, 10);
+      const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      const receiptNo = `RCP-${dateStr.replace(/-/g, '')}-${now.getTime().toString().slice(-4)}`;
+      const curStore = AppState.stores.find(s => s.id === AppState.currentStoreId) || AppState.stores[0];
+
+      // 1. Atomically deduct stock
+      for (const item of items) {
+        const prod = AppState.products.find(p => p.id === item.id);
+        if (prod) {
+          prod.stock -= item.qty;
+        }
+      }
+
+      // 2. Build receipt object
+      const receiptRecord = {
+        id: `tx-tz-${now.getTime().toString().slice(-5)}`,
+        receiptNo: receiptNo,
+        date: dateStr,
+        time: timeStr,
+        timestamp: now.toISOString(),
+        storeId: curStore.id,
+        storeName: curStore.name,
+        cashier: AppState.currentUser ? AppState.currentUser.name : 'Cashier',
+        customerName: customerName,
+        customerPhone: customerPhone,
+        paymentMethod: paymentMethod,
+        items: items.map(i => ({
+          id: i.id,
+          name: i.name,
+          sku: i.sku,
+          unitPrice: i.unitPrice,
+          qty: i.qty,
+          unit: i.unit,
+          subtotal: i.unitPrice * i.qty
+        })),
+        totalUnits: items.reduce((sum, i) => sum + i.qty, 0),
+        totalAmount: grandTotal,
+        tendered: tendered,
+        change: change
+      };
+
+      // 3. Update AppState and LocalStorage
+      if (!AppState.salesHistory) AppState.salesHistory = [];
+      AppState.salesHistory.unshift(receiptRecord);
+
+      AppState.todaySales.unshift({
+        id: receiptRecord.id,
+        receiptNo: receiptNo,
+        productName: items.map(i => `${i.qty}x ${i.name}`).join(', '),
+        qty: receiptRecord.totalUnits,
+        amount: grandTotal,
+        paymentMethod: paymentMethod,
+        timestamp: timeStr,
+        date: dateStr,
+        cashier: receiptRecord.cashier,
+        items: receiptRecord.items
+      });
+
+      // 4. Background Sync Mutation Queue
+      for (const item of items) {
+        AppState.syncQueue.unshift({
+          id: `queue-${Date.now().toString().slice(-4)}-${item.id}`,
+          type: 'DEDUCT',
+          productId: item.id,
+          productName: item.name,
+          qty: item.qty,
+          unitPrice: item.unitPrice,
+          totalAmount: item.unitPrice * item.qty,
+          paymentMethod: paymentMethod,
+          reason: `Sale - ${receiptNo}`,
+          timestamp: timeStr,
+          date: dateStr,
+          user: AppState.currentUser ? AppState.currentUser.email : 'cashier@tzionstockly.com',
+          userName: receiptRecord.cashier
+        });
+      }
+
+      saveProductsLocally();
+      saveSalesHistoryLocally();
+      saveCloseoutStateLocally();
+
+      // 5. Empty Cart & Close POS Modal
+      AppState.posCart = [];
+      saveCartLocally();
+      closePosCartModal();
+
+      // 6. Launch Digital Receipt
+      AppState.lastCompletedReceipt = receiptRecord;
+      openDigitalReceiptModal(receiptRecord);
+
+      showToast(`Mauzo yamekamilika! Risiti #${receiptNo}`, "success");
+      renderUI();
+    }
+
+    // =========================================================================
+    // DIGITAL RECEIPT & WHATSAPP DELIVERY CONTROLLER
+    // =========================================================================
+    function openDigitalReceiptModal(receipt) {
+      if (!receipt) receipt = AppState.lastCompletedReceipt;
+      if (!receipt) return;
+
+      const modal = document.getElementById('digitalReceiptModal');
+      if (!modal) return;
+
+      document.getElementById('receiptStoreName').innerText = receipt.storeName || "TZION MAIN STORE";
+      document.getElementById('receiptNoDisplay').innerText = receipt.receiptNo;
+      document.getElementById('receiptDateTime').innerText = `${receipt.date} ${receipt.time}`;
+      document.getElementById('receiptCashierName').innerText = receipt.cashier || "Cashier";
+      document.getElementById('receiptCustomerName').innerText = receipt.customerName || "Walk-in Customer";
+      document.getElementById('receiptTotalAmount').innerText = formatTZS(receipt.totalAmount);
+      document.getElementById('receiptPaymentMethod').innerText = receipt.paymentMethod;
+      document.getElementById('receiptTendered').innerText = formatTZS(receipt.tendered || receipt.totalAmount);
+      document.getElementById('receiptChange').innerText = formatTZS(receipt.change || 0);
+
+      const itemsTbody = document.getElementById('receiptItemsList');
+      if (itemsTbody && receipt.items) {
+        itemsTbody.innerHTML = receipt.items.map(item => `
+          <tr class="py-1">
+            <td class="text-left font-medium py-1">${item.name}</td>
+            <td class="text-center font-bold py-1">${item.qty} ${item.unit || ''}</td>
+            <td class="text-right py-1">${formatTZS(item.unitPrice)}</td>
+            <td class="text-right font-bold py-1">${formatTZS(item.subtotal || (item.unitPrice * item.qty))}</td>
+          </tr>
+        `).join('');
+      }
+
+      // WhatsApp Delivery URL Setup
+      const waBtn = document.getElementById('receiptWhatsAppBtn');
+      if (waBtn) {
+        const phone = (receipt.customerPhone || '').replace(/[^0-9]/g, '');
+        const itemsTxt = (receipt.items || []).map(i => `• ${i.qty}x ${i.name} - ${formatTZS(i.subtotal || (i.unitPrice * i.qty))}`).join('\n');
+        const text = [
+          `🏪 *${receipt.storeName || 'TZION MAIN STORE'}*`,
+          `🧾 Risiti: *${receipt.receiptNo}*`,
+          `📅 Tarehe: ${receipt.date} ${receipt.time}`,
+          `👤 Mhudumu: ${receipt.cashier}`,
+          `-----------------------------------`,
+          itemsTxt,
+          `-----------------------------------`,
+          `💰 *JUMLA KUU: ${formatTZS(receipt.totalAmount)}*`,
+          `💵 Malipo: ${receipt.paymentMethod}`,
+          receipt.change > 0 ? `Chenji: ${formatTZS(receipt.change)}` : '',
+          `-----------------------------------`,
+          `Asante kwa kufanya biashara nasi! Karibu tena.`,
+          `_Mfumo wa TzionStockly - Kariakoo_`
+        ].filter(Boolean).join('\n');
+
+        waBtn.href = phone 
+          ? `https://wa.me/${phone.startsWith('0') ? '255' + phone.slice(1) : phone}?text=${encodeURIComponent(text)}`
+          : `https://wa.me/?text=${encodeURIComponent(text)}`;
+      }
+
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
+
+    function closeDigitalReceiptModal() {
+      const modal = document.getElementById('digitalReceiptModal');
+      if (modal) {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+      }
+    }
+
+    function printReceiptDirect() {
+      window.print();
+    }
+
+    // =========================================================================
+    // SALES HISTORY CONTROLLER (DAY, MONTH, YEAR, ALL TIME)
+    // =========================================================================
+    function openSalesHistoryModal() {
+      initSalesHistoryState();
+      renderSalesHistory();
+      const modal = document.getElementById('salesHistoryModal');
+      if (modal) {
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+      }
+    }
+
+    function closeSalesHistoryModal() {
+      const modal = document.getElementById('salesHistoryModal');
+      if (modal) {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+      }
+    }
+
+    function setSalesHistoryFilter(period) {
+      AppState.salesHistoryFilter = period; // 'today' | 'month' | 'year' | 'all'
+      renderSalesHistory();
+    }
+
+    function handleSalesHistorySearch(val) {
+      AppState.salesHistorySearch = val.trim();
+      renderSalesHistory();
+    }
+
+    function handleSalesHistoryPaymentFilter(val) {
+      AppState.salesHistoryPaymentFilter = val;
+      renderSalesHistory();
+    }
+
+    function renderSalesHistory() {
+      const filter = AppState.salesHistoryFilter || 'today';
+      const now = new Date();
+      const todayStr = now.toISOString().slice(0, 10);
+      const curMonthStr = todayStr.slice(0, 7); // 'YYYY-MM'
+      const curYearStr = todayStr.slice(0, 4);  // 'YYYY'
+
+      // Update Tab Styles
+      const tabs = {
+        today: document.getElementById('histTabToday'),
+        month: document.getElementById('histTabMonth'),
+        year: document.getElementById('histTabYear'),
+        all: document.getElementById('histTabAll')
+      };
+      const activeClass = "px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all bg-tzion-orange-500 text-white shadow";
+      const inactiveClass = "px-3.5 py-1.5 rounded-xl text-xs font-medium transition-all bg-purple-100 dark:bg-tzion-purple-900/60 text-slate-700 dark:text-purple-300";
+
+      Object.keys(tabs).forEach(k => {
+        if (tabs[k]) tabs[k].className = (k === filter) ? activeClass : inactiveClass;
+      });
+
+      const periodLabelEl = document.getElementById('historyActivePeriodLabel');
+      if (periodLabelEl) {
+        if (filter === 'today') periodLabelEl.innerText = `Leo: ${now.toLocaleDateString('sw-TZ', { day: 'numeric', month: 'short', year: 'numeric' })}`;
+        if (filter === 'month') periodLabelEl.innerText = `Mwezi: ${now.toLocaleDateString('sw-TZ', { month: 'long', year: 'numeric' })}`;
+        if (filter === 'year') periodLabelEl.innerText = `Mwaka: ${now.getFullYear()}`;
+        if (filter === 'all') periodLabelEl.innerText = `Historia Yote`;
+      }
+
+      let sales = AppState.salesHistory || [];
+      if (filter === 'today') {
+        sales = sales.filter(s => s.date === todayStr || (s.timestamp && s.timestamp.startsWith(todayStr)));
+      } else if (filter === 'month') {
+        sales = sales.filter(s => (s.date && s.date.startsWith(curMonthStr)) || (s.timestamp && s.timestamp.startsWith(curMonthStr)));
+      } else if (filter === 'year') {
+        sales = sales.filter(s => (s.date && s.date.startsWith(curYearStr)) || (s.timestamp && s.timestamp.startsWith(curYearStr)));
+      }
+
+      // Apply Search Filter
+      if (AppState.salesHistorySearch) {
+        const q = AppState.salesHistorySearch.toLowerCase();
+        sales = sales.filter(s => 
+          (s.receiptNo && s.receiptNo.toLowerCase().includes(q)) ||
+          (s.cashier && s.cashier.toLowerCase().includes(q)) ||
+          (s.customerName && s.customerName.toLowerCase().includes(q)) ||
+          (s.items && s.items.some(i => i.name.toLowerCase().includes(q)))
+        );
+      }
+
+      // Apply Payment Filter
+      if (AppState.salesHistoryPaymentFilter && AppState.salesHistoryPaymentFilter !== 'All') {
+        sales = sales.filter(s => s.paymentMethod === AppState.salesHistoryPaymentFilter);
+      }
+
+      // Calculate Metrics
+      const totalRev = sales.reduce((sum, s) => sum + (s.totalAmount || s.amount || 0), 0);
+      const cashRev = sales.filter(s => s.paymentMethod === 'Cash').reduce((sum, s) => sum + (s.totalAmount || s.amount || 0), 0);
+      const mobileRev = sales.filter(s => s.paymentMethod !== 'Cash').reduce((sum, s) => sum + (s.totalAmount || s.amount || 0), 0);
+      const totalUnits = sales.reduce((sum, s) => sum + (s.totalUnits || s.qty || 1), 0);
+
+      const totalRevEl = document.getElementById('historyTotalRevenue');
+      const cashRevEl = document.getElementById('historyCashSales');
+      const mobileRevEl = document.getElementById('historyMobileSales');
+      const unitsEl = document.getElementById('historyUnitsSold');
+      const txCountEl = document.getElementById('historyTxCount');
+
+      if (totalRevEl) totalRevEl.innerText = formatTZS(totalRev);
+      if (cashRevEl) cashRevEl.innerText = formatTZS(cashRev);
+      if (mobileRevEl) mobileRevEl.innerText = formatTZS(mobileRev);
+      if (unitsEl) unitsEl.innerText = `${totalUnits} pcs`;
+      if (txCountEl) txCountEl.innerText = `${sales.length} risiti`;
+
+      const container = document.getElementById('salesHistoryListContainer');
+      if (!container) return;
+
+      if (sales.length === 0) {
+        container.innerHTML = `
+          <div class="text-center py-12 text-slate-400">
+            <span class="text-3xl block mb-2">🧾</span>
+            <p class="text-xs">Hakuna rekodi za mauzo zilizopatikana kwa kipindi hiki.</p>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = `
+        <div class="overflow-x-auto">
+          <table class="w-full text-xs text-left">
+            <thead class="text-[11px] text-slate-400 uppercase border-b border-purple-100 dark:border-purple-900/60 pb-2">
+              <tr>
+                <th class="py-2.5 px-3">Risiti #</th>
+                <th class="py-2.5 px-3">Tarehe & Saa</th>
+                <th class="py-2.5 px-3">Mhudumu / Mteja</th>
+                <th class="py-2.5 px-3">Bidhaa Zilizouzwa</th>
+                <th class="py-2.5 px-3">Malipo</th>
+                <th class="py-2.5 px-3 text-right">Jumla (TZS)</th>
+                <th class="py-2.5 px-3 text-center">Kitendo</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-purple-100 dark:divide-purple-900/40">
+              ${sales.map(s => {
+                const itemsSummary = s.items 
+                  ? s.items.map(i => `${i.qty}x ${i.name}`).join(', ') 
+                  : (s.productName || 'Bidhaa');
+                return `
+                  <tr class="hover:bg-purple-50/50 dark:hover:bg-tzion-purple-900/30 transition-colors">
+                    <td class="py-3 px-3 font-mono font-bold text-tzion-orange-500">${s.receiptNo || s.id}</td>
+                    <td class="py-3 px-3 font-mono text-[11px] text-slate-500 dark:text-purple-300">
+                      <div>${s.date}</div>
+                      <div class="text-[10px] text-slate-400">${s.time || ''}</div>
+                    </td>
+                    <td class="py-3 px-3">
+                      <div class="font-bold text-slate-900 dark:text-white">${s.cashier || 'Cashier'}</div>
+                      <div class="text-[10px] text-slate-400">${s.customerName || 'Walk-in'}</div>
+                    </td>
+                    <td class="py-3 px-3 max-w-xs">
+                      <span class="text-slate-800 dark:text-purple-200 truncate block text-[11px]" title="${itemsSummary}">${itemsSummary}</span>
+                      <span class="text-[10px] text-slate-400">${s.totalUnits || (s.qty || 1)} jumla ya vipande</span>
+                    </td>
+                    <td class="py-3 px-3">
+                      <span class="px-2 py-0.5 rounded-full text-[10px] font-bold font-mono ${s.paymentMethod === 'Cash' ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400' : 'bg-purple-500/15 text-tzion-purple-700 dark:text-purple-300'}">
+                        ${s.paymentMethod}
+                      </span>
+                    </td>
+                    <td class="py-3 px-3 text-right font-mono font-bold text-slate-900 dark:text-white text-sm">
+                      ${formatTZS(s.totalAmount || s.amount)}
+                    </td>
+                    <td class="py-3 px-3 text-center">
+                      <div class="inline-flex items-center gap-1.5">
+                        <button onclick="viewHistoricalReceipt('${s.id}')" class="px-2 py-1 rounded-lg bg-purple-100 dark:bg-tzion-purple-900/60 hover:bg-purple-200 text-tzion-purple-700 dark:text-purple-300 text-[11px] font-bold transition-all" title="Fungua Risiti">
+                          👁️ Risiti
+                        </button>
+                        <button onclick="sendHistoricalReceiptWhatsApp('${s.id}')" class="px-2 py-1 rounded-lg bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-600 dark:text-emerald-400 text-[11px] font-bold transition-all" title="Tuma WhatsApp">
+                          📲 WhatsApp
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                `;
+              }).join('')}
+            </tbody>
+          </table>
+        </div>
+      `;
+    }
+
+    function viewHistoricalReceipt(receiptId) {
+      const receipt = (AppState.salesHistory || []).find(s => s.id === receiptId);
+      if (receipt) {
+        openDigitalReceiptModal(receipt);
+      }
+    }
+
+    function sendHistoricalReceiptWhatsApp(receiptId) {
+      const receipt = (AppState.salesHistory || []).find(s => s.id === receiptId);
+      if (!receipt) return;
+      const phone = (receipt.customerPhone || '').replace(/[^0-9]/g, '');
+      const itemsTxt = (receipt.items || []).map(i => `• ${i.qty}x ${i.name} - ${formatTZS(i.subtotal || (i.unitPrice * i.qty))}`).join('\n');
+      const text = [
+        `🏪 *${receipt.storeName || 'TZION MAIN STORE'}*`,
+        `🧾 Risiti: *${receipt.receiptNo}*`,
+        `📅 Tarehe: ${receipt.date} ${receipt.time}`,
+        `👤 Mhudumu: ${receipt.cashier}`,
+        `-----------------------------------`,
+        itemsTxt,
+        `-----------------------------------`,
+        `💰 *JUMLA KUU: ${formatTZS(receipt.totalAmount || receipt.amount)}*`,
+        `💵 Malipo: ${receipt.paymentMethod}`,
+        `Asante kwa kufanya biashara nasi!`
+      ].filter(Boolean).join('\n');
+
+      const waUrl = phone 
+        ? `https://wa.me/${phone.startsWith('0') ? '255' + phone.slice(1) : phone}?text=${encodeURIComponent(text)}`
+        : `https://wa.me/?text=${encodeURIComponent(text)}`;
+      window.open(waUrl, '_blank');
+    }
+
+    function exportSalesHistoryCSV() {
+      const filter = AppState.salesHistoryFilter || 'today';
+      const sales = AppState.salesHistory || [];
+      if (sales.length === 0) {
+        showToast("Hakuna rekodi za mauzo za kupakua.", "warning");
+        return;
+      }
+
+      const headers = ["Receipt No", "Date", "Time", "Cashier", "Customer", "Items", "Total Units", "Grand Total TZS", "Payment Method"];
+      const rows = sales.map(s => [
+        s.receiptNo || s.id,
+        s.date,
+        s.time || '',
+        `"${s.cashier || ''}"`,
+        `"${s.customerName || ''}"`,
+        `"${(s.items ? s.items.map(i => `${i.qty}x ${i.name}`).join('; ') : s.productName || '')}"`,
+        s.totalUnits || s.qty || 1,
+        s.totalAmount || s.amount,
+        `"${s.paymentMethod}"`
+      ]);
+
+      const csvContent = "data:text/csv;charset=utf-8," + [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement("a");
+      link.setAttribute("href", encodedUri);
+      link.setAttribute("download", `tzion_sales_report_${filter}_${new Date().toISOString().slice(0, 10)}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      showToast("Ripoti ya Mauzo imepakuliwa kwa CSV!", "success");
+    }
+
+    // =========================================================================
+    // STORE ADMIN INVENTORY CONTROLLER (RECEIVE STOCK / WRITE-OFF ADJUSTMENT)
+    // =========================================================================
+    function openAdminStockModal(productId, action) {
+      if (AppState.currentUser.role !== 'admin') {
+        showToast("Access Denied: Customer checkouts are handled in Cashier Terminal.", "error");
+        return;
+      }
+
+      const prod = AppState.products.find(p => p.id === productId);
+      if (!prod) return;
+
+      AppState.activeModalItem = prod;
+      AppState.activeModalAction = action; // 'in' (Receive) or 'out' (Adjust/Write-off)
+
+      const modal = document.getElementById('adminStockModal');
+      const badge = document.getElementById('adminStockBadge');
+      const title = document.getElementById('adminStockModalTitle');
+      const current = document.getElementById('adminStockCurrentQty');
+      const unit = document.getElementById('adminStockUnit');
+      const cost = document.getElementById('adminStockCostPrice');
+      const submitBtn = document.getElementById('adminStockSubmitBtn');
+      const reasonSelect = document.getElementById('adminStockReason');
+      const qtyInput = document.getElementById('adminStockQty');
+      const notesInput = document.getElementById('adminStockNotes');
+
+      qtyInput.value = 1;
+      notesInput.value = '';
+      title.innerText = prod.name;
+      current.innerText = prod.stock;
+      unit.innerText = prod.unit;
+      cost.innerText = formatTZS(prod.costPrice);
+
+      if (action === 'in') {
+        badge.className = "px-2.5 py-0.5 rounded-full text-xs font-mono font-bold uppercase bg-tzion-purple-600/20 text-tzion-purple-700 dark:text-purple-300 border border-tzion-purple-600/30";
+        badge.innerText = "ADMIN: RECEIVE STOCK (+)";
+        submitBtn.className = "flex-1 py-2 rounded-xl bg-tzion-purple-600 hover:bg-tzion-purple-700 text-white text-xs font-bold shadow-lg shadow-tzion-purple-900/20";
+        submitBtn.innerText = "Thibitisha Upokeaji Mzigo (+ In)";
+        reasonSelect.innerHTML = `
+          <option value="Supplier Delivery">Supplier Shipment Received (Mzigo Mpya)</option>
+          <option value="Physical Audit Correction">Inventory Audit Adjustment (Hesabu Iliyozidi)</option>
+          <option value="Return to Shelf">Customer Return to Stock (Bidhaa Iliyorudishwa)</option>
+        `;
+      } else {
+        badge.className = "px-2.5 py-0.5 rounded-full text-xs font-mono font-bold uppercase bg-rose-500/20 text-rose-600 dark:text-rose-400 border border-rose-500/30";
+        badge.innerText = "ADMIN: ADJUST STOCK (-)";
+        submitBtn.className = "flex-1 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold shadow-lg shadow-rose-900/20";
+        submitBtn.innerText = "Thibitisha Upunguzaji Mzigo (- Write-off)";
+        reasonSelect.innerHTML = `
+          <option value="Damaged / Broken">Damaged or Broken Stock (Bidhaa Iliyoharibika)</option>
+          <option value="Expired Goods">Expired Goods (Bidhaa Iliyopitwa na Wakati)</option>
+          <option value="Audit Shrinkage">Inventory Audit Shrinkage (Upungufu wa Hesabu)</option>
+          <option value="Internal Store Use">Internal Store Consumption (Matumizi ya Ndani)</option>
+          <option value="Returned to Supplier">Returned to Supplier (Kurejesha kwa Msambazaji)</option>
+        `;
+      }
+
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
+
+    function closeAdminStockModal() {
+      const modal = document.getElementById('adminStockModal');
+      if (modal) {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+      }
+      AppState.activeModalItem = null;
+    }
+
+    function adjustAdminInputQty(delta) {
+      const input = document.getElementById('adminStockQty');
+      let val = parseInt(input.value) || 0;
+      val = Math.max(1, val + delta);
+      input.value = val;
+    }
+
+    function submitAdminStockAction() {
+      if (!AppState.activeModalItem) return;
+      if (!validateStoreSubscription()) {
+        showToast("Transaction Blocked: Store subscription is suspended or past grace period.", "error");
+        return;
+      }
+
+      const qty = parseInt(document.getElementById('adminStockQty').value) || 1;
+      const reason = document.getElementById('adminStockReason').value;
+      const notes = document.getElementById('adminStockNotes').value.trim();
+      const prod = AppState.activeModalItem;
+
+      if (AppState.activeModalAction === 'out' && prod.stock < qty) {
+        showToast(`Upunguzaji umeshindikana: Mzigo uliopo ni ${prod.stock} ${prod.unit} tu!`, "error");
+        return;
+      }
+
+      // 1. Update stock
+      if (AppState.activeModalAction === 'in') {
+        prod.stock += qty;
+      } else {
+        prod.stock -= qty;
+      }
+      saveProductsLocally();
+
+      // 2. Queue stock adjustment mutation for Supabase Background Sync
+      const now = new Date();
+      const queueRecord = {
+        id: `adj-tz-${now.getTime().toString().slice(-4)}`,
+        type: AppState.activeModalAction === 'in' ? 'ADD' : 'DEDUCT',
+        productId: prod.id,
+        productName: prod.name,
+        qty: qty,
+        unitPrice: prod.costPrice,
+        totalAmount: qty * prod.costPrice,
+        paymentMethod: 'Inventory Adjustment',
+        reason: notes ? `${reason} (${notes})` : reason,
+        timestamp: now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        date: now.toISOString().slice(0, 10),
+        user: AppState.currentUser.email,
+        userName: AppState.currentUser.name
+      };
+      AppState.syncQueue.unshift(queueRecord);
+
+      closeAdminStockModal();
+      showToast(`Imerekodiwa: ${AppState.activeModalAction === 'in' ? '+' : '-'}${qty} ${prod.unit} kwa "${prod.name}"`, "success");
+      renderUI();
+    }
+
     function openStockModal(productId, action) {
       // Permission Enforcement:
       if (action === 'in' && AppState.currentUser.role !== 'admin') {
@@ -1662,23 +3255,13 @@
       const curStore = AppState.stores.find(s => s.id === AppState.currentStoreId) || AppState.stores[0];
       if (!curStore) return true;
 
-      // Offline lease check from local storage & memory:
-      // currentTime > license_expires_at OR is_locked == true
-      const storedExpires = localStorage.getItem('tzion_license_expires_at');
-      const storedLocked = localStorage.getItem('tzion_is_locked');
-
-      const isLocked = (storedLocked === 'true') || curStore.is_locked || (curStore.status === 'suspended');
-
-      let expiresAt = null;
-      if (storedExpires) {
-        expiresAt = new Date(storedExpires);
-      } else {
-        const renew = new Date(curStore.subscription_renews_at);
-        expiresAt = new Date(renew.getTime() + (curStore.grace_period_days * 86400000));
-      }
-
+      // Store-specific verification
+      const renew = new Date(curStore.subscription_renews_at);
+      const graceDays = curStore.grace_period_days || 7;
+      const expiresAt = new Date(renew.getTime() + (graceDays * 86400000));
       const now = new Date();
-      const isExpired = expiresAt && (now > expiresAt);
+      const isExpired = !isNaN(expiresAt.getTime()) && (now > expiresAt);
+      const isLocked = curStore.is_locked === true || curStore.status === 'suspended';
 
       if (isLocked || isExpired) {
         const reason = isExpired 
@@ -1688,6 +3271,8 @@
         return false;
       }
 
+      // Remove stale lock key so browser is cleanly unlocked
+      localStorage.removeItem('tzion_is_locked');
       closeSubscriptionLockModal();
       return true;
     }
@@ -2616,6 +4201,11 @@
                 <p class="text-xs text-purple-200">Full stock authority, TZS financial valuation, and Supabase cloud outbox control.</p>
               </div>
               <div class="flex flex-wrap items-center gap-2">
+                <!-- Sales History Global / Admin Button -->
+                <button onclick="openSalesHistoryModal()" class="flex-1 sm:flex-initial px-3.5 py-2.5 rounded-xl bg-purple-700 hover:bg-purple-800 text-white text-xs font-bold shadow flex items-center justify-center gap-1.5 transition-all">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+                  <span>📊 Sales History</span>
+                </button>
                 <!-- End-of-Day Shift Closeout (Z-Report) Button -->
                 <button onclick="openCloseoutModal()" class="flex-1 sm:flex-initial px-3.5 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-xs font-black shadow-lg shadow-amber-900/30 flex items-center justify-center gap-1.5 transition-all active:scale-95">
                   <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
@@ -2783,11 +4373,11 @@
                           <td class="py-3 px-4 font-mono font-bold text-slate-900 dark:text-white">${formatTZS(p.stock * p.costPrice)}</td>
                           <td class="py-3 px-4 text-right">
                             <div class="inline-flex items-center space-x-1.5">
-                              <button onclick="openStockModal(${p.id}, 'in')" class="px-2.5 py-1.5 rounded-xl bg-tzion-purple-600/15 hover:bg-tzion-purple-600/30 text-tzion-purple-700 dark:text-purple-300 border border-tzion-purple-600/30 font-semibold text-xs transition-all">
-                                + Check In
+                              <button onclick="openAdminStockModal(${p.id}, 'in')" class="px-2.5 py-1.5 rounded-xl bg-tzion-purple-600/15 hover:bg-tzion-purple-600/30 text-tzion-purple-700 dark:text-purple-300 border border-tzion-purple-600/30 font-semibold text-xs transition-all">
+                                + Receive Stock
                               </button>
-                              <button onclick="openStockModal(${p.id}, 'out')" class="px-2.5 py-1.5 rounded-xl bg-tzion-orange-500/15 hover:bg-tzion-orange-500/30 text-tzion-orange-600 dark:text-tzion-orange-400 border border-tzion-orange-500/30 font-semibold text-xs transition-all">
-                                - Check Out
+                              <button onclick="openAdminStockModal(${p.id}, 'out')" class="px-2.5 py-1.5 rounded-xl bg-rose-500/15 hover:bg-rose-500/30 text-rose-600 dark:text-rose-400 border border-rose-500/30 font-semibold text-xs transition-all">
+                                - Adjust Stock
                               </button>
                             </div>
                           </td>
@@ -2821,11 +4411,11 @@
                           ${isLow ? `<span class="text-[9px] text-amber-500 font-mono ml-1">(LOW)</span>` : ''}
                         </div>
                         <div class="flex items-center space-x-1.5">
-                          <button onclick="openStockModal(${p.id}, 'in')" class="px-2.5 py-1 rounded-xl bg-tzion-purple-600/15 text-tzion-purple-700 dark:text-purple-300 font-bold text-xs border border-tzion-purple-600/30">
-                            + In
+                          <button onclick="openAdminStockModal(${p.id}, 'in')" class="px-2.5 py-1 rounded-xl bg-tzion-purple-600/15 text-tzion-purple-700 dark:text-purple-300 font-bold text-xs border border-tzion-purple-600/30">
+                            + Receive
                           </button>
-                          <button onclick="openStockModal(${p.id}, 'out')" class="px-2.5 py-1 rounded-xl bg-tzion-orange-500 text-white font-bold text-xs shadow-sm">
-                            - Out
+                          <button onclick="openAdminStockModal(${p.id}, 'out')" class="px-2.5 py-1 rounded-xl bg-rose-500 text-white font-bold text-xs shadow-sm">
+                            - Adjust
                           </button>
                         </div>
                       </div>
@@ -2852,12 +4442,21 @@
                 <h2 class="text-lg sm:text-2xl font-black mt-1">High-Speed Checkout & Dispatch</h2>
                 <p class="text-xs text-orange-100">Tap Check Out on any item to record customer sales. Cost prices are strictly protected.</p>
               </div>
-              <div class="flex items-center gap-2 self-start sm:self-auto">
-                <button onclick="openCloseoutModal()" class="px-3.5 py-2 rounded-2xl bg-white text-tzion-orange-600 hover:bg-orange-50 text-xs font-black shadow flex items-center gap-1.5 transition-all">
-                  <span>🧾</span>
-                  <span>Funga Hesabu (Shift Closeout)</span>
+              <div class="flex flex-wrap items-center gap-2 self-start sm:self-auto">
+                <button onclick="openSalesHistoryModal()" class="px-3 py-2 rounded-2xl bg-white/20 hover:bg-white/30 text-white text-xs font-bold backdrop-blur-md flex items-center gap-1.5 transition-all">
+                  <span>📊</span>
+                  <span>Sales History</span>
                 </button>
-                <div class="bg-white/20 backdrop-blur-md px-3.5 py-2 rounded-2xl text-xs font-mono">
+                <button onclick="openPosCartModal()" class="relative px-3.5 py-2 rounded-2xl bg-white text-tzion-orange-600 hover:bg-orange-50 text-xs font-black shadow-lg flex items-center gap-1.5 transition-all">
+                  <span>🛒</span>
+                  <span>Kikapu cha Mauzo</span>
+                  <span id="staffBannerCartBadge" class="px-1.5 py-0.2 rounded-full bg-tzion-orange-500 text-white text-[10px] font-mono font-bold">${(AppState.posCart || []).reduce((sum, i) => sum + i.qty, 0)}</span>
+                </button>
+                <button onclick="openCloseoutModal()" class="px-3 py-2 rounded-2xl bg-amber-500 hover:bg-amber-600 text-white text-xs font-black shadow flex items-center gap-1.5 transition-all">
+                  <span>🧾</span>
+                  <span>Funga Hesabu</span>
+                </button>
+                <div class="bg-white/20 backdrop-blur-md px-3 py-2 rounded-2xl text-xs font-mono">
                   Cashier: <span class="font-bold">${AppState.currentUser.name}</span>
                 </div>
               </div>
@@ -2904,26 +4503,54 @@
                       <p class="text-xs text-slate-400 mt-0.5">${p.category}</p>
                     </div>
 
-                    <div class="mt-4 pt-3 border-t border-purple-100 dark:border-purple-900/60 flex items-center justify-between gap-2">
-                      <div>
-                        <span class="text-[10px] text-slate-400 block">Retail Price:</span>
-                        <span class="text-sm sm:text-base font-bold font-mono text-tzion-orange-500">${formatTZS(p.sellingPrice)}</span>
+                    <div class="mt-4 pt-3 border-t border-purple-100 dark:border-purple-900/60 flex flex-col gap-2">
+                      <div class="flex items-center justify-between">
+                        <div>
+                          <span class="text-[10px] text-slate-400 block">Retail Price:</span>
+                          <span class="text-sm sm:text-base font-bold font-mono text-tzion-orange-500">${formatTZS(p.sellingPrice)}</span>
+                        </div>
+                        ${(() => {
+                          const cItem = (AppState.posCart || []).find(i => i.id === p.id);
+                          return cItem ? `<span class="px-2 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 font-mono font-bold text-[10px]">Kikapuni: ${cItem.qty}</span>` : '';
+                        })()}
                       </div>
                       
-                      <!-- STAFF CHECK OUT ONLY -->
-                      <button 
-                        onclick="openStockModal(${p.id}, 'out')" 
-                        ${isOutOfStock ? 'disabled' : ''} 
-                        class="px-3.5 py-2 sm:px-4 sm:py-2.5 rounded-2xl bg-gradient-to-r from-tzion-orange-500 to-amber-600 hover:from-tzion-orange-600 hover:to-amber-700 text-white font-bold text-xs shadow-md shadow-tzion-orange-500/20 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed transition-all flex items-center gap-1.5"
-                      >
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
-                        <span>Check Out</span>
-                      </button>
+                      <div class="grid grid-cols-2 gap-1.5">
+                        <button 
+                          onclick="addToCart(${p.id}, 1)" 
+                          ${isOutOfStock ? 'disabled' : ''} 
+                          class="px-2.5 py-2 rounded-xl bg-tzion-purple-600 hover:bg-tzion-purple-700 text-white font-bold text-[11px] shadow-sm active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-1"
+                        >
+                          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                          <span>+ Kikapuni</span>
+                        </button>
+                        <button 
+                          onclick="quickSaleSingle(${p.id})" 
+                          ${isOutOfStock ? 'disabled' : ''} 
+                          class="px-2.5 py-2 rounded-xl bg-gradient-to-r from-tzion-orange-500 to-amber-600 hover:from-tzion-orange-600 hover:to-amber-700 text-white font-bold text-[11px] shadow-sm shadow-tzion-orange-500/20 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-1"
+                        >
+                          <span>⚡ Lipa Moja</span>
+                        </button>
+                      </div>
                     </div>
                   </div>
                 `;
               }).join('')}
             </div>
+
+            ${(AppState.posCart && AppState.posCart.length > 0) ? `
+              <!-- STICKY FLOATING BOTTOM CART BAR -->
+              <div class="fixed bottom-4 left-4 right-4 sm:left-auto sm:right-6 sm:w-96 z-40 bg-gradient-to-r from-tzion-purple-900 via-[#1e073d] to-tzion-purple-950 text-white p-3.5 rounded-2xl shadow-2xl border border-tzion-orange-500/50 flex items-center justify-between gap-3 animate-slide-up">
+                <div>
+                  <div class="text-[11px] text-purple-200 font-medium">🛒 Kikapu cha Mauzo (${AppState.posCart.reduce((sum, i) => sum + i.qty, 0)} pcs)</div>
+                  <div class="text-base font-black font-mono text-tzion-orange-400">${formatTZS(AppState.posCart.reduce((sum, i) => sum + (i.unitPrice * i.qty), 0))}</div>
+                </div>
+                <button onclick="openPosCartModal()" class="px-4 py-2 rounded-xl bg-gradient-to-r from-tzion-orange-500 to-amber-600 hover:from-tzion-orange-600 text-white font-bold text-xs shadow-lg shadow-tzion-orange-500/30 flex items-center gap-1.5 active:scale-95 transition-all">
+                  <span>Kamilisha Mauzo</span>
+                  <span>➔</span>
+                </button>
+              </div>
+            ` : ''}
 
           </div>
         `;
@@ -3004,6 +4631,11 @@
       }
 
       applyTheme();
+      initProductsState();
+      initCartState();
+      initSalesHistoryState();
+      initCloseoutState();
+      updateCartBadgeDisplays();
       setAuthRoleTab('admin');
     };
   </script>
