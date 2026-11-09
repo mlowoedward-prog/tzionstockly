@@ -159,7 +159,7 @@
           </div>
           <!-- Clean Dynamic Portal Title: Staff - staff_name or Store Admin - Store_name -->
           <h1 id="headerPortalTitle" class="text-xs sm:text-sm font-bold font-mono text-tzion-orange-600 dark:text-tzion-orange-400 leading-tight">
-            Store Admin - Tzion Main Flagship Store
+            Store Admin - Jawiza
           </h1>
         </div>
       </div>
@@ -305,11 +305,16 @@
       <form onsubmit="handleFormLogin(event)" class="space-y-4">
         <div>
           <label class="block text-xs font-semibold text-slate-700 dark:text-purple-200 mb-1">Email or Staff ID</label>
-          <input type="text" id="loginEmail" required class="w-full bg-slate-50 dark:bg-tzion-purple-950 border border-purple-200 dark:border-purple-800 rounded-xl px-3.5 py-2.5 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-tzion-orange-500 transition-colors">
+          <input type="text" id="loginEmail" required placeholder="Andika username (admin au sarah)..." class="w-full bg-slate-50 dark:bg-tzion-purple-950 border border-purple-200 dark:border-purple-800 rounded-xl px-3.5 py-2.5 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-tzion-orange-500 transition-colors">
         </div>
         <div>
           <label class="block text-xs font-semibold text-slate-700 dark:text-purple-200 mb-1">Security PIN / Password</label>
-          <input type="password" id="loginPin" required value="1234" class="w-full bg-slate-50 dark:bg-tzion-purple-950 border border-purple-200 dark:border-purple-800 rounded-xl px-3.5 py-2.5 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-tzion-orange-500 transition-colors font-mono">
+          <div class="relative">
+            <input type="password" id="loginPin" required placeholder="Andika password au PIN yako..." class="w-full bg-slate-50 dark:bg-tzion-purple-950 border border-purple-200 dark:border-purple-800 rounded-xl pl-3.5 pr-10 py-2.5 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-tzion-orange-500 transition-colors font-mono">
+            <button type="button" onclick="togglePasswordVisibility()" class="absolute right-3 top-2.5 text-slate-400 hover:text-slate-600 dark:hover:text-purple-200 text-xs" title="Onyesha / Ficha Password">
+              👁️
+            </button>
+          </div>
         </div>
 
         <button type="submit" id="authSubmitBtn" class="w-full py-3 rounded-xl bg-gradient-to-r from-tzion-purple-600 to-tzion-orange-500 hover:from-tzion-purple-700 hover:to-tzion-orange-600 text-white font-bold text-xs uppercase tracking-wider shadow-lg shadow-tzion-purple-900/30 active:scale-98 transition-all">
@@ -317,22 +322,7 @@
         </button>
       </form>
 
-      <!-- Instant Demo Shortcuts -->
-      <div class="mt-6 pt-4 border-t border-purple-100 dark:border-purple-900/40 text-center">
-        <span class="text-[10px] text-slate-400 dark:text-purple-400 font-mono block mb-2">QUICK DEMO ONE-CLICK SIGN IN:</span>
-        <div class="grid grid-cols-2 gap-2">
-          <button onclick="quickLogin('admin')" class="py-2 px-3 rounded-lg bg-purple-100 dark:bg-tzion-purple-900/40 hover:bg-tzion-purple-600 hover:text-white text-tzion-purple-700 dark:text-purple-300 text-[11px] font-semibold border border-purple-200 dark:border-purple-800 transition-all">
-            Login as Admin
-          </button>
-          <button onclick="quickLogin('staff')" class="py-2 px-3 rounded-lg bg-tzion-orange-500/10 hover:bg-tzion-orange-500 hover:text-white text-tzion-orange-600 dark:text-tzion-orange-400 text-[11px] font-semibold border border-tzion-orange-500/30 transition-all">
-            Login as Staff
-          </button>
-        </div>
-        <!-- Discreet Hidden Link for Platform Super Admin -->
-        
       </div>
-
-    </div>
   </section>
 
   <!-- ========================================================================= -->
@@ -541,7 +531,7 @@
       <form onsubmit="handleCreateProduct(event)" class="p-5 space-y-3.5 text-xs">
         <div>
           <label class="block font-semibold text-slate-700 dark:text-purple-200 mb-1">Product Name</label>
-          <input type="text" id="newProdName" required placeholder="e.g. Premium Kilimanjaro Coffee 500g" class="w-full bg-slate-50 dark:bg-tzion-purple-950 border border-purple-200 dark:border-purple-800 rounded-xl px-3 py-2 text-slate-900 dark:text-white focus:outline-none focus:border-tzion-orange-500 text-xs">
+          <input type="text" id="newProdName" required placeholder="mf. Kuku, Uji Mtamu, Mbilimbi..." class="w-full bg-slate-50 dark:bg-tzion-purple-950 border border-purple-200 dark:border-purple-800 rounded-xl px-3 py-2 text-slate-900 dark:text-white focus:outline-none focus:border-tzion-orange-500 text-xs">
         </div>
         <div class="grid grid-cols-2 gap-3">
           <div>
@@ -551,10 +541,9 @@
           <div>
             <label class="block font-semibold text-slate-700 dark:text-purple-200 mb-1">Category</label>
             <select id="newProdCat" class="w-full bg-slate-50 dark:bg-tzion-purple-950 border border-purple-200 dark:border-purple-800 rounded-xl px-2.5 py-2 text-slate-900 dark:text-white focus:outline-none focus:border-tzion-orange-500 text-xs">
-              <option value="Beverages">Beverages</option>
-              <option value="Raw Materials">Raw Materials</option>
-              <option value="Packaged Foods">Packaged Foods</option>
-              <option value="Household">Household</option>
+              <option value="unga">unga</option>
+              <option value="poultry">poultry</option>
+              <option value="appetizer">appetizer</option>
             </select>
           </div>
         </div>
@@ -740,7 +729,7 @@
           </div>
           <div>
             <h3 class="font-extrabold text-slate-900 dark:text-white text-base">Funga Hesabu ya Siku (Z-Report Closeout)</h3>
-            <p id="closeoutHeaderSub" class="text-xs text-slate-500 dark:text-purple-300/70 font-mono">Duka: Tzion Main Store • Tarehe: Leo</p>
+            <p id="closeoutHeaderSub" class="text-xs text-slate-500 dark:text-purple-300/70 font-mono">Duka: Jawiza • Tarehe: Leo</p>
           </div>
         </div>
         <button onclick="closeCloseoutModal()" class="text-slate-400 hover:text-slate-700 dark:hover:text-white p-1 rounded-lg">
@@ -940,7 +929,7 @@
                 <input 
                   type="text" 
                   id="newCashierPin" 
-                  value="1234" 
+                  placeholder="Weka PIN ya muuzaji..." 
                   class="w-full bg-white dark:bg-[#120726] border border-purple-200 dark:border-purple-800 rounded-xl px-3 py-1.5 text-xs font-mono font-bold text-slate-900 dark:text-white focus:outline-none focus:border-tzion-orange-500"
                   required
                 >
@@ -1174,8 +1163,8 @@
       <!-- Printable Receipt Canvas -->
       <div id="printableReceiptArea" class="p-6 overflow-y-auto space-y-4 font-mono text-xs">
         <div class="text-center pb-3 border-b border-dashed border-slate-300">
-          <h2 id="receiptStoreName" class="text-base font-black text-slate-900">TZION MAIN STORE</h2>
-          <p class="text-[10px] text-slate-500">Kariakoo Wholesale & Retail Hub • Dar es Salaam</p>
+          <h2 id="receiptStoreName" class="text-base font-black text-slate-900">JAWIZA STORE</h2>
+          <p class="text-[10px] text-slate-500">Jawiza Retail & Wholesale • Dar es Salaam</p>
           <p class="text-[10px] text-slate-500">Simu: +255 755 123 456</p>
           <div class="mt-2 inline-block px-2.5 py-0.5 rounded-full bg-slate-100 font-bold text-[10px] text-slate-700">
             RISITI YA MAUZO / CASH SALE
@@ -1407,113 +1396,142 @@
       salesHistoryPaymentFilter: 'All',
       lastCompletedReceipt: null,
       
-      // Store Staff Accounts & Passwords
+      // Store Staff Accounts & Passwords (Real Production Accounts)
       staffAccounts: [
-        { id: 'usr-1', name: 'Store Owner / Admin', email: 'admin@tzionstockly.com', pin: '1234', role: 'admin' },
-        { id: 'usr-2', name: 'Cashier Sarah (Till 1)', email: 'staff@tzionstockly.com', pin: '1234', role: 'staff' },
-        { id: 'usr-3', name: 'Cashier Juma (Till 2)', email: 'juma@store', pin: '5678', role: 'staff' }
+        {
+          id: 'usr-admin',
+          username: 'admin',
+          name: 'Jawiza Admin',
+          email: 'admin@jawiza.com',
+          pin: 'Jawiza@Admin2026',
+          role: 'admin'
+        },
+        {
+          id: 'usr-sarah',
+          username: 'sarah',
+          name: 'Sarah',
+          email: 'sarah@jawiza.com',
+          pin: 'Sarah@Jawiza2026',
+          role: 'staff'
+        }
       ],
-      // Shift Closeout & Daily Sales Reconciliation
-      todaySales: [
-        { id: 'tx-tz-101', receiptNo: 'RCP-20261109-1001', productName: 'Kilimanjaro Arabica Coffee 1kg', qty: 2, amount: 90000, paymentMethod: 'Cash', timestamp: '10:45 AM', cashier: 'Cashier Sarah (Till 1)', date: new Date().toISOString().slice(0, 10), items: [{ id: 1, name: 'Kilimanjaro Arabica Coffee 1kg', sku: 'BEV-KIL-001', qty: 2, unitPrice: 45000, subtotal: 90000, unit: 'kg' }] },
-        { id: 'tx-tz-102', receiptNo: 'RCP-20261109-1002', productName: 'Azam Pure Sunflower Oil 5L', qty: 1, amount: 42000, paymentMethod: 'Vodacom Lipa Namba', timestamp: '11:15 AM', cashier: 'Cashier Sarah (Till 1)', date: new Date().toISOString().slice(0, 10), items: [{ id: 3, name: 'Azam Pure Sunflower Oil 5L', sku: 'PKG-AZM-005', qty: 1, unitPrice: 42000, subtotal: 42000, unit: 'jerrycan' }] },
-        { id: 'tx-tz-103', receiptNo: 'RCP-20261109-1003', productName: 'Asas Fresh Whole Milk 1L', qty: 5, amount: 15000, paymentMethod: 'Cash', timestamp: '01:20 PM', cashier: 'Cashier Sarah (Till 1)', date: new Date().toISOString().slice(0, 10), items: [{ id: 4, name: 'Asas Fresh Whole Milk 1L', sku: 'BEV-ASA-001', qty: 5, unitPrice: 3000, subtotal: 15000, unit: 'packet' }] }
-      ],
-      salesHistory: [
-        // Realistic multi-period sample records for immediate Day, Month, Year testing:
-        { id: 'tx-tz-101', receiptNo: 'RCP-20261109-1001', date: new Date().toISOString().slice(0, 10), time: '10:45 AM', timestamp: new Date(Date.now() - 3600000 * 5).toISOString(), cashier: 'Cashier Sarah (Till 1)', customerName: 'Juma Hamisi', customerPhone: '+255712345678', paymentMethod: 'Cash', items: [{ id: 1, name: 'Kilimanjaro Arabica Coffee 1kg', sku: 'BEV-KIL-001', qty: 2, unitPrice: 45000, subtotal: 90000, unit: 'kg' }], totalUnits: 2, totalAmount: 90000, tendered: 100000, change: 10000 },
-        { id: 'tx-tz-102', receiptNo: 'RCP-20261109-1002', date: new Date().toISOString().slice(0, 10), time: '11:15 AM', timestamp: new Date(Date.now() - 3600000 * 4).toISOString(), cashier: 'Cashier Sarah (Till 1)', customerName: 'Mama Neema', customerPhone: '+255784990011', paymentMethod: 'Vodacom Lipa Namba', items: [{ id: 3, name: 'Azam Pure Sunflower Oil 5L', sku: 'PKG-AZM-005', qty: 1, unitPrice: 42000, subtotal: 42000, unit: 'jerrycan' }], totalUnits: 1, totalAmount: 42000, tendered: 42000, change: 0 },
-        { id: 'tx-tz-103', receiptNo: 'RCP-20261109-1003', date: new Date().toISOString().slice(0, 10), time: '01:20 PM', timestamp: new Date(Date.now() - 3600000 * 2).toISOString(), cashier: 'Cashier Sarah (Till 1)', customerName: 'Bakari Ali', customerPhone: '', paymentMethod: 'Cash', items: [{ id: 4, name: 'Asas Fresh Whole Milk 1L', sku: 'BEV-ASA-001', qty: 5, unitPrice: 3000, subtotal: 15000, unit: 'packet' }], totalUnits: 5, totalAmount: 15000, tendered: 20000, change: 5000 },
-        // Earlier this month
-        { id: 'tx-tz-098', receiptNo: 'RCP-20261105-0988', date: new Date(Date.now() - 4 * 86400000).toISOString().slice(0, 10), time: '03:40 PM', timestamp: new Date(Date.now() - 4 * 86400000).toISOString(), cashier: 'Cashier Juma (Till 2)', customerName: 'Rashid Khalfan', customerPhone: '+255755443322', paymentMethod: 'Airtel Money', items: [{ id: 2, name: 'Azam Extra Wheat Flour 25kg', sku: 'RAW-FLR-025', qty: 1, unitPrice: 58000, subtotal: 58000, unit: 'bag' }, { id: 4, name: 'Asas Fresh Whole Milk 1L', sku: 'BEV-ASA-001', qty: 2, unitPrice: 3000, subtotal: 6000, unit: 'packet' }], totalUnits: 3, totalAmount: 64000, tendered: 64000, change: 0 },
-        { id: 'tx-tz-095', receiptNo: 'RCP-20261102-0951', date: new Date(Date.now() - 7 * 86400000).toISOString().slice(0, 10), time: '11:10 AM', timestamp: new Date(Date.now() - 7 * 86400000).toISOString(), cashier: 'Cashier Sarah (Till 1)', customerName: 'Safari Supermarket', customerPhone: '+255788112233', paymentMethod: 'Bank Transfer', items: [{ id: 1, name: 'Kilimanjaro Arabica Coffee 1kg', sku: 'BEV-KIL-001', qty: 3, unitPrice: 45000, subtotal: 135000, unit: 'kg' }, { id: 3, name: 'Azam Pure Sunflower Oil 5L', sku: 'PKG-AZM-005', qty: 2, unitPrice: 42000, subtotal: 84000, unit: 'jerrycan' }], totalUnits: 5, totalAmount: 219000, tendered: 219000, change: 0 },
-        // Earlier this year
-        { id: 'tx-tz-080', receiptNo: 'RCP-20261015-0802', date: new Date(Date.now() - 25 * 86400000).toISOString().slice(0, 10), time: '02:15 PM', timestamp: new Date(Date.now() - 25 * 86400000).toISOString(), cashier: 'Cashier Juma (Till 2)', customerName: 'Zainab Stores', customerPhone: '', paymentMethod: 'Tigo Pesa', items: [{ id: 5, name: 'White Granulated Sugar 50kg', sku: 'RAW-SGR-050', qty: 1, unitPrice: 135000, subtotal: 135000, unit: 'bag' }], totalUnits: 1, totalAmount: 135000, tendered: 135000, change: 0 },
-        { id: 'tx-tz-062', receiptNo: 'RCP-20260910-0621', date: new Date(Date.now() - 60 * 86400000).toISOString().slice(0, 10), time: '09:30 AM', timestamp: new Date(Date.now() - 60 * 86400000).toISOString(), cashier: 'Cashier Sarah (Till 1)', customerName: 'Mwanza Retailers', customerPhone: '+255714009988', paymentMethod: 'Cash', items: [{ id: 2, name: 'Azam Extra Wheat Flour 25kg', sku: 'RAW-FLR-025', qty: 5, unitPrice: 58000, subtotal: 290000, unit: 'bag' }], totalUnits: 5, totalAmount: 290000, tendered: 300000, change: 10000 }
-      ],
+      // Shift Closeout & Daily Sales Reconciliation (Fresh Production State)
+      todaySales: [],
+      salesHistory: [],
       closeoutHistory: [],
 
-      // Multi-Store SaaS & Subscription Control
-      currentStoreId: 'store-tz-001',
+      // Single Store Control: "Jawiza"
+      currentStoreId: 'store-jawiza-001',
       activeSuperAdminPortal: false,
       storeSearchQuery: '',
-      storeStatusFilter: 'All', // 'All' | 'active' | 'past_due' | 'suspended'
+      storeStatusFilter: 'All',
       stores: [
         {
-          id: "store-tz-001",
-          name: "Tzion Main Flagship Store",
-          owner_name: "Edward Mlowo",
+          id: "store-jawiza-001",
+          name: "Jawiza",
+          owner_name: "Jawiza Admin",
           owner_phone: "+255755123456",
+          city: "Dar es Salaam",
           monthly_fee_tzs: 50000,
           status: "active",
-          subscription_renews_at: new Date(Date.now() + 30 * 86400000).toISOString(),
-          is_locked: false,
-          status: "active",
-          grace_period_days: 3,
+          subscription_renews_at: new Date(Date.now() + 60 * 86400000).toISOString(),
+          grace_period_days: 14,
           is_locked: false,
           lock_reason: ""
-        },
-        {
-          id: "store-tz-002",
-          name: "Arusha Safari Provisions",
-          owner_name: "Amina Rashid",
-          owner_phone: "+255784992211",
-          monthly_fee_tzs: 65000,
-          status: "active",
-          subscription_renews_at: new Date(Date.now() + 4 * 86400000).toISOString(),
-          grace_period_days: 3,
-          is_locked: false,
-          lock_reason: ""
-        },
-        {
-          id: "store-tz-003",
-          name: "Mwanza Lake Distributors",
-          owner_name: "Juma Baraka",
-          owner_phone: "+255713445566",
-          monthly_fee_tzs: 75000,
-          status: "past_due",
-          subscription_renews_at: new Date(Date.now() - 1 * 86400000).toISOString(),
-          grace_period_days: 3,
-          is_locked: false,
-          lock_reason: "Grace period active (2 days remaining)"
-        },
-        {
-          id: "store-tz-004",
-          name: "Dodoma Capital Wholesale",
-          owner_name: "Neema Mollel",
-          owner_phone: "+255762883344",
-          monthly_fee_tzs: 50000,
-          status: "suspended",
-          subscription_renews_at: new Date(Date.now() - 8 * 86400000).toISOString(),
-          grace_period_days: 3,
-          is_locked: true,
-          lock_reason: "Monthly subscription payment overdue"
         }
       ],
 
-      // Stock adjustment modal active item
-      activeModalItem: null,
-      activeModalAction: 'out', // 'in' (admin only) | 'out' (admin & user)
-
-      // Staged Excel rows in TZS
-      stagedImportData: [],
-
-      // Master Catalog in Tanzanian Shillings (TZS)
+      // Exact 7 Products Requested:
+      // mbilimbi-appetizer, kuku-poultry, Uji Mtamu-unga, mayai-poultry, mtama mwekundu-unga, mtama mweupe-unga, Njano mix-unga
       products: [
-        { id: 1, name: "Kilimanjaro Arabica Coffee 1kg", sku: "TZ-1001", category: "Beverages", stock: 24, minStock: 10, costPrice: 28000, sellingPrice: 45000, unit: "bags", velocity: 12 },
-        { id: 2, name: "Azam Pure Sunflower Oil 5L", sku: "TZ-1002", category: "Household", stock: 58, minStock: 20, costPrice: 32000, sellingPrice: 42000, unit: "cans", velocity: 22 },
-        { id: 3, name: "Asas Fresh Whole Milk 1L", sku: "TZ-1003", category: "Beverages", stock: 85, minStock: 25, costPrice: 2200, sellingPrice: 3000, unit: "cartons", velocity: 45 },
-        { id: 4, name: "Kyela Super Aromatic Rice 25kg", sku: "TZ-1004", category: "Raw Materials", stock: 6, minStock: 12, costPrice: 75000, sellingPrice: 95000, unit: "sacks", velocity: 8 },
-        { id: 5, name: "Kilombero Sugar 50kg Sack", sku: "TZ-1005", category: "Raw Materials", stock: 3, minStock: 8, costPrice: 140000, sellingPrice: 175000, unit: "sacks", velocity: 5 },
-        { id: 6, name: "Mo Extra Spiced Tea 500g", sku: "TZ-1006", category: "Beverages", stock: 42, minStock: 15, costPrice: 4500, sellingPrice: 7000, unit: "boxes", velocity: 16 },
-        { id: 7, name: "Zanzibar Organic Cinnamon 250g", sku: "TZ-1007", category: "Packaged Foods", stock: 19, minStock: 10, costPrice: 6500, sellingPrice: 11000, unit: "jars", velocity: 9 }
+        {
+          id: 1,
+          name: "mbilimbi",
+          sku: "APP-MBI-001",
+          category: "appetizer",
+          stock: 50,
+          minStock: 10,
+          costPrice: 1000,
+          sellingPrice: 1500,
+          unit: "fungu",
+          velocity: 15
+        },
+        {
+          id: 2,
+          name: "kuku",
+          sku: "PLT-KUK-001",
+          category: "poultry",
+          stock: 30,
+          minStock: 5,
+          costPrice: 12000,
+          sellingPrice: 15000,
+          unit: "kuku",
+          velocity: 10
+        },
+        {
+          id: 3,
+          name: "Uji Mtamu",
+          sku: "UNG-UJI-001",
+          category: "unga",
+          stock: 40,
+          minStock: 10,
+          costPrice: 2500,
+          sellingPrice: 3500,
+          unit: "pakiti",
+          velocity: 20
+        },
+        {
+          id: 4,
+          name: "mayai",
+          sku: "PLT-MAY-001",
+          category: "poultry",
+          stock: 25,
+          minStock: 5,
+          costPrice: 9000,
+          sellingPrice: 11000,
+          unit: "trei",
+          velocity: 18
+        },
+        {
+          id: 5,
+          name: "mtama mwekundu",
+          sku: "UNG-MTM-001",
+          category: "unga",
+          stock: 50,
+          minStock: 10,
+          costPrice: 1800,
+          sellingPrice: 2500,
+          unit: "kg",
+          velocity: 12
+        },
+        {
+          id: 6,
+          name: "mtama mweupe",
+          sku: "UNG-MTW-002",
+          category: "unga",
+          stock: 50,
+          minStock: 10,
+          costPrice: 1800,
+          sellingPrice: 2500,
+          unit: "kg",
+          velocity: 14
+        },
+        {
+          id: 7,
+          name: "Njano mix",
+          sku: "UNG-NJM-003",
+          category: "unga",
+          stock: 40,
+          minStock: 10,
+          costPrice: 2500,
+          sellingPrice: 3500,
+          unit: "pakiti",
+          velocity: 16
+        }
       ],
 
-      // Offline Outbox Queue (Mutations waiting to push to Supabase)
-      syncQueue: [
-        { id: 'tx-tz-101', type: 'DEDUCT', productId: 1, productName: 'Kilimanjaro Arabica Coffee 1kg', qty: 2, unitPrice: 45000, reason: 'Customer Sale', timestamp: '10:45 AM', user: 'staff@tzionstockly.com' },
-        { id: 'tx-tz-102', type: 'ADD', productId: 3, productName: 'Asas Fresh Whole Milk 1L', qty: 20, unitPrice: 3000, reason: 'Supplier Delivery', timestamp: '11:15 AM', user: 'admin@tzionstockly.com' }
-      ]
+      // Offline Outbox Queue
+      syncQueue: []
     };
 
     let movementChart = null;
@@ -1560,65 +1578,72 @@
     // AUTHENTICATION ENGINE (ADMIN VS STAFF USER)
     // =========================================================================
 
+    function togglePasswordVisibility() {
+      const pinInput = document.getElementById('loginPin');
+      if (pinInput) {
+        pinInput.type = pinInput.type === 'password' ? 'text' : 'password';
+      }
+    }
+
     function setAuthRoleTab(role) {
       AppState.authTabRole = role;
       const tabAdmin = document.getElementById('authTabAdmin');
       const tabStaff = document.getElementById('authTabStaff');
-      const tabSuper = document.getElementById('authTabSuperAdmin');
       const notice = document.getElementById('authRoleNotice');
       const emailInput = document.getElementById('loginEmail');
+      const pinInput = document.getElementById('loginPin');
 
-      // Reset base styling
-      const inactiveClass = "py-2 rounded-xl font-bold text-[11px] sm:text-xs transition-all flex items-center justify-center gap-1 text-slate-600 dark:text-purple-300 hover:text-slate-900 dark:hover:text-white";
-      tabAdmin.className = inactiveClass;
-      tabStaff.className = inactiveClass;
-      if (tabSuper) tabSuper.className = inactiveClass;
+      // Input fields are strictly blank - user types credentials manually
+      if (emailInput) emailInput.value = "";
+      if (pinInput) pinInput.value = "";
+
+      const inactiveClass = "py-2.5 rounded-xl font-bold text-xs transition-all flex items-center justify-center gap-1.5 text-slate-600 dark:text-purple-300 hover:text-slate-900 dark:hover:text-white";
+      if (tabAdmin) tabAdmin.className = inactiveClass;
+      if (tabStaff) tabStaff.className = inactiveClass;
 
       if (role === 'admin') {
-        tabAdmin.className = "py-2 rounded-xl font-bold text-[11px] sm:text-xs transition-all flex items-center justify-center gap-1 bg-tzion-purple-600 text-white shadow-md";
-        notice.innerHTML = `<strong class="text-tzion-orange-500">Store Administrator:</strong> Full control over stock check-in, check-out, valuations in TZS, and Excel imports for this store.`;
-        emailInput.value = "admin@tzionstockly.com";
-      } else if (role === 'staff') {
-        tabStaff.className = "py-2 rounded-xl font-bold text-[11px] sm:text-xs transition-all flex items-center justify-center gap-1 bg-tzion-orange-500 text-white shadow-md";
-        notice.innerHTML = `<strong class="text-tzion-purple-600 dark:text-purple-400">Staff Checkout Mode:</strong> High-speed POS dispatch terminal. Staff can <strong>ONLY check out items</strong>. Cost prices are hidden.`;
-        emailInput.value = "staff@tzionstockly.com";
-      } else if (role === 'super_admin') {
-        if (tabSuper) tabSuper.className = "py-2 rounded-xl font-bold text-[11px] sm:text-xs transition-all flex items-center justify-center gap-1 bg-amber-500 text-white shadow-md";
-        notice.innerHTML = `<strong class="text-amber-500">Super Admin Fleet Authority:</strong> Multi-Store SaaS Control, tenant subscription status, 1-click lockouts, grace period extensions, and MRR metrics.`;
-        emailInput.value = "superadmin@tzionstockly.com";
+        if (tabAdmin) tabAdmin.className = "py-2.5 rounded-xl font-bold text-xs transition-all flex items-center justify-center gap-1.5 bg-tzion-purple-600 text-white shadow-md";
+        if (notice) notice.innerHTML = `<strong class="text-tzion-orange-500">Msimamizi wa Duka (Store Admin):</strong> Usimamizi wa stoo ya Jawiza, kupokea mizigo, upunguzaji wa mzigo, ripoti za mauzo kwa TZS, na PIN za wauzaji.`;
+        if (emailInput) emailInput.placeholder = "Andika username ya Admin (mf. admin)...";
+      } else {
+        if (tabStaff) tabStaff.className = "py-2.5 rounded-xl font-bold text-xs transition-all flex items-center justify-center gap-1.5 bg-tzion-orange-500 text-white shadow-md";
+        if (notice) notice.innerHTML = `<strong class="text-tzion-purple-600 dark:text-purple-400">Muuzaji (Staff POS Terminal):</strong> Mauzo ya haraka kwa wateja kupitia Kikapu cha Mauzo, risiti za WhatsApp, na kufunga hesabu ya siku.`;
+        if (emailInput) emailInput.placeholder = "Andika username ya Muuzaji (mf. sarah)...";
       }
-    }
-
-    function quickLogin(role) {
-      setAuthRoleTab(role);
-      let email = "staff@tzionstockly.com";
-      if (role === 'admin') email = "admin@tzionstockly.com";
-      if (role === 'super_admin') email = "superadmin@tzionstockly.com";
-      completeLogin(email, role);
     }
 
     function handleFormLogin(e) {
       e.preventDefault();
-      const email = document.getElementById('loginEmail').value.trim();
-      const pin = document.getElementById('loginPin').value.trim();
+      const inputVal = (document.getElementById('loginEmail').value || '').trim().toLowerCase();
+      const pinVal = (document.getElementById('loginPin').value || '').trim();
       const targetRole = AppState.authTabRole;
 
       initStaffAccounts();
 
-      // Check if matches an existing staff account
+      if (!inputVal || !pinVal) {
+        showToast("Tafadhali jaza username na password yako.", "warning");
+        return;
+      }
+
+      // Check against real registered accounts in Jawiza
       const matched = AppState.staffAccounts.find(u => 
-        (u.email.toLowerCase() === email.toLowerCase() || u.name.toLowerCase() === email.toLowerCase()) && 
-        u.pin === pin
+        (u.username?.toLowerCase() === inputVal || 
+         u.email?.toLowerCase() === inputVal || 
+         u.name?.toLowerCase() === inputVal) && 
+        u.pin === pinVal
       );
 
-      if (matched) {
-        completeLogin(matched.email, matched.role, matched.name);
-      } else if (pin === '1234' || pin === 'admin') {
-        // Fallback for default demo access
-        completeLogin(email, targetRole);
-      } else {
-        showToast("Invalid credentials or PIN. Please verify with your Store Admin.", "error");
+      if (!matched) {
+        showToast("Username au Password si sahihi! Hakiki taarifa zako na ujaribu tena.", "error");
+        return;
       }
+
+      // Seamlessly activate the matched user's role
+      if (matched.role !== targetRole) {
+        setAuthRoleTab(matched.role);
+      }
+
+      completeLogin(matched.email, matched.role, matched.name);
     }
 
     function completeLogin(email, role, customName) {
@@ -1951,6 +1976,27 @@
     // =========================================================================
     // LOCAL PERSISTENCE HELPERS
     // =========================================================================
+    
+    // --- Automatic Storage Migration for Jawiza Production Release ---
+    function initAppStorageMigration() {
+      const CURRENT_APP_VERSION = 'jawiza-prod-v1';
+      const installedVersion = localStorage.getItem('tzion_app_version');
+      if (installedVersion !== CURRENT_APP_VERSION) {
+        // Clear old demo stores, demo products, and demo sales
+        localStorage.removeItem('tzion_products');
+        localStorage.removeItem('tzion_stores');
+        localStorage.removeItem('tzion_store_staff');
+        localStorage.removeItem('tzion_today_sales');
+        localStorage.removeItem('tzion_sales_history');
+        localStorage.removeItem('tzion_pos_cart');
+        localStorage.removeItem('tzion_closeout_history');
+        localStorage.removeItem('tzion_is_locked');
+        localStorage.removeItem('tzion_license_expires_at');
+        localStorage.setItem('tzion_active_store_id', 'store-jawiza-001');
+        localStorage.setItem('tzion_app_version', CURRENT_APP_VERSION);
+      }
+    }
+  
     function initProductsState() {
       const savedProds = localStorage.getItem('tzion_products');
       if (savedProds) {
@@ -2375,7 +2421,7 @@
       const modal = document.getElementById('digitalReceiptModal');
       if (!modal) return;
 
-      document.getElementById('receiptStoreName').innerText = receipt.storeName || "TZION MAIN STORE";
+      document.getElementById('receiptStoreName').innerText = receipt.storeName || "JAWIZA STORE";
       document.getElementById('receiptNoDisplay').innerText = receipt.receiptNo;
       document.getElementById('receiptDateTime').innerText = `${receipt.date} ${receipt.time}`;
       document.getElementById('receiptCashierName').innerText = receipt.cashier || "Cashier";
@@ -2403,7 +2449,7 @@
         const phone = (receipt.customerPhone || '').replace(/[^0-9]/g, '');
         const itemsTxt = (receipt.items || []).map(i => `• ${i.qty}x ${i.name} - ${formatTZS(i.subtotal || (i.unitPrice * i.qty))}`).join('\n');
         const text = [
-          `🏪 *${receipt.storeName || 'TZION MAIN STORE'}*`,
+          `🏪 *${receipt.storeName || 'JAWIZA STORE'}*`,
           `🧾 Risiti: *${receipt.receiptNo}*`,
           `📅 Tarehe: ${receipt.date} ${receipt.time}`,
           `👤 Mhudumu: ${receipt.cashier}`,
@@ -2415,7 +2461,7 @@
           receipt.change > 0 ? `Chenji: ${formatTZS(receipt.change)}` : '',
           `-----------------------------------`,
           `Asante kwa kufanya biashara nasi! Karibu tena.`,
-          `_Mfumo wa TzionStockly - Kariakoo_`
+          `_Mfumo wa TzionStockly - Jawiza_`
         ].filter(Boolean).join('\n');
 
         waBtn.href = phone 
@@ -2634,7 +2680,7 @@
       const phone = (receipt.customerPhone || '').replace(/[^0-9]/g, '');
       const itemsTxt = (receipt.items || []).map(i => `• ${i.qty}x ${i.name} - ${formatTZS(i.subtotal || (i.unitPrice * i.qty))}`).join('\n');
       const text = [
-        `🏪 *${receipt.storeName || 'TZION MAIN STORE'}*`,
+        `🏪 *${receipt.storeName || 'JAWIZA STORE'}*`,
         `🧾 Risiti: *${receipt.receiptNo}*`,
         `📅 Tarehe: ${receipt.date} ${receipt.time}`,
         `👤 Mhudumu: ${receipt.cashier}`,
@@ -3938,7 +3984,7 @@
 
       document.getElementById('newCashierName').value = '';
       document.getElementById('newCashierId').value = '';
-      document.getElementById('newCashierPin').value = '1234';
+      document.getElementById('newCashierPin').value = '';
 
       showToast(`Created cashier account for ${name} (PIN: ${pin})`, "success");
       renderStaffList();
@@ -4332,7 +4378,7 @@
                   <svg class="w-4 h-4 text-purple-400 absolute left-3 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
                 </div>
                 <div class="flex items-center space-x-1.5 overflow-x-auto pb-1 md:pb-0">
-                  ${['All', 'Beverages', 'Raw Materials', 'Household', 'Packaged Foods'].map(cat => `
+                  ${['All', 'unga', 'poultry', 'appetizer'].map(cat => `
                     <button 
                       onclick="setCategory('${cat}')" 
                       class="shrink-0 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all ${AppState.selectedCategory === cat ? 'bg-tzion-purple-600 text-white font-semibold' : 'bg-white dark:bg-tzion-purple-950 text-slate-600 dark:text-purple-300 border border-purple-200 dark:border-purple-800'}"
@@ -4485,7 +4531,7 @@
                 <svg class="w-4 h-4 text-tzion-orange-500 absolute left-3.5 top-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
               </div>
               <div class="flex items-center space-x-1.5 overflow-x-auto pb-1 md:pb-0">
-                ${['All', 'Beverages', 'Raw Materials', 'Household', 'Packaged Foods'].map(cat => `
+                ${['All', 'unga', 'poultry', 'appetizer'].map(cat => `
                   <button 
                     onclick="setCategory('${cat}')" 
                     class="shrink-0 px-3 py-1.5 rounded-xl text-xs font-medium transition-all ${AppState.selectedCategory === cat ? 'bg-tzion-orange-500 text-white font-semibold' : 'bg-purple-100 dark:bg-tzion-purple-950 text-slate-600 dark:text-purple-300 border border-purple-200 dark:border-purple-800'}"
@@ -4635,6 +4681,7 @@
 
     // --- Window Onload Initializer ---
     window.onload = function() {
+      initAppStorageMigration();
       if (window.location.hash.includes('super-admin')) {
         window.location.href = 'superadmin.html';
         return;
