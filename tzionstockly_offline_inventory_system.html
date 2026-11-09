@@ -1701,6 +1701,7 @@
 
       showToast(`Welcome back, ${AppState.currentUser.name}`, "success");
       renderUI();
+      CloudSync.pullProducts(true);
     }
 
     function handleLogout() {
@@ -1982,7 +1983,7 @@
     
     // --- Automatic Storage Migration for Jawiza Production Release ---
     function initAppStorageMigration() {
-      const CURRENT_APP_VERSION = 'jawiza-prod-v3';
+      const CURRENT_APP_VERSION = 'jawiza-prod-v4';
       const installedVersion = localStorage.getItem('tzion_app_version');
       if (installedVersion !== CURRENT_APP_VERSION) {
         // Clear old demo stores, demo products, and demo sales
@@ -3091,6 +3092,7 @@
           });
           if (!res.ok) {
             this.isPulling = false;
+            if (notify) showToast(`Cloud sync error: ${res.status}`, "warning");
             return false;
           }
           const remoteProds = await res.json();
@@ -3119,8 +3121,8 @@
 
           if (updatedAny) {
             saveProductsLocally();
-            renderUI();
-            if (notify) showToast("Stoo imesasishwa kutoka Supabase Cloud!", "success");
+            if (AppState.isAuthenticated) renderUI();
+            showToast("Stoo imesasishwa kutoka Supabase Cloud!", "success");
           } else if (notify) {
             showToast("Stoo ipo sawa na Cloud (Up to date).", "info");
           }
@@ -3133,7 +3135,7 @@
         }
       },
 
-      // Push stock quantity of an updated product to Supabase immediately
+      // Push stock quantity of an updated product to Supabase immediately with visible toast
       async pushProductStock(product) {
         if (!navigator.onLine || !product) return false;
         try {
@@ -3146,7 +3148,15 @@
               updated_at: new Date().toISOString()
             })
           });
-          return res.ok;
+          if (res.ok) {
+            showToast(`Cloud: Idadi ya ${product.name} imehifadhiwa (${product.stock})!`, "success");
+            return true;
+          } else {
+            const errTxt = await res.text();
+            console.error("Cloud push failed:", res.status, errTxt);
+            showToast(`Hitilafu ya Cloud: ${res.status}`, "warning");
+            return false;
+          }
         } catch (err) {
           console.warn("CloudSync push error:", err);
           return false;
@@ -4801,6 +4811,23 @@
       initCloseoutState();
       updateCartBadgeDisplays();
       setAuthRoleTab('admin');
+
+      // Startup Cloud Sync & 5-second Realtime Polling
+      CloudSync.pullProducts();
+      setInterval(() => {
+        if (AppState.isAuthenticated) {
+          CloudSync.pullProducts();
+        }
+      }, 5000);
+
+      window.addEventListener('focus', () => {
+        if (AppState.isAuthenticated) CloudSync.pullProducts(true);
+      });
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible' && AppState.isAuthenticated) {
+          CloudSync.pullProducts();
+        }
+      });
     };
   </script>
 </body>
