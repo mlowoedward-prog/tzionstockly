@@ -1530,7 +1530,9 @@
       initStaffAccounts();
       initCloseoutState();
       if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('./sw.js').catch(function(err) {
+        navigator.serviceWorker.register('./sw.js').then(function(reg) {
+          reg.update();
+        }).catch(function(err) {
           console.warn('PWA service worker registration failed:', err);
         });
       }
@@ -4637,6 +4639,17 @@
         window.location.href = 'superadmin.html';
         return;
       }
+
+      // Purge any legacy header subtitles or badges from cache
+      document.querySelectorAll('p, div, span').forEach(el => {
+        if (el.id !== 'headerPortalTitle' && el.textContent && (el.textContent.includes('Multi-Store SaaS Fleet') || el.textContent.includes('Currency: TZS (Tanzanian Shillings)'))) {
+          el.remove();
+        }
+      });
+      const stalePill = document.getElementById('headerStorePill');
+      if (stalePill) stalePill.remove();
+      const staleBadge = document.getElementById('roleHeaderBadge');
+      if (staleBadge) staleBadge.remove();
 
       applyTheme();
       initProductsState();

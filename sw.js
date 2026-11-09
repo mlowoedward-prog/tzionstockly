@@ -1,4 +1,4 @@
-const CACHE_NAME = 'tzionstockly-pwa-v10';
+const CACHE_NAME = 'tzionstockly-pwa-v11';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
@@ -36,12 +36,36 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
   
-  // Network-first for Supabase API requests, cache-first for static assets
   const url = new URL(event.request.url);
   if (url.hostname.includes('supabase.co')) {
-    return; // Pass through to browser network / offline outbox queue
+    return; // Pass through to network / local queue
   }
 
+  // Network-First for HTML navigation / documents so user always sees the newest app updates
+  const isHtml = event.request.mode === 'navigate' || 
+                 event.request.headers.get('accept')?.includes('text/html') ||
+                 url.pathname.endsWith('.html') || 
+                 url.pathname.endsWith('/');
+
+  if (isHtml) {
+    event.respondWith(
+      fetch(event.request)
+        .then((networkResponse) => {
+          if (networkResponse && networkResponse.status === 200) {
+            const responseToCache = networkResponse.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, responseToCache));
+          }
+          return networkResponse;
+        })
+        .catch(() => {
+          // If offline, serve from cache
+          return caches.match(event.request).then((cached) => cached || caches.match('./index.html'));
+        })
+    );
+    return;
+  }
+
+  // Cache-First for static assets (images, third-party libraries)
   event.respondWith(
     caches.match(event.request).then((cachedResponse) => {
       if (cachedResponse) {
@@ -55,10 +79,7 @@ self.addEventListener('fetch', (event) => {
           });
         }
         return networkResponse;
-      }).catch(() => {
-        return caches.match('./index.html');
       });
     })
   );
 });
-
