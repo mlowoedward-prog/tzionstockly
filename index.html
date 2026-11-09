@@ -1700,13 +1700,16 @@
       }
 
       showToast(`Welcome back, ${AppState.currentUser.name}`, "success");
+      // Persist active session so phone/PC stays logged in across reloads
+      localStorage.setItem('tzion_auth_session', JSON.stringify(AppState.currentUser));
       renderUI();
-      CloudSync.pullProducts(true);
+      CloudSync.pullProducts(false);
     }
 
     function handleLogout() {
       AppState.isAuthenticated = false;
       AppState.currentUser = null;
+      localStorage.removeItem('tzion_auth_session');
 
       document.getElementById('authPortalScreen').classList.remove('hidden');
       document.getElementById('mainAppHeader').classList.add('hidden');
@@ -1983,7 +1986,7 @@
     
     // --- Automatic Storage Migration for Jawiza Production Release ---
     function initAppStorageMigration() {
-      const CURRENT_APP_VERSION = 'jawiza-prod-v4';
+      const CURRENT_APP_VERSION = 'jawiza-prod-v5';
       const installedVersion = localStorage.getItem('tzion_app_version');
       if (installedVersion !== CURRENT_APP_VERSION) {
         // Clear old demo stores, demo products, and demo sales
@@ -3121,8 +3124,16 @@
 
           if (updatedAny) {
             saveProductsLocally();
-            if (AppState.isAuthenticated) renderUI();
-            showToast("Stoo imesasishwa kutoka Supabase Cloud!", "success");
+            if (AppState.isAuthenticated) {
+              renderUI();
+            }
+            // Silent, seamless auto-sync indicator
+            const netTxt = document.getElementById('netText');
+            if (netTxt) {
+              const original = netTxt.innerText;
+              netTxt.innerText = "⚡ Stoo Imesawazishwa!";
+              setTimeout(() => { if (netTxt) netTxt.innerText = original; }, 2500);
+            }
           } else if (notify) {
             showToast("Stoo ipo sawa na Cloud (Up to date).", "info");
           }
@@ -4812,21 +4823,36 @@
       updateCartBadgeDisplays();
       setAuthRoleTab('admin');
 
-      // Startup Cloud Sync & 5-second Realtime Polling
-      CloudSync.pullProducts();
-      setInterval(() => {
-        if (AppState.isAuthenticated) {
-          CloudSync.pullProducts();
-        }
-      }, 5000);
+      // Auto-restore previous user session (No need to re-login every time)
+      const activeSession = localStorage.getItem('tzion_auth_session');
+      if (activeSession) {
+        try {
+          const savedUser = JSON.parse(activeSession);
+          if (savedUser && savedUser.role) {
+            completeLogin(savedUser.email, savedUser.role, savedUser.name);
+          }
+        } catch(e) {}
+      }
 
-      window.addEventListener('focus', () => {
-        if (AppState.isAuthenticated) CloudSync.pullProducts(true);
-      });
+      // --- 100% AUTOMATIC REAL-TIME CLOUD AUTO-SYNC ---
+      // 1. Initial background pull immediately on app start
+      CloudSync.pullProducts(false);
+
+      // 2. Non-stop 3.5s background heartbeat auto-sync (No buttons, no manual refresh needed)
+      setInterval(() => {
+        CloudSync.pullProducts(false);
+      }, 3500);
+
+      // 3. Instant auto-sync on tab switch, screen wakeup, or internet reconnect
+      window.addEventListener('focus', () => CloudSync.pullProducts(false));
       document.addEventListener('visibilitychange', () => {
-        if (document.visibilityState === 'visible' && AppState.isAuthenticated) {
-          CloudSync.pullProducts();
+        if (document.visibilityState === 'visible') {
+          CloudSync.pullProducts(false);
         }
+      });
+      window.addEventListener('online', () => {
+        updateNetworkStatus();
+        CloudSync.pullProducts(false);
       });
     };
   </script>
