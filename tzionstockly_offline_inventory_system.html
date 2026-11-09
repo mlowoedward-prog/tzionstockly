@@ -158,10 +158,9 @@
             <span class="font-extrabold tracking-tight text-lg text-tzion-purple-700 dark:text-tzion-purple-300">Tzion<span class="text-tzion-orange-500">Stockly</span></span>
             <span id="roleHeaderBadge" class="text-[10px] uppercase font-mono px-2 py-0.5 rounded-full font-bold bg-tzion-purple-100 dark:bg-tzion-purple-900/60 border border-tzion-purple-300 dark:border-tzion-purple-700 text-tzion-purple-700 dark:text-tzion-purple-300">Admin Mode</span>
             <!-- Store Indicator Pill -->
-            <button id="headerStorePill" onclick="openEditStoreModal()" class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-amber-500/20 border border-amber-500/40 text-amber-700 dark:text-amber-300 hover:bg-amber-500/30 transition-all cursor-pointer shadow-sm" title="Click to edit store name and monthly fees">
+            <div id="headerStorePill" class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-tzion-purple-100 dark:bg-tzion-purple-900/60 border border-tzion-purple-300 dark:border-tzion-purple-700 text-tzion-purple-700 dark:text-purple-300 shadow-sm">
               <span id="headerStoreName">🏪 Tzion Main Store</span>
-              <span class="text-[9px] px-1 py-0.2 rounded bg-amber-500 text-white font-bold">✏️ Edit</span>
-            </button>
+            </div>
           </div>
           <p class="text-[10px] text-slate-500 dark:text-purple-300/60 font-mono">Currency: TZS (Tanzanian Shillings) • Multi-Store SaaS Fleet</p>
         </div>
@@ -386,6 +385,17 @@
         </div>
 
         <!-- Operation Reason -->
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 dark:text-purple-200 mb-1.5">Payment Method / Njia ya Malipo</label>
+          <select id="stockModalPaymentMethod" class="w-full bg-slate-50 dark:bg-tzion-purple-950 border border-purple-200 dark:border-purple-800 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-white font-semibold focus:outline-none focus:border-tzion-orange-500">
+            <option value="Cash">💵 Pesa Taslimu (Cash)</option>
+            <option value="Vodacom Lipa Namba">📱 Vodacom M-Pesa / Lipa Namba</option>
+            <option value="Airtel Money">📱 Airtel Money</option>
+            <option value="Tigo Pesa">📱 Tigo Pesa / Halopesa</option>
+            <option value="Bank Transfer">🏦 CRDB / NMB Bank</option>
+          </select>
+        </div>
+
         <div>
           <label class="block text-xs font-semibold text-slate-700 dark:text-purple-200 mb-1.5">Transaction Type / Notes</label>
           <select id="stockModalReason" class="w-full bg-slate-50 dark:bg-tzion-purple-950 border border-purple-200 dark:border-purple-800 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-purple-200 focus:outline-none focus:border-tzion-orange-500">
@@ -693,6 +703,14 @@
         { id: 'usr-2', name: 'Cashier Sarah (Till 1)', email: 'staff@tzionstockly.com', pin: '1234', role: 'staff' },
         { id: 'usr-3', name: 'Cashier Juma (Till 2)', email: 'juma@store', pin: '5678', role: 'staff' }
       ],
+      // Shift Closeout & Sales Reconciliation
+      todaySales: [
+        { id: 'tx-tz-101', productName: 'Kilimanjaro Arabica Coffee 1kg', qty: 2, amount: 90000, paymentMethod: 'Cash', timestamp: '10:45 AM', cashier: 'Cashier Sarah' },
+        { id: 'tx-tz-102', productName: 'Azam Pure Sunflower Oil 5L', qty: 1, amount: 42000, paymentMethod: 'Vodacom Lipa Namba', timestamp: '11:15 AM', cashier: 'Cashier Sarah' },
+        { id: 'tx-tz-103', productName: 'Asas Fresh Whole Milk 1L', qty: 5, amount: 15000, paymentMethod: 'Cash', timestamp: '01:20 PM', cashier: 'Cashier Sarah' }
+      ],
+      closeoutHistory: [],
+
       // Multi-Store SaaS & Subscription Control
       currentStoreId: 'store-tz-001',
       activeSuperAdminPortal: false,
@@ -786,6 +804,7 @@
       AppState.isDark = !AppState.isDark;
       applyTheme();
       initStaffAccounts();
+      initCloseoutState();
       if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('./sw.js').catch(function(err) {
           console.warn('PWA service worker registration failed:', err);
@@ -1308,6 +1327,10 @@
       }
 
       // 2. Queue mutation for Supabase Background Sync
+      const paymentEl = document.getElementById('stockModalPaymentMethod');
+      const paymentMethod = paymentEl ? paymentEl.value : 'Cash';
+      const saleAmount = qty * prod.sellingPrice;
+
       const queueRecord = {
         id: `tx-tz-${Date.now().toString().slice(-4)}`,
         type: AppState.activeModalAction === 'in' ? 'ADD' : 'DEDUCT',
@@ -1315,10 +1338,27 @@
         productName: prod.name,
         qty: qty,
         unitPrice: prod.sellingPrice,
+        totalAmount: saleAmount,
+        paymentMethod: AppState.activeModalAction === 'out' ? paymentMethod : 'Supplier',
         reason: reason,
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        user: AppState.currentUser.email
+        date: new Date().toISOString().slice(0, 10),
+        user: AppState.currentUser.email,
+        userName: AppState.currentUser.name
       };
+
+      if (AppState.activeModalAction === 'out') {
+        AppState.todaySales.unshift({
+          id: queueRecord.id,
+          productName: prod.name,
+          qty: qty,
+          amount: saleAmount,
+          paymentMethod: paymentMethod,
+          timestamp: queueRecord.timestamp,
+          cashier: AppState.currentUser.name
+        });
+        saveCloseoutStateLocally();
+      }
 
       AppState.syncQueue.unshift(queueRecord);
 
@@ -2320,62 +2360,220 @@
       }
     }
 
-    // --- Edit Store Modal Controller ---
-    function openEditStoreModal(storeId) {
-      const targetId = storeId || AppState.currentStoreId;
-      const st = AppState.stores.find(s => s.id === targetId) || AppState.stores[0];
-      if (!st) return;
+    // =========================================================================
+    // END-OF-DAY CLOSEOUT ("FUNGA HESABU" / Z-REPORT) CONTROLLER
+    // =========================================================================
 
-      document.getElementById('editStoreId').value = st.id;
-      document.getElementById('editStoreHeaderSub').innerText = `ID: ${st.id} • ${st.name}`;
-      document.getElementById('editStoreName').value = st.name;
-      document.getElementById('editStoreFee').value = st.monthly_fee_tzs || 50000;
-      document.getElementById('editStoreOwner').value = st.owner_name;
-      document.getElementById('editStorePhone').value = st.owner_phone;
-      document.getElementById('editStoreStatus').value = st.status || 'active';
-      document.getElementById('editStoreGrace').value = st.grace_period_days || 3;
-
-      const modal = document.getElementById('editStoreModal');
-      if (modal) {
-        modal.classList.remove('hidden');
-        modal.classList.add('flex');
+    function initCloseoutState() {
+      const savedSales = localStorage.getItem('tzion_today_sales');
+      if (savedSales) {
+        try { AppState.todaySales = JSON.parse(savedSales); } catch(e){}
+      }
+      const savedHistory = localStorage.getItem('tzion_closeout_history');
+      if (savedHistory) {
+        try { AppState.closeoutHistory = JSON.parse(savedHistory); } catch(e){}
       }
     }
 
-    function closeEditStoreModal() {
-      const modal = document.getElementById('editStoreModal');
+    function saveCloseoutStateLocally() {
+      localStorage.setItem('tzion_today_sales', JSON.stringify(AppState.todaySales));
+      localStorage.setItem('tzion_closeout_history', JSON.stringify(AppState.closeoutHistory));
+    }
+
+    function openCloseoutModal() {
+      initCloseoutState();
+      const modal = document.getElementById('shiftCloseoutModal');
+      if (!modal) return;
+
+      const curStore = AppState.stores.find(s => s.id === AppState.currentStoreId) || AppState.stores[0];
+      const todayStr = new Date().toLocaleDateString('sw-TZ', { day: 'numeric', month: 'long', year: 'numeric' });
+      document.getElementById('closeoutHeaderSub').innerText = `Duka: ${curStore.name} • Tarehe: ${todayStr} • Mhusika: ${AppState.currentUser.name}`;
+
+      // Calculate Sales Figures
+      const cashSales = AppState.todaySales
+        .filter(s => s.paymentMethod === 'Cash' || !s.paymentMethod)
+        .reduce((sum, s) => sum + (s.amount || 0), 0);
+
+      const mobileSales = AppState.todaySales
+        .filter(s => s.paymentMethod && s.paymentMethod !== 'Cash')
+        .reduce((sum, s) => sum + (s.amount || 0), 0);
+
+      const totalSales = cashSales + mobileSales;
+      const cashCount = AppState.todaySales.filter(s => s.paymentMethod === 'Cash' || !s.paymentMethod).length;
+      const mobileCount = AppState.todaySales.filter(s => s.paymentMethod && s.paymentMethod !== 'Cash').length;
+
+      document.getElementById('closeoutCashSalesDisplay').innerText = formatTZS(cashSales);
+      document.getElementById('closeoutCashCountBadge').innerText = `${cashCount} mauzo ya taslimu`;
+      document.getElementById('closeoutMobileSalesDisplay').innerText = formatTZS(mobileSales);
+      document.getElementById('closeoutMobileCountBadge').innerText = `${mobileCount} miamala ya simu`;
+      document.getElementById('closeoutTotalSalesDisplay').innerText = formatTZS(totalSales);
+      document.getElementById('closeoutTotalTxCount').innerText = `Jumla ya mauzo ${AppState.todaySales.length} leo`;
+
+      calculateCloseoutDiscrepancy();
+      renderCloseoutHistory();
+
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
+
+    function closeCloseoutModal() {
+      const modal = document.getElementById('shiftCloseoutModal');
       if (modal) {
         modal.classList.add('hidden');
         modal.classList.remove('flex');
       }
     }
 
-    function handleSaveStoreDetails(e) {
-      e.preventDefault();
-      const storeId = document.getElementById('editStoreId').value;
-      const name = document.getElementById('editStoreName').value.trim();
-      const fee = parseFloat(document.getElementById('editStoreFee').value) || 50000;
-      const owner = document.getElementById('editStoreOwner').value.trim();
-      const phone = document.getElementById('editStorePhone').value.trim();
-      const status = document.getElementById('editStoreStatus').value;
-      const grace = parseInt(document.getElementById('editStoreGrace').value) || 3;
+    function calculateCloseoutDiscrepancy() {
+      const floatVal = parseFloat(document.getElementById('closeoutOpeningFloatInput').value) || 0;
+      const countedVal = parseFloat(document.getElementById('closeoutCountedCashInput').value);
 
-      const st = AppState.stores.find(s => s.id === storeId);
-      if (!st) return;
+      const cashSales = AppState.todaySales
+        .filter(s => s.paymentMethod === 'Cash' || !s.paymentMethod)
+        .reduce((sum, s) => sum + (s.amount || 0), 0);
 
-      st.name = name;
-      st.monthly_fee_tzs = fee;
-      st.owner_name = owner;
-      st.owner_phone = phone;
-      st.status = status;
-      st.grace_period_days = grace;
+      const expectedCash = floatVal + cashSales;
+      document.getElementById('closeoutExpectedDrawerCash').innerText = formatTZS(expectedCash);
 
-      saveSubscriptionStateLocally();
-      closeEditStoreModal();
-      updateHeaderStoreDisplay();
+      const banner = document.getElementById('closeoutDiscrepancyBanner');
+      const textEl = document.getElementById('closeoutDiscrepancyText');
+      const amtEl = document.getElementById('closeoutDiscrepancyAmount');
 
-      showToast(`Saved: ${st.name} (Monthly Fee: ${formatTZS(fee)})`, "success");
-      renderUI();
+      if (isNaN(countedVal) || countedVal === '') {
+        banner.className = "p-3 rounded-xl border border-purple-200 dark:border-purple-800 bg-purple-50/50 dark:bg-tzion-purple-950/40 text-slate-500 dark:text-purple-300 flex items-center justify-between text-xs font-mono font-bold";
+        textEl.innerText = "Hesabu pesa zilizopo drooni uziweke hapa.";
+        amtEl.innerText = "TZS 0";
+        return;
+      }
+
+      const discrepancy = countedVal - expectedCash;
+      amtEl.innerText = formatTZS(Math.abs(discrepancy));
+
+      if (discrepancy === 0) {
+        banner.className = "p-3 rounded-xl border border-emerald-500/40 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-between text-xs font-mono font-bold";
+        textEl.innerText = "✅ HESABU IMETIMIA SAWASAWAA! Hakuna upungufu wala ziada.";
+      } else if (discrepancy < 0) {
+        banner.className = "p-3 rounded-xl border border-rose-500/40 bg-rose-500/10 text-rose-600 dark:text-rose-400 flex items-center justify-between text-xs font-mono font-bold";
+        textEl.innerText = `⚠️ UPUNGUFU WA PESA (CASH SHORTAGE):`;
+      } else {
+        banner.className = "p-3 rounded-xl border border-amber-500/40 bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-between text-xs font-mono font-bold";
+        textEl.innerText = `ℹ️ ZIADA YA PESA (CASH SURPLUS):`;
+      }
+    }
+
+    function toggleCloseoutHistory() {
+      const container = document.getElementById('closeoutHistoryContainer');
+      const icon = document.getElementById('historyToggleIcon');
+      if (container.classList.contains('hidden')) {
+        container.classList.remove('hidden');
+        icon.innerText = '▼';
+      } else {
+        container.classList.add('hidden');
+        icon.innerText = '▶';
+      }
+    }
+
+    function renderCloseoutHistory() {
+      const container = document.getElementById('closeoutHistoryContainer');
+      if (!container) return;
+
+      if (AppState.closeoutHistory.length === 0) {
+        container.innerHTML = `<div class="p-3 text-center text-slate-400 text-xs">Hakuna Z-Reports zilizofungwa hapo awali.</div>`;
+        return;
+      }
+
+      container.innerHTML = AppState.closeoutHistory.map(h => {
+        const isMatch = h.discrepancy === 0;
+        return `
+          <div class="p-2.5 rounded-xl border border-purple-200 dark:border-purple-800 bg-white dark:bg-tzion-purple-900/30 flex justify-between items-center text-xs">
+            <div>
+              <div class="font-bold text-slate-900 dark:text-white">${h.date} - ${h.cashier}</div>
+              <div class="text-[10px] text-slate-500 dark:text-purple-300 font-mono">
+                Mauzo: ${formatTZS(h.totalSales)} • Taslimu: ${formatTZS(h.cashSales)} • Simu: ${formatTZS(h.mobileSales)}
+              </div>
+            </div>
+            <div class="text-right font-mono font-bold">
+              <span class="${isMatch ? 'text-emerald-500' : (h.discrepancy < 0 ? 'text-rose-500' : 'text-amber-500')}">
+                ${isMatch ? '✅ Sawasawa' : (h.discrepancy < 0 ? `-${formatTZS(Math.abs(h.discrepancy))}` : `+${formatTZS(h.discrepancy)}`)}
+              </span>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function submitAndSendCloseoutWhatsApp() {
+      const curStore = AppState.stores.find(s => s.id === AppState.currentStoreId) || AppState.stores[0];
+      const floatVal = parseFloat(document.getElementById('closeoutOpeningFloatInput').value) || 0;
+      const countedVal = parseFloat(document.getElementById('closeoutCountedCashInput').value) || 0;
+      const notes = document.getElementById('closeoutNotesInput').value.trim();
+
+      const cashSales = AppState.todaySales
+        .filter(s => s.paymentMethod === 'Cash' || !s.paymentMethod)
+        .reduce((sum, s) => sum + (s.amount || 0), 0);
+
+      const mobileSales = AppState.todaySales
+        .filter(s => s.paymentMethod && s.paymentMethod !== 'Cash')
+        .reduce((sum, s) => sum + (s.amount || 0), 0);
+
+      const totalSales = cashSales + mobileSales;
+      const expectedCash = floatVal + cashSales;
+      const discrepancy = countedVal - expectedCash;
+      const nowStr = new Date().toLocaleDateString('sw-TZ', { day: 'numeric', month: 'long', year: 'numeric' }) + ' ' + new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+      let discText = "TZS 0 (Sawasawa ✅)";
+      if (discrepancy < 0) discText = `Upungufu: -${formatTZS(Math.abs(discrepancy))} ⚠️`;
+      if (discrepancy > 0) discText = `Ziada: +${formatTZS(discrepancy)} ℹ️`;
+
+      // Save to Closeout History
+      const closeoutRecord = {
+        id: `z-rep-${Date.now()}`,
+        date: nowStr,
+        cashier: AppState.currentUser.name,
+        float: floatVal,
+        cashSales: cashSales,
+        mobileSales: mobileSales,
+        totalSales: totalSales,
+        expectedCash: expectedCash,
+        countedCash: countedVal,
+        discrepancy: discrepancy,
+        notes: notes
+      };
+
+      AppState.closeoutHistory.unshift(closeoutRecord);
+      saveCloseoutStateLocally();
+
+      // Format WhatsApp Z-Report message
+      const msg = [
+        `📊 TZIONSTOCKLY - RIPOTI YA KUFUNGA HESABU (Z-REPORT)`,
+        `🏪 Duka: ${curStore.name}`,
+        `📅 Tarehe: ${nowStr}`,
+        `👤 Mhusika: ${AppState.currentUser.name}`,
+        `------------------------------------------`,
+        `💵 Kianzio cha Asubuhi (Float): ${formatTZS(floatVal)}`,
+        `💰 Mauzo ya Taslimu (Cash Sales): ${formatTZS(cashSales)}`,
+        `📱 Mauzo ya Simu (M-Pesa/Lipa Namba): ${formatTZS(mobileSales)}`,
+        `------------------------------------------`,
+        `📈 JUMLA KUU YA MAUZO: ${formatTZS(totalSales)}`,
+        `📥 Pesa Zinazotakiwa Drooni: ${formatTZS(expectedCash)}`,
+        `💵 Pesa Zilizopo Drooni: ${formatTZS(countedVal)}`,
+        `⚖️ Tofauti: ${discText}`,
+        notes ? `📝 Maelezo: ${notes}` : '',
+        `------------------------------------------`,
+        `Idadi ya Mauzo: ${AppState.todaySales.length} transactions`,
+        `Imethibitishwa kupitia mfumo wa TzionStockly.`
+      ].filter(Boolean).join('\n');
+
+      const phone = (curStore.owner_phone || '+255755123456').replace(/[^0-9]/g, '');
+      const waUrl = `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`;
+
+      window.open(waUrl, '_blank');
+      showToast("Z-Report imehifadhiwa na kufunguliwa kwa WhatsApp ya Mmiliki!", "success");
+      closeCloseoutModal();
+    }
+
+    function printCloseoutZReport() {
+      window.print();
     }
 
     function renderUI() {
@@ -2418,10 +2616,10 @@
                 <p class="text-xs text-purple-200">Full stock authority, TZS financial valuation, and Supabase cloud outbox control.</p>
               </div>
               <div class="flex flex-wrap items-center gap-2">
-                <!-- Prominent Edit Store Details & Fee Button -->
-                <button onclick="openEditStoreModal()" class="flex-1 sm:flex-initial px-3.5 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-xs font-black shadow-lg shadow-amber-900/30 flex items-center justify-center gap-1.5 transition-all active:scale-95">
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
-                  <span>✏️ Edit Store & Fees</span>
+                <!-- End-of-Day Shift Closeout (Z-Report) Button -->
+                <button onclick="openCloseoutModal()" class="flex-1 sm:flex-initial px-3.5 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-xs font-black shadow-lg shadow-amber-900/30 flex items-center justify-center gap-1.5 transition-all active:scale-95">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                  <span>🧾 Funga Hesabu (Z-Report)</span>
                 </button>
                 <button onclick="openStaffModal()" class="flex-1 sm:flex-initial px-3.5 py-2.5 rounded-xl bg-tzion-purple-600 hover:bg-tzion-purple-700 text-white text-xs font-bold shadow flex items-center justify-center gap-1.5 transition-all">
                   <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
@@ -2654,8 +2852,14 @@
                 <h2 class="text-lg sm:text-2xl font-black mt-1">High-Speed Checkout & Dispatch</h2>
                 <p class="text-xs text-orange-100">Tap Check Out on any item to record customer sales. Cost prices are strictly protected.</p>
               </div>
-              <div class="bg-white/20 backdrop-blur-md px-3.5 py-2 rounded-2xl text-xs font-mono self-start sm:self-auto">
-                Cashier: <span class="font-bold">${AppState.currentUser.name}</span>
+              <div class="flex items-center gap-2 self-start sm:self-auto">
+                <button onclick="openCloseoutModal()" class="px-3.5 py-2 rounded-2xl bg-white text-tzion-orange-600 hover:bg-orange-50 text-xs font-black shadow flex items-center gap-1.5 transition-all">
+                  <span>🧾</span>
+                  <span>Funga Hesabu (Shift Closeout)</span>
+                </button>
+                <div class="bg-white/20 backdrop-blur-md px-3.5 py-2 rounded-2xl text-xs font-mono">
+                  Cashier: <span class="font-bold">${AppState.currentUser.name}</span>
+                </div>
               </div>
             </div>
 
