@@ -1,82 +1,165 @@
 -- =============================================================================
 -- TZIONSTOCKLY: JAWIZA STORE PRODUCTION SEED & SYNC SCRIPT FOR SUPABASE
--- Run this script in your Supabase Project SQL Editor:
+-- Run this complete script in Supabase SQL Editor:
 -- Dashboard -> SQL Editor -> New Query -> Paste & Run
 -- =============================================================================
 
+-- 1. EXTENSIONS
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 
-DO $$
-DECLARE
-    v_business_id UUID := '00000000-0000-0000-0000-000000000001'::UUID;
-    v_admin_user_id UUID;
-    v_maria_user_id UUID;
-    v_cat_unga UUID;
-    v_cat_poultry UUID;
-    v_cat_appetizer UUID;
-BEGIN
-    -- -------------------------------------------------------------------------
-    -- 1. ENSURE JAWIZA STORE RECORD EXISTS IN businesses & stores
-    -- -------------------------------------------------------------------------
-    INSERT INTO public.businesses (
-        id, name, store_code, currency, phone, address, subscription_tier
-    ) VALUES (
-        v_business_id,
-        'Jawiza',
-        'TZ-JAWIZA',
-        'TZS',
-        '+255755123456',
-        'Dar es Salaam, Tanzania',
-        'active'
-    )
-    ON CONFLICT (id) DO UPDATE SET
-        name = 'Jawiza',
-        phone = '+255755123456',
-        address = 'Dar es Salaam, Tanzania',
-        subscription_tier = 'active',
-        updated_at = NOW();
+-- 2. ENSURE ALL TABLES & COLUMNS EXIST (Prevents "column does not exist" errors)
+CREATE TABLE IF NOT EXISTS public.businesses (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    name TEXT NOT NULL DEFAULT 'Jawiza',
+    currency TEXT NOT NULL DEFAULT 'TZS',
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
 
-    -- Also sync with stores table (if migration 00007 is active)
+ALTER TABLE public.businesses ADD COLUMN IF NOT EXISTS store_code TEXT;
+ALTER TABLE public.businesses ADD COLUMN IF NOT EXISTS currency TEXT DEFAULT 'TZS';
+ALTER TABLE public.businesses ADD COLUMN IF NOT EXISTS phone TEXT;
+ALTER TABLE public.businesses ADD COLUMN IF NOT EXISTS address TEXT;
+ALTER TABLE public.businesses ADD COLUMN IF NOT EXISTS subscription_tier TEXT DEFAULT 'active';
+ALTER TABLE public.businesses ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFAULT NOW();
+
+CREATE TABLE IF NOT EXISTS public.categories (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    business_id UUID REFERENCES public.businesses(id) ON DELETE CASCADE,
+    name TEXT NOT NULL,
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS public.products (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    business_id UUID REFERENCES public.businesses(id) ON DELETE CASCADE,
+    name TEXT NOT NULL,
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Crucial: Add any missing product columns before inserting
+ALTER TABLE public.products ADD COLUMN IF NOT EXISTS business_id UUID REFERENCES public.businesses(id) ON DELETE CASCADE;
+ALTER TABLE public.products ADD COLUMN IF NOT EXISTS store_id UUID;
+ALTER TABLE public.products ADD COLUMN IF NOT EXISTS sku TEXT;
+ALTER TABLE public.products ADD COLUMN IF NOT EXISTS barcode TEXT;
+ALTER TABLE public.products ADD COLUMN IF NOT EXISTS unit TEXT NOT NULL DEFAULT 'pcs';
+ALTER TABLE public.products ADD COLUMN IF NOT EXISTS category TEXT NOT NULL DEFAULT 'General';
+ALTER TABLE public.products ADD COLUMN IF NOT EXISTS cost_price BIGINT NOT NULL DEFAULT 0;
+ALTER TABLE public.products ADD COLUMN IF NOT EXISTS selling_price BIGINT NOT NULL DEFAULT 0;
+ALTER TABLE public.products ADD COLUMN IF NOT EXISTS cost_price_tzs NUMERIC(12, 2) NOT NULL DEFAULT 0.00;
+ALTER TABLE public.products ADD COLUMN IF NOT EXISTS selling_price_tzs NUMERIC(12, 2) NOT NULL DEFAULT 0.00;
+ALTER TABLE public.products ADD COLUMN IF NOT EXISTS stock_quantity INTEGER NOT NULL DEFAULT 0;
+ALTER TABLE public.products ADD COLUMN IF NOT EXISTS min_threshold INTEGER NOT NULL DEFAULT 5;
+ALTER TABLE public.products ADD COLUMN IF NOT EXISTS reorder_level INT NOT NULL DEFAULT 5;
+ALTER TABLE public.products ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFAULT NOW();
+
+CREATE TABLE IF NOT EXISTS public.user_profiles (
+    id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+    email TEXT NOT NULL,
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+ALTER TABLE public.user_profiles ADD COLUMN IF NOT EXISTS business_id UUID REFERENCES public.businesses(id) ON DELETE CASCADE;
+ALTER TABLE public.user_profiles ADD COLUMN IF NOT EXISTS store_id UUID;
+ALTER TABLE public.user_profiles ADD COLUMN IF NOT EXISTS role TEXT NOT NULL DEFAULT 'staff';
+ALTER TABLE public.user_profiles ADD COLUMN IF NOT EXISTS full_name TEXT;
+ALTER TABLE public.user_profiles ADD COLUMN IF NOT EXISTS phone_number TEXT;
+ALTER TABLE public.user_profiles ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFAULT NOW();
+
+-- 3. INSERT / UPDATE JAWIZA STORE (Default Business ID)
+INSERT INTO public.businesses (
+    id, name, store_code, currency, phone, address, subscription_tier
+) VALUES (
+    '00000000-0000-0000-0000-000000000001',
+    'Jawiza',
+    'TZ-JAWIZA',
+    'TZS',
+    '+255755123456',
+    'Dar es Salaam, Tanzania',
+    'active'
+)
+ON CONFLICT (id) DO UPDATE SET
+    name = 'Jawiza',
+    store_code = 'TZ-JAWIZA',
+    phone = '+255755123456',
+    address = 'Dar es Salaam, Tanzania',
+    subscription_tier = 'active',
+    updated_at = NOW();
+
+-- Also sync stores table if exists
+DO $$
+BEGIN
     IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'stores') THEN
         INSERT INTO public.stores (
             id, name, owner_name, owner_phone, monthly_fee_tzs, status,
-            subscription_renews_at, grace_period_days, is_locked, lock_reason
+            subscription_renews_at, is_locked
         ) VALUES (
-            v_business_id,
+            '00000000-0000-0000-0000-000000000001',
             'Jawiza',
             'Jawiza Admin',
             '+255755123456',
             50000.00,
             'active',
             NOW() + INTERVAL '60 days',
-            14,
-            false,
-            NULL
+            false
         )
         ON CONFLICT (id) DO UPDATE SET
             name = 'Jawiza',
             owner_name = 'Jawiza Admin',
-            owner_phone = '+255755123456',
             status = 'active',
-            is_locked = false,
-            subscription_renews_at = NOW() + INTERVAL '60 days';
+            is_locked = false;
     END IF;
+END $$;
 
-    -- -------------------------------------------------------------------------
-    -- 2. CREATE / SYNC AUTH ACCOUNTS: Admin & Maria
-    -- -------------------------------------------------------------------------
+-- 4. INSERT / UPDATE CATEGORIES FOR JAWIZA
+INSERT INTO public.categories (id, business_id, name)
+VALUES 
+    ('c0000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000001', 'unga'),
+    ('c0000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000001', 'poultry'),
+    ('c0000000-0000-0000-0000-000000000003', '00000000-0000-0000-0000-000000000001', 'appetizer')
+ON CONFLICT (id) DO UPDATE SET name = EXCLUDED.name;
+
+-- 5. INSERT / UPDATE EXACT 7 PRODUCTS WITH TZS PRICING & STOCK
+INSERT INTO public.products (
+    id, business_id, name, sku, category, unit,
+    cost_price, selling_price, cost_price_tzs, selling_price_tzs,
+    stock_quantity, min_threshold
+) VALUES
+    ('p0000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000001', 'mbilimbi', 'APP-MBI-001', 'appetizer', 'fungu', 1000, 1500, 1000.00, 1500.00, 50, 10),
+    ('p0000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000001', 'kuku', 'PLT-KUK-001', 'poultry', 'kuku', 12000, 15000, 12000.00, 15000.00, 30, 5),
+    ('p0000000-0000-0000-0000-000000000003', '00000000-0000-0000-0000-000000000001', 'Uji Mtamu', 'UNG-UJI-001', 'unga', 'pakiti', 2500, 3500, 2500.00, 3500.00, 40, 10),
+    ('p0000000-0000-0000-0000-000000000004', '00000000-0000-0000-0000-000000000001', 'mayai', 'PLT-MAY-001', 'poultry', 'trei', 9000, 11000, 9000.00, 11000.00, 25, 5),
+    ('p0000000-0000-0000-0000-000000000005', '00000000-0000-0000-0000-000000000001', 'mtama mwekundu', 'UNG-MTM-001', 'unga', 'kg', 1800, 2500, 1800.00, 2500.00, 50, 10),
+    ('p0000000-0000-0000-0000-000000000006', '00000000-0000-0000-0000-000000000001', 'mtama mweupe', 'UNG-MTW-002', 'unga', 'kg', 1800, 2500, 1800.00, 2500.00, 50, 10),
+    ('p0000000-0000-0000-0000-000000000007', '00000000-0000-0000-0000-000000000001', 'Njano mix', 'UNG-NJM-003', 'unga', 'pakiti', 2500, 3500, 2500.00, 3500.00, 40, 10)
+ON CONFLICT (id) DO UPDATE SET
+    name = EXCLUDED.name,
+    category = EXCLUDED.category,
+    unit = EXCLUDED.unit,
+    cost_price = EXCLUDED.cost_price,
+    selling_price = EXCLUDED.selling_price,
+    cost_price_tzs = EXCLUDED.cost_price_tzs,
+    selling_price_tzs = EXCLUDED.selling_price_tzs,
+    stock_quantity = EXCLUDED.stock_quantity;
+
+-- 6. CREATE / SYNC AUTH ACCOUNTS: Admin & Maria
+DO $$
+DECLARE
+    v_admin_id UUID;
+    v_maria_id UUID;
+BEGIN
     -- Check or Insert Admin (admin@jawiza.com / Jawiza@Admin2026)
-    SELECT id INTO v_admin_user_id FROM auth.users WHERE email = 'admin@jawiza.com';
-    IF v_admin_user_id IS NULL THEN
-        v_admin_user_id := uuid_generate_v4();
+    SELECT id INTO v_admin_id FROM auth.users WHERE email = 'admin@jawiza.com';
+    IF v_admin_id IS NULL THEN
+        v_admin_id := uuid_generate_v4();
         INSERT INTO auth.users (
             instance_id, id, aud, role, email, encrypted_password,
             email_confirmed_at, raw_app_meta_data, raw_user_meta_data,
             created_at, updated_at
         ) VALUES (
             '00000000-0000-0000-0000-000000000000',
-            v_admin_user_id,
+            v_admin_id,
             'authenticated',
             'authenticated',
             'admin@jawiza.com',
@@ -94,20 +177,20 @@ BEGIN
             raw_user_meta_data = jsonb_build_object('full_name', 'Jawiza Admin', 'role', 'admin'),
             email_confirmed_at = COALESCE(email_confirmed_at, NOW()),
             updated_at = NOW()
-        WHERE id = v_admin_user_id;
+        WHERE id = v_admin_id;
     END IF;
 
     -- Check or Insert Maria (maria@jawiza.com / Maria@Jawiza2026)
-    SELECT id INTO v_maria_user_id FROM auth.users WHERE email = 'maria@jawiza.com';
-    IF v_maria_user_id IS NULL THEN
-        v_maria_user_id := uuid_generate_v4();
+    SELECT id INTO v_maria_id FROM auth.users WHERE email = 'maria@jawiza.com';
+    IF v_maria_id IS NULL THEN
+        v_maria_id := uuid_generate_v4();
         INSERT INTO auth.users (
             instance_id, id, aud, role, email, encrypted_password,
             email_confirmed_at, raw_app_meta_data, raw_user_meta_data,
             created_at, updated_at
         ) VALUES (
             '00000000-0000-0000-0000-000000000000',
-            v_maria_user_id,
+            v_maria_id,
             'authenticated',
             'authenticated',
             'maria@jawiza.com',
@@ -125,165 +208,35 @@ BEGIN
             raw_user_meta_data = jsonb_build_object('full_name', 'Maria', 'role', 'staff'),
             email_confirmed_at = COALESCE(email_confirmed_at, NOW()),
             updated_at = NOW()
-        WHERE id = v_maria_user_id;
+        WHERE id = v_maria_id;
     END IF;
 
-    -- -------------------------------------------------------------------------
-    -- 3. LINK USERS IN user_profiles, profiles & business_members
-    -- -------------------------------------------------------------------------
-    -- Admin Profile
-    INSERT INTO public.user_profiles (id, email, business_id, role, full_name, created_at, updated_at)
-    VALUES (v_admin_user_id, 'admin@jawiza.com', v_business_id, 'owner', 'Jawiza Admin', NOW(), NOW())
-    ON CONFLICT (id) DO UPDATE SET
-        business_id = v_business_id,
-        role = 'owner',
-        full_name = 'Jawiza Admin',
-        updated_at = NOW();
+    -- Link User Profiles
+    INSERT INTO public.user_profiles (id, email, business_id, role, full_name)
+    VALUES (v_admin_id, 'admin@jawiza.com', '00000000-0000-0000-0000-000000000001', 'owner', 'Jawiza Admin')
+    ON CONFLICT (id) DO UPDATE SET business_id = '00000000-0000-0000-0000-000000000001', role = 'owner', full_name = 'Jawiza Admin';
 
-    INSERT INTO public.profiles (id, full_name, role)
-    VALUES (v_admin_user_id, 'Jawiza Admin', 'admin')
-    ON CONFLICT (id) DO UPDATE SET
-        full_name = 'Jawiza Admin',
-        role = 'admin';
+    INSERT INTO public.user_profiles (id, email, business_id, role, full_name)
+    VALUES (v_maria_id, 'maria@jawiza.com', '00000000-0000-0000-0000-000000000001', 'staff', 'Maria')
+    ON CONFLICT (id) DO UPDATE SET business_id = '00000000-0000-0000-0000-000000000001', role = 'staff', full_name = 'Maria';
 
-    INSERT INTO public.business_members (user_id, business_id, role)
-    VALUES (v_admin_user_id, v_business_id, 'owner')
-    ON CONFLICT (user_id, business_id) DO UPDATE SET role = 'owner';
+    -- Optional: If legacy profiles table exists, link there too
+    IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'profiles') THEN
+        INSERT INTO public.profiles (id, full_name, role)
+        VALUES 
+            (v_admin_id, 'Jawiza Admin', 'admin'::public.user_role),
+            (v_maria_id, 'Maria', 'staff'::public.user_role)
+        ON CONFLICT (id) DO NOTHING;
+    END IF;
 
-    -- Maria Profile
-    INSERT INTO public.user_profiles (id, email, business_id, role, full_name, created_at, updated_at)
-    VALUES (v_maria_user_id, 'maria@jawiza.com', v_business_id, 'staff', 'Maria', NOW(), NOW())
-    ON CONFLICT (id) DO UPDATE SET
-        business_id = v_business_id,
-        role = 'staff',
-        full_name = 'Maria',
-        updated_at = NOW();
-
-    INSERT INTO public.profiles (id, full_name, role)
-    VALUES (v_maria_user_id, 'Maria', 'staff')
-    ON CONFLICT (id) DO UPDATE SET
-        full_name = 'Maria',
-        role = 'staff';
-
-    INSERT INTO public.business_members (user_id, business_id, role)
-    VALUES (v_maria_user_id, v_business_id, 'staff')
-    ON CONFLICT (user_id, business_id) DO UPDATE SET role = 'staff';
-
-    -- -------------------------------------------------------------------------
-    -- 4. ENSURE CATEGORIES FOR JAWIZA (unga, poultry, appetizer)
-    -- -------------------------------------------------------------------------
-    INSERT INTO public.categories (id, business_id, name)
-    VALUES ('c0000000-0000-0000-0000-000000000001', v_business_id, 'unga')
-    ON CONFLICT (id) DO UPDATE SET name = 'unga';
-
-    INSERT INTO public.categories (id, business_id, name)
-    VALUES ('c0000000-0000-0000-0000-000000000002', v_business_id, 'poultry')
-    ON CONFLICT (id) DO UPDATE SET name = 'poultry';
-
-    INSERT INTO public.categories (id, business_id, name)
-    VALUES ('c0000000-0000-0000-0000-000000000003', v_business_id, 'appetizer')
-    ON CONFLICT (id) DO UPDATE SET name = 'appetizer';
-
-    -- -------------------------------------------------------------------------
-    -- 5. SEED EXACT 7 JAWIZA PRODUCTS INTO public.products
-    -- -------------------------------------------------------------------------
-    -- 1. mbilimbi
-    INSERT INTO public.products (
-        id, business_id, name, sku, category, unit,
-        cost_price, selling_price, cost_price_tzs, selling_price_tzs,
-        stock_quantity, reorder_level, min_threshold
-    ) VALUES (
-        'p0000000-0000-0000-0000-000000000001', v_business_id, 'mbilimbi', 'APP-MBI-001', 'appetizer', 'fungu',
-        1000, 1500, 1000.00, 1500.00,
-        50, 10, 10
-    ) ON CONFLICT (id) DO UPDATE SET
-        name = 'mbilimbi', category = 'appetizer', unit = 'fungu',
-        cost_price = 1000, selling_price = 1500, cost_price_tzs = 1000.00, selling_price_tzs = 1500.00,
-        stock_quantity = 50, updated_at = NOW();
-
-    -- 2. kuku
-    INSERT INTO public.products (
-        id, business_id, name, sku, category, unit,
-        cost_price, selling_price, cost_price_tzs, selling_price_tzs,
-        stock_quantity, reorder_level, min_threshold
-    ) VALUES (
-        'p0000000-0000-0000-0000-000000000002', v_business_id, 'kuku', 'PLT-KUK-001', 'poultry', 'kuku',
-        12000, 15000, 12000.00, 15000.00,
-        30, 5, 5
-    ) ON CONFLICT (id) DO UPDATE SET
-        name = 'kuku', category = 'poultry', unit = 'kuku',
-        cost_price = 12000, selling_price = 15000, cost_price_tzs = 12000.00, selling_price_tzs = 15000.00,
-        stock_quantity = 30, updated_at = NOW();
-
-    -- 3. Uji Mtamu
-    INSERT INTO public.products (
-        id, business_id, name, sku, category, unit,
-        cost_price, selling_price, cost_price_tzs, selling_price_tzs,
-        stock_quantity, reorder_level, min_threshold
-    ) VALUES (
-        'p0000000-0000-0000-0000-000000000003', v_business_id, 'Uji Mtamu', 'UNG-UJI-001', 'unga', 'pakiti',
-        2500, 3500, 2500.00, 3500.00,
-        40, 10, 10
-    ) ON CONFLICT (id) DO UPDATE SET
-        name = 'Uji Mtamu', category = 'unga', unit = 'pakiti',
-        cost_price = 2500, selling_price = 3500, cost_price_tzs = 2500.00, selling_price_tzs = 3500.00,
-        stock_quantity = 40, updated_at = NOW();
-
-    -- 4. mayai
-    INSERT INTO public.products (
-        id, business_id, name, sku, category, unit,
-        cost_price, selling_price, cost_price_tzs, selling_price_tzs,
-        stock_quantity, reorder_level, min_threshold
-    ) VALUES (
-        'p0000000-0000-0000-0000-000000000004', v_business_id, 'mayai', 'PLT-MAY-001', 'poultry', 'trei',
-        9000, 11000, 9000.00, 11000.00,
-        25, 5, 5
-    ) ON CONFLICT (id) DO UPDATE SET
-        name = 'mayai', category = 'poultry', unit = 'trei',
-        cost_price = 9000, selling_price = 11000, cost_price_tzs = 9000.00, selling_price_tzs = 11000.00,
-        stock_quantity = 25, updated_at = NOW();
-
-    -- 5. mtama mwekundu
-    INSERT INTO public.products (
-        id, business_id, name, sku, category, unit,
-        cost_price, selling_price, cost_price_tzs, selling_price_tzs,
-        stock_quantity, reorder_level, min_threshold
-    ) VALUES (
-        'p0000000-0000-0000-0000-000000000005', v_business_id, 'mtama mwekundu', 'UNG-MTM-001', 'unga', 'kg',
-        1800, 2500, 1800.00, 2500.00,
-        50, 10, 10
-    ) ON CONFLICT (id) DO UPDATE SET
-        name = 'mtama mwekundu', category = 'unga', unit = 'kg',
-        cost_price = 1800, selling_price = 2500, cost_price_tzs = 1800.00, selling_price_tzs = 2500.00,
-        stock_quantity = 50, updated_at = NOW();
-
-    -- 6. mtama mweupe
-    INSERT INTO public.products (
-        id, business_id, name, sku, category, unit,
-        cost_price, selling_price, cost_price_tzs, selling_price_tzs,
-        stock_quantity, reorder_level, min_threshold
-    ) VALUES (
-        'p0000000-0000-0000-0000-000000000006', v_business_id, 'mtama mweupe', 'UNG-MTW-002', 'unga', 'kg',
-        1800, 2500, 1800.00, 2500.00,
-        50, 10, 10
-    ) ON CONFLICT (id) DO UPDATE SET
-        name = 'mtama mweupe', category = 'unga', unit = 'kg',
-        cost_price = 1800, selling_price = 2500, cost_price_tzs = 1800.00, selling_price_tzs = 2500.00,
-        stock_quantity = 50, updated_at = NOW();
-
-    -- 7. Njano mix
-    INSERT INTO public.products (
-        id, business_id, name, sku, category, unit,
-        cost_price, selling_price, cost_price_tzs, selling_price_tzs,
-        stock_quantity, reorder_level, min_threshold
-    ) VALUES (
-        'p0000000-0000-0000-0000-000000000007', v_business_id, 'Njano mix', 'UNG-NJM-003', 'unga', 'pakiti',
-        2500, 3500, 2500.00, 3500.00,
-        40, 10, 10
-    ) ON CONFLICT (id) DO UPDATE SET
-        name = 'Njano mix', category = 'unga', unit = 'pakiti',
-        cost_price = 2500, selling_price = 3500, cost_price_tzs = 2500.00, selling_price_tzs = 3500.00,
-        stock_quantity = 40, updated_at = NOW();
+    -- Optional: If business_members exists, link there too
+    IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'business_members') THEN
+        INSERT INTO public.business_members (user_id, business_id, role)
+        VALUES 
+            (v_admin_id, '00000000-0000-0000-0000-000000000001', 'owner'),
+            (v_maria_id, '00000000-0000-0000-0000-000000000001', 'staff')
+        ON CONFLICT (user_id, business_id) DO NOTHING;
+    END IF;
 
     RAISE NOTICE 'SUCCESS: Jawiza store, Admin, Maria, and 7 products synchronized to Supabase!';
 END $$;
