@@ -305,7 +305,7 @@
       <form onsubmit="handleFormLogin(event)" class="space-y-4">
         <div>
           <label class="block text-xs font-semibold text-slate-700 dark:text-purple-200 mb-1">Email or Staff ID</label>
-          <input type="text" id="loginEmail" required placeholder="Andika username (admin au sarah)..." class="w-full bg-slate-50 dark:bg-tzion-purple-950 border border-purple-200 dark:border-purple-800 rounded-xl px-3.5 py-2.5 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-tzion-orange-500 transition-colors">
+          <input type="text" id="loginEmail" required placeholder="Andika username (admin au maria)..." class="w-full bg-slate-50 dark:bg-tzion-purple-950 border border-purple-200 dark:border-purple-800 rounded-xl px-3.5 py-2.5 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-tzion-orange-500 transition-colors">
         </div>
         <div>
           <label class="block text-xs font-semibold text-slate-700 dark:text-purple-200 mb-1">Security PIN / Password</label>
@@ -909,7 +909,7 @@
                 <input 
                   type="text" 
                   id="newCashierName" 
-                  placeholder="Mf. Sarah Juma" 
+                  placeholder="Mf. Maria Juma" 
                   class="w-full bg-white dark:bg-[#120726] border border-purple-200 dark:border-purple-800 rounded-xl px-3 py-1.5 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-tzion-orange-500"
                   required
                 >
@@ -919,7 +919,7 @@
                 <input 
                   type="text" 
                   id="newCashierId" 
-                  placeholder="Mf. sarah@duka" 
+                  placeholder="Mf. maria@duka" 
                   class="w-full bg-white dark:bg-[#120726] border border-purple-200 dark:border-purple-800 rounded-xl px-3 py-1.5 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-tzion-orange-500"
                   required
                 >
@@ -1182,7 +1182,7 @@
           </div>
           <div class="flex justify-between">
             <span>Mhudumu (Cashier):</span>
-            <span id="receiptCashierName" class="font-bold text-slate-900">Cashier Sarah</span>
+            <span id="receiptCashierName" class="font-bold text-slate-900">Cashier Maria</span>
           </div>
           <div class="flex justify-between">
             <span>Mteja (Customer):</span>
@@ -1407,11 +1407,11 @@
           role: 'admin'
         },
         {
-          id: 'usr-sarah',
-          username: 'sarah',
-          name: 'Sarah',
-          email: 'sarah@jawiza.com',
-          pin: 'Sarah@Jawiza2026',
+          id: 'usr-maria',
+          username: 'maria',
+          name: 'Maria',
+          email: 'maria@jawiza.com',
+          pin: 'Maria@Jawiza2026',
           role: 'staff'
         }
       ],
@@ -1608,7 +1608,7 @@
       } else {
         if (tabStaff) tabStaff.className = "py-2.5 rounded-xl font-bold text-xs transition-all flex items-center justify-center gap-1.5 bg-tzion-orange-500 text-white shadow-md";
         if (notice) notice.innerHTML = `<strong class="text-tzion-purple-600 dark:text-purple-400">Muuzaji (Staff POS Terminal):</strong> Mauzo ya haraka kwa wateja kupitia Kikapu cha Mauzo, risiti za WhatsApp, na kufunga hesabu ya siku.`;
-        if (emailInput) emailInput.placeholder = "Andika username ya Muuzaji (mf. sarah)...";
+        if (emailInput) emailInput.placeholder = "Andika username ya Muuzaji (mf. maria)...";
       }
     }
 
@@ -1979,7 +1979,7 @@
     
     // --- Automatic Storage Migration for Jawiza Production Release ---
     function initAppStorageMigration() {
-      const CURRENT_APP_VERSION = 'jawiza-prod-v1';
+      const CURRENT_APP_VERSION = 'jawiza-prod-v2';
       const installedVersion = localStorage.getItem('tzion_app_version');
       if (installedVersion !== CURRENT_APP_VERSION) {
         // Clear old demo stores, demo products, and demo sales
