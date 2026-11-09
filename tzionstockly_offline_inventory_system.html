@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <!-- Progressive Web App Manifest & Meta -->
   <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#7c3aed">
+  <meta name="theme-color" content="#07101f">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <link rel="apple-touch-icon" href="icons/Icon-192.png">
@@ -19,7 +19,7 @@
   <!-- Google Fonts: Inter & JetBrains Mono -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 
   <script>
     tailwind.config = {
@@ -27,25 +27,52 @@
       theme: {
         extend: {
           fontFamily: {
-            sans: ['Inter', 'sans-serif'],
+            sans: ['"DM Sans"', 'system-ui', '-apple-system', 'sans-serif'],
             mono: ['JetBrains Mono', 'monospace'],
           },
           colors: {
-            // Brand palette derived from TzionStockly logo (Purple, Orange & White)
+            purple: {
+              50: '#f0f5fa',
+              100: '#e1edf7',
+              200: '#c3dbef',
+              300: '#94c0e3',
+              400: '#5e9fd3',
+              500: '#3880c2',
+              600: '#2665a5',
+              700: '#1e5085',
+              800: '#1b436e',
+              900: '#0e2240',
+              950: '#07101f',
+            },
             tzion: {
+              navy: {
+                50: '#f0f5fa',
+                100: '#e1edf7',
+                200: '#c3dbef',
+                300: '#94c0e3',
+                400: '#5e9fd3',
+                500: '#3880c2',
+                600: '#2665a5',
+                700: '#1e5085',
+                800: '#1b436e',
+                900: '#0e2240', // Deep Navy Surface
+                950: '#07101f', // Deepest Navy Background
+                deep: '#040a14'
+              },
               purple: {
-                50: '#f5f3ff',
-                100: '#ede9fe',
-                200: '#ddd6fe',
-                300: '#c4b5fd',
-                400: '#a78bfa',
-                500: '#8b5cf6',
-                600: '#7c3aed',
-                700: '#6d28d9',
-                800: '#5b21b6',
-                900: '#4c1d95',
-                950: '#2e1065',
-                deep: '#3b0764'
+                // Mapped to Deep Navy for 100% theme consistency
+                50: '#f0f5fa',
+                100: '#e1edf7',
+                200: '#c3dbef',
+                300: '#94c0e3',
+                400: '#5e9fd3',
+                500: '#3880c2',
+                600: '#2665a5',
+                700: '#1e5085',
+                800: '#1b436e',
+                900: '#0e2240',
+                950: '#07101f',
+                deep: '#040a14'
               },
               orange: {
                 50: '#fff7ed',
@@ -53,11 +80,12 @@
                 200: '#fed7aa',
                 300: '#fdba74',
                 400: '#fb923c',
-                500: '#f97316',
+                500: '#f97316', // Vibrant African Orange
                 600: '#ea580c',
                 700: '#c2410c',
                 800: '#9a3412',
                 900: '#7c2d12',
+                950: '#431407'
               }
             }
           }
@@ -76,7 +104,7 @@
       background: transparent;
     }
     .dark ::-webkit-scrollbar-thumb {
-      background: #4c1d95;
+      background: #1b436e;
       border-radius: 9999px;
     }
     ::-webkit-scrollbar-thumb {
@@ -94,18 +122,18 @@
       -webkit-text-fill-color: transparent;
     }
     html:not(.dark) .brand-gradient-text {
-      background: linear-gradient(135deg, #5b21b6 0%, #7c3aed 40%, #ea580c 70%, #c2410c 100%);
+      background: linear-gradient(135deg, #1e5085 0%, #ea580c 40%, #ea580c 70%, #c2410c 100%);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
     }
   </style>
 </head>
-<body class="bg-slate-50 dark:bg-[#120726] text-slate-900 dark:text-purple-100 font-sans min-h-screen selection:bg-tzion-orange-500 selection:text-white flex flex-col antialiased transition-colors duration-200">
+<body class="bg-slate-50 dark:bg-[#07101f] text-slate-900 dark:text-purple-100 font-sans min-h-screen selection:bg-tzion-orange-500 selection:text-white flex flex-col antialiased transition-colors duration-200">
 
   <!-- ========================================================================= -->
   <!-- TOP GLOBAL APP BAR (Visible when Authenticated)                           -->
   <!-- ========================================================================= -->
-  <header id="mainAppHeader" class="hidden bg-white/90 dark:bg-[#1b0c3a]/90 border-b border-purple-200 dark:border-purple-900/60 sticky top-0 z-40 px-4 py-2.5 backdrop-blur-md transition-colors">
+  <header id="mainAppHeader" class="hidden bg-white/90 dark:bg-[#0e2240]/90 border-b border-purple-200 dark:border-purple-900/60 sticky top-0 z-40 px-4 py-2.5 backdrop-blur-md transition-colors">
     <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-3">
       
       <!-- Brand Logo & App Name -->
@@ -127,23 +155,23 @@
             <polygon points="46,38 58,32 58,42 46,48" fill="#d97706" />
 
             <!-- Purple Shopping Cart Lines -->
-            <path d="M 28 32 L 34 32 L 44 54 L 68 54 L 75 38 L 36 38" fill="none" stroke="#7c3aed" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
-            <line x1="48" y1="38" x2="48" y2="54" stroke="#7c3aed" stroke-width="2.5" />
-            <line x1="58" y1="38" x2="58" y2="54" stroke="#7c3aed" stroke-width="2.5" />
-            <line x1="40" y1="46" x2="71" y2="46" stroke="#7c3aed" stroke-width="2" />
+            <path d="M 28 32 L 34 32 L 44 54 L 68 54 L 75 38 L 36 38" fill="none" stroke="#ea580c" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+            <line x1="48" y1="38" x2="48" y2="54" stroke="#ea580c" stroke-width="2.5" />
+            <line x1="58" y1="38" x2="58" y2="54" stroke="#ea580c" stroke-width="2.5" />
+            <line x1="40" y1="46" x2="71" y2="46" stroke="#ea580c" stroke-width="2" />
             <!-- Speed horizontal lines -->
-            <line x1="18" y1="36" x2="28" y2="36" stroke="#8b5cf6" stroke-width="2.5" stroke-linecap="round" />
-            <line x1="15" y1="42" x2="27" y2="42" stroke="#8b5cf6" stroke-width="2.5" stroke-linecap="round" />
+            <line x1="18" y1="36" x2="28" y2="36" stroke="#f97316" stroke-width="2.5" stroke-linecap="round" />
+            <line x1="15" y1="42" x2="27" y2="42" stroke="#f97316" stroke-width="2.5" stroke-linecap="round" />
             <!-- Cart Wheels -->
-            <circle cx="45" cy="59" r="3.5" fill="#581c87" stroke="#a855f7" stroke-width="1.5" />
-            <circle cx="66" cy="59" r="3.5" fill="#581c87" stroke="#a855f7" stroke-width="1.5" />
+            <circle cx="45" cy="59" r="3.5" fill="#1b436e" stroke="#f97316" stroke-width="1.5" />
+            <circle cx="66" cy="59" r="3.5" fill="#1b436e" stroke="#f97316" stroke-width="1.5" />
 
             <!-- Gradients Definition -->
             <defs>
               <linearGradient id="purpleGrad" x1="0" y1="0" x2="1" y2="1">
                 <stop offset="0%" stop-color="#9333ea" />
-                <stop offset="50%" stop-color="#581c87" />
-                <stop offset="100%" stop-color="#3b0764" />
+                <stop offset="50%" stop-color="#1b436e" />
+                <stop offset="100%" stop-color="#040a14" />
               </linearGradient>
               <linearGradient id="orangeGrad" x1="0" y1="0" x2="1" y2="0">
                 <stop offset="0%" stop-color="#ea580c" />
@@ -243,7 +271,7 @@
   <!-- 1. AUTHENTICATION / LOGIN PORTAL SCREEN                                   -->
   <!-- ========================================================================= -->
   <section id="authPortalScreen" class="flex-1 flex items-center justify-center p-4">
-    <div class="w-full max-w-md bg-white dark:bg-[#1b0c3a] border border-purple-200 dark:border-purple-900/60 rounded-3xl p-6 sm:p-8 shadow-2xl relative overflow-hidden transition-colors">
+    <div class="w-full max-w-md bg-white dark:bg-[#0e2240] border border-purple-200 dark:border-purple-900/60 rounded-3xl p-6 sm:p-8 shadow-2xl relative overflow-hidden transition-colors">
       
       <!-- Top Decorative Accent -->
       <div class="absolute -top-24 -right-24 w-48 h-48 bg-gradient-to-br from-tzion-purple-600/30 to-tzion-orange-500/20 rounded-full blur-3xl pointer-events-none"></div>
@@ -261,16 +289,16 @@
             <polygon points="34,32 46,26 58,32 46,38" fill="#fbbf24" />
             <polygon points="34,32 46,38 46,48 34,42" fill="#f59e0b" />
             <polygon points="46,38 58,32 58,42 46,48" fill="#d97706" />
-            <path d="M 28 32 L 34 32 L 44 54 L 68 54 L 75 38 L 36 38" fill="none" stroke="#7c3aed" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
-            <line x1="48" y1="38" x2="48" y2="54" stroke="#7c3aed" stroke-width="2.5" />
-            <line x1="58" y1="38" x2="58" y2="54" stroke="#7c3aed" stroke-width="2.5" />
-            <circle cx="45" cy="59" r="3.5" fill="#581c87" stroke="#a855f7" stroke-width="1.5" />
-            <circle cx="66" cy="59" r="3.5" fill="#581c87" stroke="#a855f7" stroke-width="1.5" />
+            <path d="M 28 32 L 34 32 L 44 54 L 68 54 L 75 38 L 36 38" fill="none" stroke="#ea580c" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+            <line x1="48" y1="38" x2="48" y2="54" stroke="#ea580c" stroke-width="2.5" />
+            <line x1="58" y1="38" x2="58" y2="54" stroke="#ea580c" stroke-width="2.5" />
+            <circle cx="45" cy="59" r="3.5" fill="#1b436e" stroke="#f97316" stroke-width="1.5" />
+            <circle cx="66" cy="59" r="3.5" fill="#1b436e" stroke="#f97316" stroke-width="1.5" />
             <defs>
               <linearGradient id="purpleGradAuth" x1="0" y1="0" x2="1" y2="1">
                 <stop offset="0%" stop-color="#9333ea" />
-                <stop offset="50%" stop-color="#581c87" />
-                <stop offset="100%" stop-color="#3b0764" />
+                <stop offset="50%" stop-color="#1b436e" />
+                <stop offset="100%" stop-color="#040a14" />
               </linearGradient>
               <linearGradient id="orangeGradAuth" x1="0" y1="0" x2="1" y2="0">
                 <stop offset="0%" stop-color="#ea580c" />
@@ -320,7 +348,7 @@
           </div>
         </div>
 
-        <button type="submit" id="authSubmitBtn" class="w-full py-3 rounded-xl bg-gradient-to-r from-tzion-purple-600 to-tzion-orange-500 hover:from-tzion-purple-700 hover:to-tzion-orange-600 text-white font-bold text-xs uppercase tracking-wider shadow-lg shadow-tzion-purple-900/30 active:scale-98 transition-all">
+        <button type="submit" id="authSubmitBtn" class="w-full py-3 rounded-xl bg-gradient-to-r from-tzion-orange-500 to-amber-600 hover:from-tzion-purple-700 hover:to-tzion-orange-600 text-white font-bold text-xs uppercase tracking-wider shadow-lg shadow-tzion-purple-900/30 active:scale-98 transition-all">
           Sign In to TzionStockly
         </button>
       </form>
@@ -342,7 +370,7 @@
   <!-- CHECK-IN / CHECK-OUT MODAL DIALOG                                        -->
   <!-- ========================================================================= -->
   <div id="stockActionModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden items-center justify-center p-4">
-    <div class="bg-white dark:bg-[#1b0c3a] border border-purple-200 dark:border-purple-900/60 rounded-3xl w-full max-w-md overflow-hidden shadow-2xl transition-colors">
+    <div class="bg-white dark:bg-[#0e2240] border border-purple-200 dark:border-purple-900/60 rounded-3xl w-full max-w-md overflow-hidden shadow-2xl transition-colors">
       <div id="stockModalHeader" class="p-4 border-b border-purple-100 dark:border-purple-900/60 flex items-center justify-between bg-purple-50/50 dark:bg-tzion-purple-950/40">
         <div class="flex items-center space-x-2">
           <span id="stockActionBadge" class="px-2 py-0.5 rounded text-xs font-mono font-bold uppercase bg-tzion-orange-500/20 text-tzion-orange-600 dark:text-tzion-orange-400 border border-tzion-orange-500/30">CHECK OUT</span>
@@ -421,7 +449,7 @@
   <!-- EXCEL / SPREADSHEET BULK IMPORT MODAL (ADMIN ONLY)                        -->
   <!-- ========================================================================= -->
   <div id="importExcelModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden items-center justify-center p-3 sm:p-5">
-    <div class="bg-white dark:bg-[#1b0c3a] border border-purple-200 dark:border-purple-900/60 rounded-3xl w-full max-w-3xl overflow-hidden shadow-2xl flex flex-col max-h-[90vh] transition-colors">
+    <div class="bg-white dark:bg-[#0e2240] border border-purple-200 dark:border-purple-900/60 rounded-3xl w-full max-w-3xl overflow-hidden shadow-2xl flex flex-col max-h-[90vh] transition-colors">
       
       <div class="p-4 border-b border-purple-100 dark:border-purple-900/60 flex items-center justify-between bg-purple-50/50 dark:bg-tzion-purple-950/40">
         <div class="flex items-center space-x-2.5">
@@ -498,7 +526,7 @@
                   <th class="py-2.5 px-3">Retail (TZS)</th>
                 </tr>
               </thead>
-              <tbody id="importPreviewTableBody" class="divide-y divide-purple-200 dark:divide-purple-900/60 text-slate-800 dark:text-purple-200 bg-white dark:bg-[#1b0c3a]">
+              <tbody id="importPreviewTableBody" class="divide-y divide-purple-200 dark:divide-purple-900/60 text-slate-800 dark:text-purple-200 bg-white dark:bg-[#0e2240]">
                 <!-- Populated dynamically -->
               </tbody>
             </table>
@@ -523,7 +551,7 @@
   <!-- ADD SINGLE NEW SKU MODAL (ADMIN ONLY)                                     -->
   <!-- ========================================================================= -->
   <div id="addItemModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden items-center justify-center p-4">
-    <div class="bg-white dark:bg-[#1b0c3a] border border-purple-200 dark:border-purple-900/60 rounded-3xl w-full max-w-md overflow-hidden shadow-2xl transition-colors">
+    <div class="bg-white dark:bg-[#0e2240] border border-purple-200 dark:border-purple-900/60 rounded-3xl w-full max-w-md overflow-hidden shadow-2xl transition-colors">
       <div class="p-4 border-b border-purple-100 dark:border-purple-900/60 flex items-center justify-between bg-purple-50/50 dark:bg-tzion-purple-950/40">
         <h3 class="font-bold text-slate-900 dark:text-white text-sm">Add New SKU to TzionStockly</h3>
         <button onclick="closeAddItemModal()" class="text-slate-400 hover:text-slate-700 dark:hover:text-white p-1">
@@ -589,7 +617,7 @@
   <!-- OUTBOX QUEUE MODAL                                                        -->
   <!-- ========================================================================= -->
   <div id="syncModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden items-center justify-center p-4">
-    <div class="bg-white dark:bg-[#1b0c3a] border border-purple-200 dark:border-purple-900/60 rounded-3xl w-full max-w-lg overflow-hidden shadow-2xl flex flex-col max-h-[85vh] transition-colors">
+    <div class="bg-white dark:bg-[#0e2240] border border-purple-200 dark:border-purple-900/60 rounded-3xl w-full max-w-lg overflow-hidden shadow-2xl flex flex-col max-h-[85vh] transition-colors">
       <div class="p-4 border-b border-purple-100 dark:border-purple-900/60 flex items-center justify-between bg-purple-50/50 dark:bg-tzion-purple-950/40">
         <div class="flex items-center space-x-2">
           <div class="w-3 h-3 rounded-full bg-tzion-orange-500"></div>
@@ -613,7 +641,7 @@
             <span id="syncProgressPercent" class="font-mono text-tzion-orange-500 font-bold">0%</span>
           </div>
           <div class="w-full bg-purple-200 dark:bg-tzion-purple-900 h-2 rounded-full overflow-hidden">
-            <div id="syncProgressBar" class="bg-gradient-to-r from-tzion-purple-600 to-tzion-orange-500 h-full w-0 transition-all duration-300"></div>
+            <div id="syncProgressBar" class="bg-gradient-to-r from-tzion-orange-500 to-amber-600 h-full w-0 transition-all duration-300"></div>
           </div>
         </div>
 
@@ -639,7 +667,7 @@
   <!-- SUPABASE BACKEND CONFIGURATION MODAL                                      -->
   <!-- ========================================================================= -->
   <div id="supabaseModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden items-center justify-center p-4">
-    <div class="bg-white dark:bg-[#1b0c3a] border border-purple-200 dark:border-purple-900/60 rounded-3xl w-full max-w-lg overflow-hidden shadow-2xl flex flex-col transition-colors">
+    <div class="bg-white dark:bg-[#0e2240] border border-purple-200 dark:border-purple-900/60 rounded-3xl w-full max-w-lg overflow-hidden shadow-2xl flex flex-col transition-colors">
       <div class="p-4 border-b border-purple-100 dark:border-purple-900/60 flex items-center justify-between bg-purple-50/50 dark:bg-tzion-purple-950/40">
         <div class="flex items-center space-x-2">
           <span class="text-emerald-500 font-bold">⚡</span>
@@ -686,7 +714,7 @@
   <!-- SUBSCRIPTION LEASE / LOCKOUT MODAL                                        -->
   <!-- ========================================================================= -->
   <div id="subscriptionLockModal" class="fixed inset-0 z-50 bg-black/85 backdrop-blur-md hidden items-center justify-center p-4">
-    <div class="bg-white dark:bg-[#1b0c3a] border-2 border-rose-500/50 rounded-3xl w-full max-w-md overflow-hidden shadow-2xl transition-colors">
+    <div class="bg-white dark:bg-[#0e2240] border-2 border-rose-500/50 rounded-3xl w-full max-w-md overflow-hidden shadow-2xl transition-colors">
       <div class="p-5 border-b border-rose-500/30 bg-rose-500/10 flex items-center justify-between">
         <div class="flex items-center space-x-2.5">
           <span class="text-2xl">🔒</span>
@@ -724,7 +752,7 @@
   <!-- END-OF-DAY CLOSEOUT ("FUNGA HESABU" / Z-REPORT) MODAL                    -->
   <!-- ========================================================================= -->
   <div id="shiftCloseoutModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden items-center justify-center p-3 sm:p-5">
-    <div class="bg-white dark:bg-[#1b0c3a] border border-purple-200 dark:border-purple-900/60 rounded-3xl w-full max-w-2xl overflow-hidden shadow-2xl flex flex-col max-h-[92vh] transition-colors">
+    <div class="bg-white dark:bg-[#0e2240] border border-purple-200 dark:border-purple-900/60 rounded-3xl w-full max-w-2xl overflow-hidden shadow-2xl flex flex-col max-h-[92vh] transition-colors">
       <div class="p-4 sm:p-5 border-b border-purple-100 dark:border-purple-900/60 flex items-center justify-between bg-purple-50/50 dark:bg-tzion-purple-950/40">
         <div class="flex items-center space-x-2.5">
           <div class="w-10 h-10 rounded-2xl bg-amber-500/20 text-amber-500 flex items-center justify-center text-xl font-bold shadow-inner">
@@ -779,7 +807,7 @@
                 id="closeoutOpeningFloatInput" 
                 value="50000" 
                 oninput="calculateCloseoutDiscrepancy()" 
-                class="w-full bg-white dark:bg-[#120726] border border-purple-200 dark:border-purple-800 rounded-xl px-3 py-2 text-xs font-mono font-bold text-slate-900 dark:text-white focus:outline-none focus:border-amber-500"
+                class="w-full bg-white dark:bg-[#07101f] border border-purple-200 dark:border-purple-800 rounded-xl px-3 py-2 text-xs font-mono font-bold text-slate-900 dark:text-white focus:outline-none focus:border-amber-500"
                 placeholder="Mf. 50000"
               >
               <span class="text-[10px] text-slate-400 block mt-1">Pesa za chenji zilizowekwa drooni kabla ya duka kufunguliwa.</span>
@@ -793,7 +821,7 @@
                 type="number" 
                 id="closeoutCountedCashInput" 
                 oninput="calculateCloseoutDiscrepancy()" 
-                class="w-full bg-white dark:bg-[#120726] border border-purple-200 dark:border-purple-800 rounded-xl px-3 py-2 text-xs font-mono font-bold text-slate-900 dark:text-white focus:outline-none focus:border-amber-500"
+                class="w-full bg-white dark:bg-[#07101f] border border-purple-200 dark:border-purple-800 rounded-xl px-3 py-2 text-xs font-mono font-bold text-slate-900 dark:text-white focus:outline-none focus:border-amber-500"
                 placeholder="Weka jumla ya pesa ulizohesabu"
               >
               <span class="text-[10px] text-slate-400 block mt-1">Hesabu noti na sarafu halisi zilizopo mikononi.</span>
@@ -817,7 +845,7 @@
               id="closeoutNotesInput" 
               rows="2" 
               placeholder="Mf. Nililipa mafuta ya jenereta TZS 10,000 kutoka kwenye droo..." 
-              class="w-full bg-white dark:bg-[#120726] border border-purple-200 dark:border-purple-800 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-amber-500"
+              class="w-full bg-white dark:bg-[#07101f] border border-purple-200 dark:border-purple-800 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-amber-500"
             ></textarea>
           </div>
         </div>
@@ -851,7 +879,7 @@
   <!-- STAFF & CASHIER PIN MANAGEMENT MODAL (ADMIN ONLY)                         -->
   <!-- ========================================================================= -->
   <div id="staffModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden items-center justify-center p-3 sm:p-5">
-    <div class="bg-white dark:bg-[#1b0c3a] border border-purple-200 dark:border-purple-900/60 rounded-3xl w-full max-w-xl overflow-hidden shadow-2xl flex flex-col max-h-[90vh] transition-colors">
+    <div class="bg-white dark:bg-[#0e2240] border border-purple-200 dark:border-purple-900/60 rounded-3xl w-full max-w-xl overflow-hidden shadow-2xl flex flex-col max-h-[90vh] transition-colors">
       <div class="p-4 sm:p-5 border-b border-purple-100 dark:border-purple-900/60 flex items-center justify-between bg-purple-50/50 dark:bg-tzion-purple-950/40">
         <div class="flex items-center space-x-2.5">
           <div class="w-10 h-10 rounded-2xl bg-tzion-purple-600/20 text-tzion-purple-600 dark:text-purple-300 flex items-center justify-center text-xl font-bold">
@@ -879,7 +907,7 @@
               type="text" 
               id="newAdminPinInput" 
               placeholder="Weka PIN mpya (mf. 1234)" 
-              class="flex-1 bg-white dark:bg-[#120726] border border-purple-200 dark:border-purple-800 rounded-xl px-3 py-2 text-xs font-mono font-bold text-slate-900 dark:text-white focus:outline-none focus:border-tzion-orange-500"
+              class="flex-1 bg-white dark:bg-[#07101f] border border-purple-200 dark:border-purple-800 rounded-xl px-3 py-2 text-xs font-mono font-bold text-slate-900 dark:text-white focus:outline-none focus:border-tzion-orange-500"
               required
             >
             <button type="submit" class="px-4 py-2 rounded-xl bg-tzion-purple-600 hover:bg-tzion-purple-700 text-white font-bold text-xs shadow transition-all">
@@ -913,7 +941,7 @@
                   type="text" 
                   id="newCashierName" 
                   placeholder="Mf. Maria Juma" 
-                  class="w-full bg-white dark:bg-[#120726] border border-purple-200 dark:border-purple-800 rounded-xl px-3 py-1.5 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-tzion-orange-500"
+                  class="w-full bg-white dark:bg-[#07101f] border border-purple-200 dark:border-purple-800 rounded-xl px-3 py-1.5 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-tzion-orange-500"
                   required
                 >
               </div>
@@ -923,7 +951,7 @@
                   type="text" 
                   id="newCashierId" 
                   placeholder="Mf. maria@duka" 
-                  class="w-full bg-white dark:bg-[#120726] border border-purple-200 dark:border-purple-800 rounded-xl px-3 py-1.5 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-tzion-orange-500"
+                  class="w-full bg-white dark:bg-[#07101f] border border-purple-200 dark:border-purple-800 rounded-xl px-3 py-1.5 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-tzion-orange-500"
                   required
                 >
               </div>
@@ -933,7 +961,7 @@
                   type="text" 
                   id="newCashierPin" 
                   placeholder="Weka PIN ya muuzaji..." 
-                  class="w-full bg-white dark:bg-[#120726] border border-purple-200 dark:border-purple-800 rounded-xl px-3 py-1.5 text-xs font-mono font-bold text-slate-900 dark:text-white focus:outline-none focus:border-tzion-orange-500"
+                  class="w-full bg-white dark:bg-[#07101f] border border-purple-200 dark:border-purple-800 rounded-xl px-3 py-1.5 text-xs font-mono font-bold text-slate-900 dark:text-white focus:outline-none focus:border-tzion-orange-500"
                   required
                 >
               </div>
@@ -955,7 +983,7 @@
   <!-- STORE ADMIN INVENTORY ACTION MODAL (RECEIVE STOCK / WRITE-OFF ADJUSTMENT) -->
   <!-- ========================================================================= -->
   <div id="adminStockModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden items-center justify-center p-4">
-    <div class="bg-white dark:bg-[#1b0c3a] border border-purple-200 dark:border-purple-900/60 rounded-3xl w-full max-w-md overflow-hidden shadow-2xl transition-colors">
+    <div class="bg-white dark:bg-[#0e2240] border border-purple-200 dark:border-purple-900/60 rounded-3xl w-full max-w-md overflow-hidden shadow-2xl transition-colors">
       <div class="p-4 border-b border-purple-100 dark:border-purple-900/60 flex items-center justify-between bg-purple-50/50 dark:bg-tzion-purple-950/40">
         <div class="flex items-center space-x-2">
           <span id="adminStockBadge" class="px-2 py-0.5 rounded text-xs font-mono font-bold uppercase bg-tzion-purple-600/20 text-tzion-purple-700 dark:text-purple-300 border border-tzion-purple-600/30">ADMIN: RECEIVE STOCK</span>
@@ -1021,7 +1049,7 @@
   <!-- MULTI-ITEM POS CART CHECKOUT MODAL                                        -->
   <!-- ========================================================================= -->
   <div id="posCartModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden items-center justify-center p-3 sm:p-5">
-    <div class="bg-white dark:bg-[#1b0c3a] border border-purple-200 dark:border-purple-900/60 rounded-3xl w-full max-w-2xl overflow-hidden shadow-2xl flex flex-col max-h-[92vh] transition-colors">
+    <div class="bg-white dark:bg-[#0e2240] border border-purple-200 dark:border-purple-900/60 rounded-3xl w-full max-w-2xl overflow-hidden shadow-2xl flex flex-col max-h-[92vh] transition-colors">
       
       <!-- Cart Header -->
       <div class="p-4 sm:p-5 border-b border-purple-100 dark:border-purple-900/60 flex items-center justify-between bg-purple-50/50 dark:bg-tzion-purple-950/40">
@@ -1099,7 +1127,7 @@
                   id="posCartTenderedInput" 
                   oninput="handleCartTenderChange()" 
                   placeholder="Mf. 50000" 
-                  class="w-36 bg-white dark:bg-[#120726] border border-amber-500/40 rounded-xl px-3 py-1.5 text-xs font-mono font-bold text-slate-900 dark:text-white focus:outline-none focus:border-amber-500 text-right"
+                  class="w-36 bg-white dark:bg-[#07101f] border border-amber-500/40 rounded-xl px-3 py-1.5 text-xs font-mono font-bold text-slate-900 dark:text-white focus:outline-none focus:border-amber-500 text-right"
                 >
                 <button type="button" onclick="setCartExactTender()" class="px-2 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-600 text-white text-[10px] font-bold">
                   Sawasawa
@@ -1259,12 +1287,12 @@
   <!-- SALES HISTORY (DAY, MONTH, YEAR) FULL DASHBOARD MODAL                     -->
   <!-- ========================================================================= -->
   <div id="salesHistoryModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden items-center justify-center p-3 sm:p-5">
-    <div class="bg-white dark:bg-[#1b0c3a] border border-purple-200 dark:border-purple-900/60 rounded-3xl w-full max-w-4xl overflow-hidden shadow-2xl flex flex-col max-h-[92vh] transition-colors">
+    <div class="bg-white dark:bg-[#0e2240] border border-purple-200 dark:border-purple-900/60 rounded-3xl w-full max-w-4xl overflow-hidden shadow-2xl flex flex-col max-h-[92vh] transition-colors">
       
       <!-- Modal Header -->
       <div class="p-4 sm:p-5 border-b border-purple-100 dark:border-purple-900/60 flex items-center justify-between bg-purple-50/50 dark:bg-tzion-purple-950/40">
         <div class="flex items-center space-x-2.5">
-          <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-tzion-purple-600 to-tzion-orange-500 text-white flex items-center justify-center text-xl font-bold shadow-md">
+          <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-tzion-orange-500 to-amber-600 text-white flex items-center justify-center text-xl font-bold shadow-md">
             📊
           </div>
           <div>
@@ -1302,29 +1330,29 @@
       </div>
 
       <!-- Financial Metrics KPI Cards for the active filter -->
-      <div class="p-4 sm:p-5 border-b border-purple-100 dark:border-purple-900/60 bg-slate-50/50 dark:bg-[#120726]/50">
+      <div class="p-4 sm:p-5 border-b border-purple-100 dark:border-purple-900/60 bg-slate-50/50 dark:bg-[#07101f]/50">
         <div class="grid grid-cols-2 sm:grid-cols-5 gap-2.5">
-          <div class="p-3 rounded-2xl bg-white dark:bg-[#1b0c3a] border border-purple-200 dark:border-purple-800 shadow-sm col-span-2 sm:col-span-1">
+          <div class="p-3 rounded-2xl bg-white dark:bg-[#0e2240] border border-purple-200 dark:border-purple-800 shadow-sm col-span-2 sm:col-span-1">
             <span class="text-[10px] text-slate-500 dark:text-purple-300/80 block font-semibold">Jumla ya Mauzo</span>
             <span id="historyTotalRevenue" class="text-base sm:text-lg font-black font-mono text-tzion-orange-500 block mt-0.5">TZS 0</span>
             <span class="text-[9px] text-slate-400 font-mono">Gross Sales</span>
           </div>
-          <div class="p-3 rounded-2xl bg-white dark:bg-[#1b0c3a] border border-purple-200 dark:border-purple-800 shadow-sm">
+          <div class="p-3 rounded-2xl bg-white dark:bg-[#0e2240] border border-purple-200 dark:border-purple-800 shadow-sm">
             <span class="text-[10px] text-slate-500 dark:text-purple-300/80 block font-semibold">💵 Pesa Taslimu</span>
             <span id="historyCashSales" class="text-sm sm:text-base font-bold font-mono text-emerald-600 dark:text-emerald-400 block mt-0.5">TZS 0</span>
             <span class="text-[9px] text-slate-400 font-mono">Cash Sales</span>
           </div>
-          <div class="p-3 rounded-2xl bg-white dark:bg-[#1b0c3a] border border-purple-200 dark:border-purple-800 shadow-sm">
+          <div class="p-3 rounded-2xl bg-white dark:bg-[#0e2240] border border-purple-200 dark:border-purple-800 shadow-sm">
             <span class="text-[10px] text-slate-500 dark:text-purple-300/80 block font-semibold">📱 Simu / Lipa Namba</span>
             <span id="historyMobileSales" class="text-sm sm:text-base font-bold font-mono text-purple-600 dark:text-purple-300 block mt-0.5">TZS 0</span>
             <span class="text-[9px] text-slate-400 font-mono">M-Pesa / Airtel</span>
           </div>
-          <div class="p-3 rounded-2xl bg-white dark:bg-[#1b0c3a] border border-purple-200 dark:border-purple-800 shadow-sm">
+          <div class="p-3 rounded-2xl bg-white dark:bg-[#0e2240] border border-purple-200 dark:border-purple-800 shadow-sm">
             <span class="text-[10px] text-slate-500 dark:text-purple-300/80 block font-semibold">📦 Bidhaa Zilizouzwa</span>
             <span id="historyUnitsSold" class="text-sm sm:text-base font-bold font-mono text-slate-900 dark:text-white block mt-0.5">0 pcs</span>
             <span class="text-[9px] text-slate-400 font-mono">Total Units</span>
           </div>
-          <div class="p-3 rounded-2xl bg-white dark:bg-[#1b0c3a] border border-purple-200 dark:border-purple-800 shadow-sm">
+          <div class="p-3 rounded-2xl bg-white dark:bg-[#0e2240] border border-purple-200 dark:border-purple-800 shadow-sm">
             <span class="text-[10px] text-slate-500 dark:text-purple-300/80 block font-semibold">🧾 Idadi ya Risiti</span>
             <span id="historyTxCount" class="text-sm sm:text-base font-bold font-mono text-slate-900 dark:text-white block mt-0.5">0 mauzo</span>
             <span class="text-[9px] text-slate-400 font-mono">Transactions</span>
@@ -3312,7 +3340,7 @@
       const container = document.getElementById('toastContainer');
       const toast = document.createElement('div');
       
-      let border = "border-purple-200 dark:border-purple-800 text-slate-800 dark:text-purple-200 bg-white dark:bg-[#1b0c3a]";
+      let border = "border-purple-200 dark:border-purple-800 text-slate-800 dark:text-purple-200 bg-white dark:bg-[#0e2240]";
       let icon = "⚡";
       if (type === 'success') {
         border = "border-emerald-500/40 text-emerald-800 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/90";
@@ -3698,7 +3726,7 @@
         <div class="space-y-5 md:space-y-6">
           
           <!-- SUPER ADMIN MASTER BANNER -->
-          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 sm:p-6 bg-gradient-to-r from-amber-600 via-tzion-purple-900 to-[#1e073d] text-white rounded-3xl border border-amber-500/40 shadow-2xl">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 sm:p-6 bg-gradient-to-r from-amber-600 via-tzion-purple-900 to-[#07101f] text-white rounded-3xl border border-amber-500/40 shadow-2xl">
             <div>
               <span class="text-[10px] font-mono font-black px-2.5 py-0.5 rounded-full bg-amber-500 text-white uppercase tracking-wider shadow">
                 👑 Super Admin Multi-Store SaaS Controller
@@ -3718,7 +3746,7 @@
           <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
             
             <!-- Card 1: Total Stores Registered -->
-            <div class="bg-white dark:bg-[#1b0c3a] p-4 rounded-3xl border border-purple-200 dark:border-purple-900/60 shadow-sm">
+            <div class="bg-white dark:bg-[#0e2240] p-4 rounded-3xl border border-purple-200 dark:border-purple-900/60 shadow-sm">
               <div class="flex justify-between items-start text-slate-500 dark:text-purple-300 mb-1">
                 <span class="text-xs font-semibold">Total Stores Registered</span>
                 <span class="text-xs p-1.5 rounded-xl bg-purple-100 dark:bg-tzion-purple-900 text-tzion-purple-600 dark:text-purple-300">🏪</span>
@@ -3728,7 +3756,7 @@
             </div>
 
             <!-- Card 2: Active vs Overdue / Suspended -->
-            <div class="bg-white dark:bg-[#1b0c3a] p-4 rounded-3xl border border-purple-200 dark:border-purple-900/60 shadow-sm">
+            <div class="bg-white dark:bg-[#0e2240] p-4 rounded-3xl border border-purple-200 dark:border-purple-900/60 shadow-sm">
               <div class="flex justify-between items-start text-slate-500 dark:text-purple-300 mb-1">
                 <span class="text-xs font-semibold">Active vs. Overdue / Suspended</span>
                 <span class="text-xs p-1.5 rounded-xl bg-amber-500/10 text-amber-500">⚖️</span>
@@ -3749,7 +3777,7 @@
             </div>
 
             <!-- Card 3: Monthly Recurring Revenue (MRR) -->
-            <div class="bg-white dark:bg-[#1b0c3a] p-4 rounded-3xl border border-purple-200 dark:border-purple-900/60 shadow-sm">
+            <div class="bg-white dark:bg-[#0e2240] p-4 rounded-3xl border border-purple-200 dark:border-purple-900/60 shadow-sm">
               <div class="flex justify-between items-start text-slate-500 dark:text-purple-300 mb-1">
                 <span class="text-xs font-semibold">Monthly Recurring Revenue (MRR)</span>
                 <span class="text-xs p-1.5 rounded-xl bg-tzion-orange-500/10 text-tzion-orange-500">💰</span>
@@ -3761,7 +3789,7 @@
           </div>
 
           <!-- SEARCH & STATUS FILTER ROW -->
-          <div class="bg-white dark:bg-[#1b0c3a] p-3 sm:p-4 rounded-3xl border border-purple-200 dark:border-purple-900/60 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-3">
+          <div class="bg-white dark:bg-[#0e2240] p-3 sm:p-4 rounded-3xl border border-purple-200 dark:border-purple-900/60 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-3">
             <div class="relative flex-1">
               <input 
                 type="text" 
@@ -3790,7 +3818,7 @@
           </div>
 
           <!-- STORE MANAGEMENT TABLE -->
-          <div class="bg-white dark:bg-[#1b0c3a] rounded-3xl border border-purple-200 dark:border-purple-900/60 overflow-hidden shadow-sm">
+          <div class="bg-white dark:bg-[#0e2240] rounded-3xl border border-purple-200 dark:border-purple-900/60 overflow-hidden shadow-sm">
             <div class="p-4 border-b border-purple-100 dark:border-purple-900/60 flex items-center justify-between">
               <div>
                 <h3 class="font-bold text-slate-900 dark:text-white text-sm">Tenant Store Fleet (${filteredStores.length})</h3>
@@ -4367,7 +4395,7 @@
           <div class="space-y-5 md:space-y-6">
             
             <!-- ADMIN WELCOME & ACTION BANNER -->
-            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 sm:p-5 bg-gradient-to-r from-tzion-purple-900/95 via-tzion-purple-900 to-[#1e073d] text-white rounded-3xl border border-tzion-purple-700/50 shadow-xl">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 sm:p-5 bg-gradient-to-r from-tzion-purple-900/95 via-tzion-purple-900 to-[#07101f] text-white rounded-3xl border border-tzion-purple-700/50 shadow-xl">
               <div>
                 <span class="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-tzion-orange-500 text-white uppercase tracking-wider">Administrator Hub</span>
                 <h2 class="text-lg sm:text-2xl font-black mt-1 text-white">TzionStockly Master Inventory</h2>
@@ -4401,7 +4429,7 @@
 
             <!-- FINANCIAL METRICS ROW IN TZS -->
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-              <div class="bg-white dark:bg-[#1b0c3a] p-4 rounded-3xl border border-purple-200 dark:border-purple-900/60 shadow-sm">
+              <div class="bg-white dark:bg-[#0e2240] p-4 rounded-3xl border border-purple-200 dark:border-purple-900/60 shadow-sm">
                 <div class="flex justify-between items-start text-slate-500 dark:text-purple-300 mb-1">
                   <span class="text-xs font-semibold">Total Inventory Value</span>
                   <span class="text-xs p-1.5 rounded-xl bg-purple-100 dark:bg-tzion-purple-900 text-tzion-purple-600 dark:text-purple-300">💰</span>
@@ -4410,7 +4438,7 @@
                 <span class="text-[10px] text-slate-500 dark:text-purple-300/70 font-mono">Cost Basis in TZS</span>
               </div>
 
-              <div class="bg-white dark:bg-[#1b0c3a] p-4 rounded-3xl border border-purple-200 dark:border-purple-900/60 shadow-sm">
+              <div class="bg-white dark:bg-[#0e2240] p-4 rounded-3xl border border-purple-200 dark:border-purple-900/60 shadow-sm">
                 <div class="flex justify-between items-start text-slate-500 dark:text-purple-300 mb-1">
                   <span class="text-xs font-semibold">Projected Retail Value</span>
                   <span class="text-xs p-1.5 rounded-xl bg-tzion-orange-500/10 text-tzion-orange-500">📈</span>
@@ -4419,7 +4447,7 @@
                 <span class="text-[10px] text-emerald-600 dark:text-emerald-400 font-mono font-medium">Profit: +${formatTZS(metrics.projectedProfitTZS)}</span>
               </div>
 
-              <div class="bg-white dark:bg-[#1b0c3a] p-4 rounded-3xl border border-purple-200 dark:border-purple-900/60 shadow-sm">
+              <div class="bg-white dark:bg-[#0e2240] p-4 rounded-3xl border border-purple-200 dark:border-purple-900/60 shadow-sm">
                 <div class="flex justify-between items-start text-slate-500 dark:text-purple-300 mb-1">
                   <span class="text-xs font-semibold">Total Stock Units</span>
                   <span class="text-xs p-1.5 rounded-xl bg-purple-100 dark:bg-tzion-purple-900 text-tzion-purple-600 dark:text-purple-300">📦</span>
@@ -4428,7 +4456,7 @@
                 <span class="text-[10px] text-slate-500 dark:text-purple-300/70 font-mono">Across ${metrics.totalSkus} active SKUs</span>
               </div>
 
-              <div class="bg-white dark:bg-[#1b0c3a] p-4 rounded-3xl border ${metrics.lowStockCount > 0 ? 'border-amber-500/40 bg-amber-500/5' : 'border-purple-200 dark:border-purple-900/60'} shadow-sm">
+              <div class="bg-white dark:bg-[#0e2240] p-4 rounded-3xl border ${metrics.lowStockCount > 0 ? 'border-amber-500/40 bg-amber-500/5' : 'border-purple-200 dark:border-purple-900/60'} shadow-sm">
                 <div class="flex justify-between items-start text-slate-500 dark:text-purple-300 mb-1">
                   <span class="text-xs font-semibold">Low Stock Depletion</span>
                   <span class="text-xs p-1.5 rounded-xl bg-amber-500/10 text-amber-500">⚠️</span>
@@ -4440,7 +4468,7 @@
 
             <!-- ANALYTICS ROW -->
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
-              <div class="lg:col-span-2 bg-white dark:bg-[#1b0c3a] p-4 sm:p-5 rounded-3xl border border-purple-200 dark:border-purple-900/60 shadow-sm">
+              <div class="lg:col-span-2 bg-white dark:bg-[#0e2240] p-4 sm:p-5 rounded-3xl border border-purple-200 dark:border-purple-900/60 shadow-sm">
                 <div class="flex items-center justify-between mb-4">
                   <div>
                     <h3 class="text-sm font-bold text-slate-900 dark:text-white">7-Day Stock In vs Check Out Flow (TZS)</h3>
@@ -4453,7 +4481,7 @@
                 </div>
               </div>
 
-              <div class="bg-white dark:bg-[#1b0c3a] p-4 sm:p-5 rounded-3xl border border-purple-200 dark:border-purple-900/60 shadow-sm flex flex-col justify-between">
+              <div class="bg-white dark:bg-[#0e2240] p-4 sm:p-5 rounded-3xl border border-purple-200 dark:border-purple-900/60 shadow-sm flex flex-col justify-between">
                 <div>
                   <h3 class="text-sm font-bold text-slate-900 dark:text-white mb-1">Fast-Moving Items</h3>
                   <p class="text-xs text-slate-500 dark:text-purple-300/70 mb-4">Highest turnover units/day</p>
@@ -4465,7 +4493,7 @@
                           <span class="font-mono text-tzion-orange-500 font-bold">${p.velocity} / day</span>
                         </div>
                         <div class="w-full bg-purple-100 dark:bg-tzion-purple-900 h-1.5 rounded-full overflow-hidden">
-                          <div class="bg-gradient-to-r from-tzion-purple-600 to-tzion-orange-500 h-full rounded-full" style="width: ${Math.min(100, p.velocity * 2.5)}%"></div>
+                          <div class="bg-gradient-to-r from-tzion-orange-500 to-amber-600 h-full rounded-full" style="width: ${Math.min(100, p.velocity * 2.5)}%"></div>
                         </div>
                       </div>
                     `).join('')}
@@ -4482,7 +4510,7 @@
             </div>
 
             <!-- INVENTORY TABLE / CARD CONTAINER -->
-            <div class="bg-white dark:bg-[#1b0c3a] rounded-3xl border border-purple-200 dark:border-purple-900/60 shadow-sm overflow-hidden">
+            <div class="bg-white dark:bg-[#0e2240] rounded-3xl border border-purple-200 dark:border-purple-900/60 shadow-sm overflow-hidden">
               <div class="p-3 sm:p-4 border-b border-purple-100 dark:border-purple-900/60 flex flex-col md:flex-row md:items-center justify-between gap-3 bg-purple-50/40 dark:bg-tzion-purple-950/40">
                 <div class="relative flex-1">
                   <input 
@@ -4636,7 +4664,7 @@
             </div>
 
             <!-- SEARCH & CATEGORY SELECTOR -->
-            <div class="bg-white dark:bg-[#1b0c3a] p-3 sm:p-4 rounded-3xl border border-purple-200 dark:border-purple-900/60 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-3">
+            <div class="bg-white dark:bg-[#0e2240] p-3 sm:p-4 rounded-3xl border border-purple-200 dark:border-purple-900/60 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-3">
               <div class="relative flex-1">
                 <input 
                   type="text" 
@@ -4666,7 +4694,7 @@
               ` : filtered.map(p => {
                 const isOutOfStock = p.stock <= 0;
                 return `
-                  <div class="bg-white dark:bg-[#1b0c3a] p-4 sm:p-5 rounded-3xl border border-purple-200 dark:border-purple-900/60 shadow-sm flex flex-col justify-between hover:border-tzion-orange-500/50 transition-all">
+                  <div class="bg-white dark:bg-[#0e2240] p-4 sm:p-5 rounded-3xl border border-purple-200 dark:border-purple-900/60 shadow-sm flex flex-col justify-between hover:border-tzion-orange-500/50 transition-all">
                     <div>
                       <div class="flex justify-between items-start mb-2">
                         <span class="text-[10px] font-mono px-2 py-0.5 rounded-full bg-purple-100 dark:bg-tzion-purple-900 text-tzion-purple-700 dark:text-purple-300 font-semibold">${p.sku}</span>
@@ -4713,7 +4741,7 @@
 
             ${(AppState.posCart && AppState.posCart.length > 0) ? `
               <!-- STICKY FLOATING BOTTOM CART BAR -->
-              <div class="fixed bottom-4 left-4 right-4 sm:left-auto sm:right-6 sm:w-96 z-40 bg-gradient-to-r from-tzion-purple-900 via-[#1e073d] to-tzion-purple-950 text-white p-3.5 rounded-2xl shadow-2xl border border-tzion-orange-500/50 flex items-center justify-between gap-3 animate-slide-up">
+              <div class="fixed bottom-4 left-4 right-4 sm:left-auto sm:right-6 sm:w-96 z-40 bg-gradient-to-r from-tzion-purple-900 via-[#07101f] to-tzion-purple-950 text-white p-3.5 rounded-2xl shadow-2xl border border-tzion-orange-500/50 flex items-center justify-between gap-3 animate-slide-up">
                 <div>
                   <div class="text-[11px] text-purple-200 font-medium">🛒 Kikapu cha Mauzo (${AppState.posCart.reduce((sum, i) => sum + i.qty, 0)} pcs)</div>
                   <div class="text-base font-black font-mono text-tzion-orange-400">${formatTZS(AppState.posCart.reduce((sum, i) => sum + (i.unitPrice * i.qty), 0))}</div>
@@ -4739,7 +4767,7 @@
       const stockOutData = [95000, 110000, 240000, 180000, 310000, 195000, 175000];
 
       const isDarkMode = AppState.isDark;
-      const gridColor = isDarkMode ? '#2e1065' : '#ede9fe';
+      const gridColor = isDarkMode ? '#07101f' : '#ede9fe';
       const textColor = isDarkMode ? '#c4b5fd' : '#6b21a8';
 
       const ctx = document.getElementById('movementCanvas');

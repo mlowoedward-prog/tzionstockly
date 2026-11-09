@@ -12,7 +12,7 @@
   <!-- Google Fonts: Inter & JetBrains Mono -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 
   <script>
     tailwind.config = {
@@ -20,24 +20,52 @@
       theme: {
         extend: {
           fontFamily: {
-            sans: ['Inter', 'sans-serif'],
+            sans: ['"DM Sans"', 'system-ui', '-apple-system', 'sans-serif'],
             mono: ['JetBrains Mono', 'monospace'],
           },
           colors: {
+            purple: {
+              50: '#f0f5fa',
+              100: '#e1edf7',
+              200: '#c3dbef',
+              300: '#94c0e3',
+              400: '#5e9fd3',
+              500: '#3880c2',
+              600: '#2665a5',
+              700: '#1e5085',
+              800: '#1b436e',
+              900: '#0e2240',
+              950: '#07101f',
+            },
             tzion: {
+              navy: {
+                50: '#f0f5fa',
+                100: '#e1edf7',
+                200: '#c3dbef',
+                300: '#94c0e3',
+                400: '#5e9fd3',
+                500: '#3880c2',
+                600: '#2665a5',
+                700: '#1e5085',
+                800: '#1b436e',
+                900: '#0e2240', // Deep Navy Surface
+                950: '#07101f', // Deepest Navy Background
+                deep: '#040a14'
+              },
               purple: {
-                50: '#f5f3ff',
-                100: '#ede9fe',
-                200: '#ddd6fe',
-                300: '#c4b5fd',
-                400: '#a78bfa',
-                500: '#8b5cf6',
-                600: '#7c3aed',
-                700: '#6d28d9',
-                800: '#5b21b6',
-                900: '#4c1d95',
-                950: '#2e1065',
-                deep: '#3b0764'
+                // Mapped to Deep Navy for 100% theme consistency
+                50: '#f0f5fa',
+                100: '#e1edf7',
+                200: '#c3dbef',
+                300: '#94c0e3',
+                400: '#5e9fd3',
+                500: '#3880c2',
+                600: '#2665a5',
+                700: '#1e5085',
+                800: '#1b436e',
+                900: '#0e2240',
+                950: '#07101f',
+                deep: '#040a14'
               },
               orange: {
                 50: '#fff7ed',
@@ -45,11 +73,12 @@
                 200: '#fed7aa',
                 300: '#fdba74',
                 400: '#fb923c',
-                500: '#f97316',
+                500: '#f97316', // Vibrant African Orange
                 600: '#ea580c',
                 700: '#c2410c',
                 800: '#9a3412',
                 900: '#7c2d12',
+                950: '#431407'
               }
             }
           }
@@ -61,17 +90,17 @@
   <style>
     ::-webkit-scrollbar { width: 6px; height: 6px; }
     ::-webkit-scrollbar-track { background: transparent; }
-    .dark ::-webkit-scrollbar-thumb { background: #4c1d95; border-radius: 9999px; }
+    .dark ::-webkit-scrollbar-thumb { background: #1b436e; border-radius: 9999px; }
     ::-webkit-scrollbar-thumb { background: #c4b5fd; border-radius: 9999px; }
     ::-webkit-scrollbar-thumb:hover { background: #f97316; }
   </style>
 </head>
-<body class="bg-slate-50 dark:bg-[#120726] text-slate-900 dark:text-purple-100 font-sans min-h-screen selection:bg-tzion-orange-500 selection:text-white flex flex-col antialiased transition-colors duration-200">
+<body class="bg-slate-50 dark:bg-[#07101f] text-slate-900 dark:text-purple-100 font-sans min-h-screen selection:bg-tzion-orange-500 selection:text-white flex flex-col antialiased transition-colors duration-200">
 
   <!-- ========================================================================= -->
   <!-- TOP SUPER ADMIN APP BAR (Visible when Authenticated)                      -->
   <!-- ========================================================================= -->
-  <header id="superAdminHeader" class="hidden bg-white/95 dark:bg-[#1b0c3a]/95 border-b border-amber-500/30 sticky top-0 z-40 px-4 py-2.5 backdrop-blur-md transition-colors shadow-sm">
+  <header id="superAdminHeader" class="hidden bg-white/95 dark:bg-[#0e2240]/95 border-b border-amber-500/30 sticky top-0 z-40 px-4 py-2.5 backdrop-blur-md transition-colors shadow-sm">
     <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-3">
       
       <!-- Logo & SaaS Badge -->
@@ -86,13 +115,13 @@
             <polygon points="34,32 46,26 58,32 46,38" fill="#fbbf24" />
             <polygon points="34,32 46,38 46,48 34,42" fill="#f59e0b" />
             <polygon points="46,38 58,32 58,42 46,48" fill="#d97706" />
-            <path d="M 28 32 L 34 32 L 44 54 L 68 54 L 75 38 L 36 38" fill="none" stroke="#7c3aed" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
-            <circle cx="45" cy="59" r="3.5" fill="#581c87" stroke="#a855f7" stroke-width="1.5" />
-            <circle cx="66" cy="59" r="3.5" fill="#581c87" stroke="#a855f7" stroke-width="1.5" />
+            <path d="M 28 32 L 34 32 L 44 54 L 68 54 L 75 38 L 36 38" fill="none" stroke="#ea580c" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+            <circle cx="45" cy="59" r="3.5" fill="#1b436e" stroke="#f97316" stroke-width="1.5" />
+            <circle cx="66" cy="59" r="3.5" fill="#1b436e" stroke="#f97316" stroke-width="1.5" />
             <defs>
               <linearGradient id="purpleGradSA" x1="0" y1="0" x2="1" y2="1">
                 <stop offset="0%" stop-color="#9333ea" />
-                <stop offset="100%" stop-color="#3b0764" />
+                <stop offset="100%" stop-color="#040a14" />
               </linearGradient>
               <linearGradient id="orangeGradSA" x1="0" y1="0" x2="1" y2="0">
                 <stop offset="0%" stop-color="#ea580c" />
@@ -143,7 +172,7 @@
   <!-- 1. SUPER ADMIN MASTER AUTHENTICATION GATEWAY                              -->
   <!-- ========================================================================= -->
   <section id="superAdminLoginScreen" class="flex-1 flex items-center justify-center p-4">
-    <div class="w-full max-w-md bg-white dark:bg-[#1b0c3a] border border-amber-500/40 rounded-3xl p-6 sm:p-8 shadow-2xl relative overflow-hidden transition-colors">
+    <div class="w-full max-w-md bg-white dark:bg-[#0e2240] border border-amber-500/40 rounded-3xl p-6 sm:p-8 shadow-2xl relative overflow-hidden transition-colors">
       
       <!-- Ambient Glow Accents -->
       <div class="absolute -top-24 -right-24 w-48 h-48 bg-amber-500/20 rounded-full blur-3xl pointer-events-none"></div>
@@ -202,7 +231,7 @@
   <!-- MODAL: MANUALLY SET CUSTOM RENEWAL DATE                                   -->
   <!-- ========================================================================= -->
   <div id="changeDateModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden items-center justify-center p-4">
-    <div class="bg-white dark:bg-[#1b0c3a] border border-amber-500/50 rounded-3xl w-full max-w-md overflow-hidden shadow-2xl transition-colors">
+    <div class="bg-white dark:bg-[#0e2240] border border-amber-500/50 rounded-3xl w-full max-w-md overflow-hidden shadow-2xl transition-colors">
       <div class="p-4 border-b border-purple-100 dark:border-purple-900/60 flex items-center justify-between bg-amber-500/10">
         <div class="flex items-center space-x-2">
           <span class="text-amber-500 font-bold text-lg">📅</span>
@@ -283,7 +312,7 @@
   <!-- MODAL: EDIT STORE DETAILS & MONTHLY FEE                                   -->
   <!-- ========================================================================= -->
   <div id="editStoreModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden items-center justify-center p-4">
-    <div class="bg-white dark:bg-[#1b0c3a] border border-amber-500/50 rounded-3xl w-full max-w-lg overflow-hidden shadow-2xl transition-colors">
+    <div class="bg-white dark:bg-[#0e2240] border border-amber-500/50 rounded-3xl w-full max-w-lg overflow-hidden shadow-2xl transition-colors">
       <div class="p-4 border-b border-purple-100 dark:border-purple-900/60 flex items-center justify-between bg-amber-500/10">
         <div class="flex items-center space-x-2">
           <span class="text-amber-500 font-bold text-lg">✏️</span>
@@ -365,7 +394,7 @@
   <!-- MODAL: ONBOARD NEW TENANT STORE                                           -->
   <!-- ========================================================================= -->
   <div id="onboardStoreModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden items-center justify-center p-4">
-    <div class="bg-white dark:bg-[#1b0c3a] border border-purple-200 dark:border-purple-900/60 rounded-3xl w-full max-w-md overflow-hidden shadow-2xl transition-colors">
+    <div class="bg-white dark:bg-[#0e2240] border border-purple-200 dark:border-purple-900/60 rounded-3xl w-full max-w-md overflow-hidden shadow-2xl transition-colors">
       <div class="p-4 border-b border-purple-100 dark:border-purple-900/60 flex items-center justify-between bg-amber-500/10">
         <div class="flex items-center space-x-2">
           <span class="text-amber-500 font-bold text-base">🏪</span>
