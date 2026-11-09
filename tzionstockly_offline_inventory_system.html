@@ -156,13 +156,11 @@
         <div>
           <div class="flex items-center space-x-2">
             <span class="font-extrabold tracking-tight text-lg text-tzion-purple-700 dark:text-tzion-purple-300">Tzion<span class="text-tzion-orange-500">Stockly</span></span>
-            <span id="roleHeaderBadge" class="text-[10px] uppercase font-mono px-2 py-0.5 rounded-full font-bold bg-tzion-purple-100 dark:bg-tzion-purple-900/60 border border-tzion-purple-300 dark:border-tzion-purple-700 text-tzion-purple-700 dark:text-tzion-purple-300">Admin Mode</span>
-            <!-- Store Indicator Pill -->
-            <div id="headerStorePill" class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-tzion-purple-100 dark:bg-tzion-purple-900/60 border border-tzion-purple-300 dark:border-tzion-purple-700 text-tzion-purple-700 dark:text-purple-300 shadow-sm">
-              <span id="headerStoreName">🏪 Tzion Main Store</span>
-            </div>
           </div>
-          <p class="text-[10px] text-slate-500 dark:text-purple-300/60 font-mono">Currency: TZS (Tanzanian Shillings) • Multi-Store SaaS Fleet</p>
+          <!-- Clean Dynamic Portal Title: Staff - staff_name or Store Admin - Store_name -->
+          <h1 id="headerPortalTitle" class="text-xs sm:text-sm font-bold font-mono text-tzion-orange-600 dark:text-tzion-orange-400 leading-tight">
+            Store Admin - Tzion Main Flagship Store
+          </h1>
         </div>
       </div>
 
@@ -184,8 +182,8 @@
           <span id="netText">Online (Supabase Sync)</span>
         </button>
 
-        <!-- Direct Link to Super Admin Fleet -->
-        <a href="superadmin.html" class="px-2.5 py-1.5 rounded-xl border border-amber-500/40 bg-amber-500/10 hover:bg-amber-500/20 text-amber-600 dark:text-amber-400 text-xs font-bold flex items-center gap-1 transition-all shadow-sm" title="Open Super Admin Multi-Store Hub">
+        <!-- Direct Link to Super Admin Fleet (Visible ONLY to Super Admin) -->
+        <a id="superAdminFleetLink" href="superadmin.html" class="hidden px-2.5 py-1.5 rounded-xl border border-amber-500/40 bg-amber-500/10 hover:bg-amber-500/20 text-amber-600 dark:text-amber-400 text-xs font-bold items-center gap-1 transition-all shadow-sm" title="Open Super Admin Multi-Store Hub">
           <span>👑</span>
           <span class="hidden sm:inline">Fleet</span>
         </a>
@@ -331,11 +329,7 @@
           </button>
         </div>
         <!-- Discreet Hidden Link for Platform Super Admin -->
-        <div class="mt-4 text-center">
-          <a href="superadmin.html" class="text-[10px] text-purple-300/30 dark:text-purple-800 hover:text-amber-500 font-mono transition-colors" title="Platform Super Admin Portal">
-            🔒 SaaS Fleet Root
-          </a>
-        </div>
+        
       </div>
 
     </div>
@@ -1647,19 +1641,17 @@
       document.getElementById('headerUserRole').innerText = isSuper ? 'Super Administrator' : (role === 'admin' ? 'Store Administrator' : 'Staff Cashier');
       
       const badge = document.getElementById('roleHeaderBadge');
-      const superBtn = document.getElementById('superAdminPortalBtn');
+      if (badge) badge.classList.add('hidden');
 
-      if (isSuper) {
-        badge.innerText = "👑 Super Admin";
-        badge.className = "text-[10px] uppercase font-mono px-2.5 py-0.5 rounded-full font-black bg-amber-500/20 border border-amber-500/40 text-amber-600 dark:text-amber-300 shadow-sm";
-        if (superBtn) {
-          superBtn.classList.remove('hidden');
-          superBtn.classList.add('flex');
+      const fleetLink = document.getElementById('superAdminFleetLink');
+      if (fleetLink) {
+        if (isSuper) {
+          fleetLink.classList.remove('hidden');
+          fleetLink.classList.add('flex');
+        } else {
+          fleetLink.classList.add('hidden');
+          fleetLink.classList.remove('flex');
         }
-      } else if (role === 'admin') {
-        badge.innerText = "Admin Clearance";
-        badge.className = "text-[10px] uppercase font-mono px-2 py-0.5 rounded-full font-bold bg-tzion-purple-100 dark:bg-tzion-purple-900/60 border border-tzion-purple-300 dark:border-tzion-purple-700 text-tzion-purple-700 dark:text-purple-300";
-        if (superBtn) superBtn.classList.add('hidden');
       } else {
         badge.innerText = "Checkout Only";
         badge.className = "text-[10px] uppercase font-mono px-2 py-0.5 rounded-full font-bold bg-tzion-orange-500/15 border border-tzion-orange-500/30 text-tzion-orange-600 dark:text-tzion-orange-400";
@@ -3229,17 +3221,33 @@
 
     function updateHeaderStoreDisplay() {
       const curStore = AppState.stores.find(s => s.id === AppState.currentStoreId) || AppState.stores[0];
-      const storeNameEl = document.getElementById('headerStoreName');
-      const storePill = document.getElementById('headerStorePill');
-      if (storeNameEl && curStore) {
-        if (AppState.activeSuperAdminPortal) {
-          storeNameEl.innerText = "👑 All Stores (Fleet Portal)";
-          storePill.className = "hidden sm:inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-amber-500/20 border border-amber-500/40 text-amber-600 dark:text-amber-400";
+      const titleEl = document.getElementById('headerPortalTitle');
+      const fleetLink = document.getElementById('superAdminFleetLink');
+
+      if (!AppState.currentUser) return;
+      const isSuper = AppState.currentUser.is_super_admin || AppState.currentUser.role === 'super_admin';
+      const isAdmin = AppState.currentUser.role === 'admin';
+
+      // Update Top Header Title strictly to:
+      // "staff - staff_name" OR "Store Admin - Store_name" OR "Super Admin - Fleet Portal"
+      if (titleEl) {
+        if (isSuper || AppState.activeSuperAdminPortal) {
+          titleEl.innerText = `Super Admin - Fleet Portal`;
+        } else if (isAdmin) {
+          titleEl.innerText = `Store Admin - ${curStore ? curStore.name : 'Main Store'}`;
         } else {
-          storeNameEl.innerText = (curStore.is_locked ? "🔒 " : "🏪 ") + curStore.name;
-          storePill.className = curStore.is_locked 
-            ? "hidden sm:inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-rose-500/20 border border-rose-500/40 text-rose-600 dark:text-rose-400"
-            : "hidden sm:inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-tzion-orange-500/15 border border-tzion-orange-500/30 text-tzion-orange-600 dark:text-tzion-orange-400 hover:bg-tzion-orange-500/25";
+          titleEl.innerText = `Staff - ${AppState.currentUser.name}`;
+        }
+      }
+
+      // Fleet button strictly hidden for Staff and Store Admin; visible only to Super Admin
+      if (fleetLink) {
+        if (isSuper) {
+          fleetLink.classList.remove('hidden');
+          fleetLink.classList.add('flex');
+        } else {
+          fleetLink.classList.add('hidden');
+          fleetLink.classList.remove('flex');
         }
       }
     }
