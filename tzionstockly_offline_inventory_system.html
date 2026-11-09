@@ -210,6 +210,9 @@
 
         <!-- Super Admin Multi-Store Portal Switcher -->
         <!-- Supabase Settings Drawer Button -->
+        <button onclick="CloudSync.pullProducts(true)" title="Sawazisha Stoo sasa hivi na Supabase Cloud" class="p-2 rounded-xl border border-tzion-orange-500/30 bg-tzion-orange-500/10 text-tzion-orange-600 dark:text-tzion-orange-400 text-xs hover:bg-tzion-orange-500/20 transition-all flex items-center gap-1 font-bold">
+          <span>🔄</span><span class="hidden sm:inline text-[10px]">Sync</span>
+        </button>
         <button onclick="openSupabaseModal()" title="Supabase Database Settings" class="p-2 rounded-xl border border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-xs hover:bg-emerald-500/20 transition-all">
           <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M21.362 9.354H12V.396a.396.396 0 0 0-.716-.233L2.2 12.604a.396.396 0 0 0 .32.617H12v8.958a.396.396 0 0 0 .716.233l9.084-12.441a.396.396 0 0 0-.32-.617z"/></svg>
         </button>
@@ -1979,7 +1982,7 @@
     
     // --- Automatic Storage Migration for Jawiza Production Release ---
     function initAppStorageMigration() {
-      const CURRENT_APP_VERSION = 'jawiza-prod-v2';
+      const CURRENT_APP_VERSION = 'jawiza-prod-v3';
       const installedVersion = localStorage.getItem('tzion_app_version');
       if (installedVersion !== CURRENT_APP_VERSION) {
         // Clear old demo stores, demo products, and demo sales
@@ -2327,6 +2330,7 @@
         const prod = AppState.products.find(p => p.id === item.id);
         if (prod) {
           prod.stock -= item.qty;
+          CloudSync.pushProductStock(prod);
         }
       }
 
@@ -2831,6 +2835,7 @@
         prod.stock -= qty;
       }
       saveProductsLocally();
+      CloudSync.pushProductStock(prod);
 
       // 2. Queue stock adjustment mutation for Supabase Background Sync
       const now = new Date();
@@ -3058,6 +3063,97 @@
       `).join('');
     }
 
+    
+    // =========================================================================
+    // REAL CLOUD SYNCHRONIZATION ENGINE (SUPABASE REST API)
+    // =========================================================================
+    const CloudSync = {
+      url: 'https://afchobaedwzvcdvexhtq.supabase.co',
+      key: 'sb_publishable_3_m7mYbVuaVLhWcHXezcHQ_6Gvm1a2H',
+      isPulling: false,
+
+      getHeaders() {
+        return {
+          'apikey': this.key,
+          'Authorization': `Bearer ${this.key}`,
+          'Content-Type': 'application/json',
+          'Prefer': 'return=representation'
+        };
+      },
+
+      // Pull latest stock levels and prices from Supabase into local AppState
+      async pullProducts(notify = false) {
+        if (!navigator.onLine || this.isPulling) return false;
+        this.isPulling = true;
+        try {
+          const res = await fetch(`${this.url}/rest/v1/products?select=*`, {
+            headers: this.getHeaders()
+          });
+          if (!res.ok) {
+            this.isPulling = false;
+            return false;
+          }
+          const remoteProds = await res.json();
+          if (!Array.isArray(remoteProds) || remoteProds.length === 0) {
+            this.isPulling = false;
+            return false;
+          }
+
+          let updatedAny = false;
+          remoteProds.forEach(remote => {
+            const local = AppState.products.find(p => 
+              (remote.sku && p.sku === remote.sku) || 
+              p.name.toLowerCase().trim() === (remote.name || '').toLowerCase().trim()
+            );
+            if (local) {
+              const newQty = Number(remote.stock_quantity ?? local.stock);
+              if (local.stock !== newQty) {
+                local.stock = newQty;
+                updatedAny = true;
+              }
+              if (remote.selling_price_tzs) local.sellingPrice = Number(remote.selling_price_tzs);
+              if (remote.cost_price_tzs) local.costPrice = Number(remote.cost_price_tzs);
+              local.supabaseId = remote.id;
+            }
+          });
+
+          if (updatedAny) {
+            saveProductsLocally();
+            renderUI();
+            if (notify) showToast("Stoo imesasishwa kutoka Supabase Cloud!", "success");
+          } else if (notify) {
+            showToast("Stoo ipo sawa na Cloud (Up to date).", "info");
+          }
+          this.isPulling = false;
+          return true;
+        } catch (err) {
+          console.warn("CloudSync pull error:", err);
+          this.isPulling = false;
+          return false;
+        }
+      },
+
+      // Push stock quantity of an updated product to Supabase immediately
+      async pushProductStock(product) {
+        if (!navigator.onLine || !product) return false;
+        try {
+          const filter = product.sku ? `sku=eq.${encodeURIComponent(product.sku)}` : `name=eq.${encodeURIComponent(product.name)}`;
+          const res = await fetch(`${this.url}/rest/v1/products?${filter}`, {
+            method: 'PATCH',
+            headers: this.getHeaders(),
+            body: JSON.stringify({
+              stock_quantity: product.stock,
+              updated_at: new Date().toISOString()
+            })
+          });
+          return res.ok;
+        } catch (err) {
+          console.warn("CloudSync push error:", err);
+          return false;
+        }
+      }
+    };
+  
     function simulateCloudSync() {
       if (AppState.syncQueue.length === 0) {
         showToast("Outbox is already empty. Nothing to sync.", "info");
