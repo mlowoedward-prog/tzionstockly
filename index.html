@@ -57,15 +57,21 @@
   .card { background:#fff; border-radius:10px; padding:16px; box-shadow:0 1px 3px rgba(0,0,0,.07); }
   .card .label { font-size:11px; color:#6b7280; text-transform:uppercase; letter-spacing:.5px; }
   .card .value { font-size:22px; font-weight:700; margin-top:4px; }
+  .card .sub-val { font-size:11.5px; color:#64748b; margin-top:3px; }
   .card.warn .value { color:#dc2626; }
   .card.good .value { color:#16a34a; }
+  .card.blue .value { color:#2563eb; }
 
   .panel { background:#fff; border-radius:10px; box-shadow:0 1px 3px rgba(0,0,0,.07); padding:16px; margin-bottom:22px; overflow-x:auto; }
   .panel-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; flex-wrap:wrap; gap:10px; }
   .panel-header h2 { font-size:15px; }
   .panel-tools { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
 
-  input[type=text], input[type=number], input[type=password], select { padding:8px 11px; border:1px solid #d1d5db; border-radius:6px; font-size:14px; outline:none; }
+  .pill-tabs { display:inline-flex; background:#f1f5f9; padding:3px; border-radius:8px; gap:2px; }
+  .pill-tab { padding:5px 11px; border-radius:6px; font-size:12px; font-weight:600; color:#475569; background:transparent; border:none; cursor:pointer; }
+  .pill-tab.active { background:#fff; color:#0f172a; box-shadow:0 1px 2px rgba(0,0,0,.08); }
+
+  input[type=text], input[type=number], input[type=password], input[type=date], select { padding:8px 11px; border:1px solid #d1d5db; border-radius:6px; font-size:14px; outline:none; background:#fff; }
   input:focus, select:focus { border-color:#22c55e; }
   button { padding:8px 13px; border:none; border-radius:6px; font-size:13px; cursor:pointer; font-weight:500; }
   .btn-primary { background:#22c55e; color:#fff; }
@@ -190,13 +196,16 @@
 
   body.is-mobile .cards { grid-template-columns:repeat(2, 1fr); gap:10px; margin-bottom:16px; }
   body.is-mobile .card { padding:12px 14px; }
-  body.is-mobile .card .value { font-size:20px; }
+  body.is-mobile .card .value { font-size:18px; }
 
   body.is-mobile .panel { padding:12px; margin-bottom:16px; }
   body.is-mobile .panel-header { flex-direction:column; align-items:stretch; gap:8px; }
   body.is-mobile .panel-tools { width:100%; flex-direction:column; align-items:stretch; }
   body.is-mobile .panel-tools input,
+  body.is-mobile .panel-tools select,
   body.is-mobile .panel-tools button { width:100%; font-size:15px; padding:10px 12px; }
+  body.is-mobile .pill-tabs { width:100%; display:flex; }
+  body.is-mobile .pill-tab { flex:1; text-align:center; padding:8px 6px; }
 
   /* Transform Tables into Touch Cards on Mobile */
   body.is-mobile table.resp-table thead { display:none; }
@@ -417,18 +426,64 @@ let products = [];
 let movements = [];
 let session = null;
 
+function todayISO() {
+  const d = new Date();
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
+
+function nowTime() {
+  const d = new Date();
+  return d.toTimeString().slice(0,5);
+}
+
+function normalizeMovement(m) {
+  const p = products.find(x => x.id === m.pid || (m.productName && x.name.toLowerCase() === m.productName.toLowerCase()));
+  const qty = Math.abs(Number(m.qty || m.change) || 0);
+  const type = (m.type === 'restock' || m.type === 'purchase' || Number(m.change) > 0) ? 'restock' : 'sale';
+  const change = type === 'restock' ? +qty : -qty;
+  const unitPrice = Number(m.unitPrice ?? (p ? p.price : 0)) || 0;
+  const unitCost  = Number(m.unitCost  ?? (p ? p.cost  : 0)) || 0;
+  const totalAmount = Number(m.totalAmount ?? (qty * (type === 'sale' ? unitPrice : unitCost))) || 0;
+  return {
+    id: m.id || ('mov_' + Date.now() + '_' + Math.random().toString(36).slice(2,6)),
+    supabaseMovId: m.supabaseMovId || null,
+    storeId: m.storeId || 'store-jawiza-001',
+    date: m.date || (m.occurred_at ? String(m.occurred_at).slice(0,10) : todayISO()),
+    time: m.time || (m.occurred_at ? new Date(m.occurred_at).toTimeString().slice(0,5) : '09:00'),
+    pid: m.pid || (p ? p.id : null),
+    productName: m.productName || (p ? p.name : 'Item'),
+    unit: m.unit || (p ? p.loc : 'pcs'),
+    type,
+    qty,
+    change,
+    unitPrice,
+    unitCost,
+    totalAmount,
+    by: m.by || m.created_by || 'Store User',
+    note: m.note || (type === 'sale' ? 'Counter sale' : 'Supplier delivery')
+  };
+}
+
 function loadState() {
   if (localStorage.getItem(STORAGE_KEYS.VERSION) !== 'v2.0') {
     localStorage.setItem(STORAGE_KEYS.STORES, JSON.stringify(DEFAULT_STORES));
     localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(DEFAULT_USERS));
     localStorage.setItem(STORAGE_KEYS.PRODUCTS, JSON.stringify(DEFAULT_PRODUCTS));
-    localStorage.setItem(STORAGE_KEYS.MOVEMENTS, JSON.stringify([]));
+    if (!localStorage.getItem(STORAGE_KEYS.MOVEMENTS)) {
+      localStorage.setItem(STORAGE_KEYS.MOVEMENTS, JSON.stringify([]));
+    }
     localStorage.setItem(STORAGE_KEYS.VERSION, 'v2.0');
   }
   try { stores = JSON.parse(localStorage.getItem(STORAGE_KEYS.STORES)) || DEFAULT_STORES; } catch(e) { stores = DEFAULT_STORES; }
   try { users = JSON.parse(localStorage.getItem(STORAGE_KEYS.USERS)) || DEFAULT_USERS; } catch(e) { users = DEFAULT_USERS; }
   try { products = JSON.parse(localStorage.getItem(STORAGE_KEYS.PRODUCTS)) || DEFAULT_PRODUCTS; } catch(e) { products = DEFAULT_PRODUCTS; }
-  try { movements = JSON.parse(localStorage.getItem(STORAGE_KEYS.MOVEMENTS)) || []; } catch(e) { movements = []; }
+  try {
+    const rawMovs = JSON.parse(localStorage.getItem(STORAGE_KEYS.MOVEMENTS)) || [];
+    movements = rawMovs.map(normalizeMovement);
+  } catch(e) { movements = []; }
 }
 
 function saveState() {
@@ -450,11 +505,19 @@ function getStoreProducts() {
 
 function getStoreMovements() {
   const sid = getCurrentStore().id;
-  return movements.filter(m => !m.storeId || m.storeId === sid);
+  return movements
+    .filter(m => !m.storeId || m.storeId === sid)
+    .map(normalizeMovement);
 }
 
 function formatTZS(n) {
   return 'TZS ' + Math.round(Number(n) || 0).toLocaleString('en-US');
+}
+
+function formatDateLabel(dateStr) {
+  if (!dateStr) return '—';
+  if (dateStr === todayISO()) return `${dateStr} (Today)`;
+  return dateStr;
 }
 
 function showToast(msg) {
@@ -467,7 +530,7 @@ function showToast(msg) {
 }
 
 /* ============================================================
-   SUPABASE REAL-TIME SYNC ENGINE
+   SUPABASE REAL-TIME SYNC ENGINE (Products + Stock Movements)
    ============================================================ */
 const CloudSync = {
   url: 'https://afchobaedwzvcdvexhtq.supabase.co',
@@ -498,36 +561,84 @@ const CloudSync = {
     this.isPulling = true;
     try {
       const res = await fetch(`${this.url}/rest/v1/products?select=*`, { headers: this.headers() });
-      if (!res.ok) { this.isPulling = false; return; }
-      const remoteProds = await res.json();
-      if (!Array.isArray(remoteProds)) { this.isPulling = false; return; }
-
-      let changed = false;
-      remoteProds.forEach(remote => {
-        if (remote.deleted_at) return;
-        const local = products.find(p =>
-          (remote.sku && p.sku === remote.sku) ||
-          p.name.toLowerCase().trim() === (remote.name || '').toLowerCase().trim()
-        );
-        if (local) {
-          const newQty = Number(remote.stock_quantity ?? local.onHand);
-          const newPrice = Number(remote.selling_price_tzs || remote.selling_price || local.price);
-          const newCost = Number(remote.cost_price_tzs || remote.cost_price || local.cost);
-          if (local.onHand !== newQty || local.price !== newPrice || local.cost !== newCost) {
-            local.onHand = newQty;
-            if (newPrice > 0) local.price = newPrice;
-            if (newCost > 0) local.cost = newCost;
-            changed = true;
+      if (res.ok) {
+        const remoteProds = await res.json();
+        if (Array.isArray(remoteProds)) {
+          let changed = false;
+          remoteProds.forEach(remote => {
+            if (remote.deleted_at) return;
+            const local = products.find(p =>
+              (remote.sku && p.sku === remote.sku) ||
+              p.name.toLowerCase().trim() === (remote.name || '').toLowerCase().trim()
+            );
+            if (local) {
+              const newQty = Number(remote.stock_quantity ?? local.onHand);
+              const newPrice = Number(remote.selling_price_tzs || remote.selling_price || local.price);
+              const newCost = Number(remote.cost_price_tzs || remote.cost_price || local.cost);
+              if (local.onHand !== newQty || local.price !== newPrice || local.cost !== newCost) {
+                local.onHand = newQty;
+                if (newPrice > 0) local.price = newPrice;
+                if (newCost > 0) local.cost = newCost;
+                changed = true;
+              }
+              local.supabaseId = remote.id;
+            }
+          });
+          if (changed) {
+            saveState();
+            if (session) renderView(currentView);
           }
-          local.supabaseId = remote.id;
         }
-      });
-
-      this.updateStatusUI(true, changed ? '⚡ Synced' : 'Cloud Synced');
-      if (changed) {
-        saveState();
-        if (session) renderView(currentView);
       }
+
+      // Also pull cloud stock_movements so all devices share movement & sales history
+      const movRes = await fetch(`${this.url}/rest/v1/stock_movements?select=*&order=occurred_at.desc&limit=200`, {
+        headers: this.headers()
+      });
+      if (movRes.ok) {
+        const remoteMovs = await movRes.json();
+        if (Array.isArray(remoteMovs) && remoteMovs.length > 0) {
+          let movChanged = false;
+          remoteMovs.forEach(rm => {
+            if (rm.deleted_at) return;
+            const exists = movements.some(m => m.supabaseMovId === rm.id || m.id === rm.id);
+            if (!exists) {
+              const p = products.find(x => x.supabaseId === rm.product_id);
+              const isRestock = rm.type === 'purchase' || rm.type === 'return';
+              const qty = Math.abs(Number(rm.quantity) || 0);
+              const unitPrice = Number(rm.unit_price || (p ? p.price : 0)) || 0;
+              const unitCost  = Number(rm.unit_cost  || (p ? p.cost  : 0)) || 0;
+              movements.push(normalizeMovement({
+                id: rm.id,
+                supabaseMovId: rm.id,
+                storeId: 'store-jawiza-001',
+                occurred_at: rm.occurred_at || rm.created_at,
+                pid: p ? p.id : null,
+                productName: p ? p.name : 'Product',
+                unit: p ? p.loc : 'pcs',
+                type: isRestock ? 'restock' : 'sale',
+                qty,
+                change: isRestock ? +qty : -qty,
+                unitPrice,
+                unitCost,
+                totalAmount: qty * (isRestock ? unitCost : unitPrice),
+                by: rm.created_by || 'Store Staff',
+                note: rm.note || (isRestock ? 'Supplier delivery' : 'Counter sale')
+              }));
+              movChanged = true;
+            }
+          });
+          if (movChanged) {
+            movements.sort((a, b) => (`${b.date} ${b.time}`).localeCompare(`${a.date} ${a.time}`));
+            saveState();
+            if (session && (currentView === 'movements' || currentView === 'reports')) {
+              renderView(currentView);
+            }
+          }
+        }
+      }
+
+      this.updateStatusUI(true, 'Cloud Synced');
     } catch (e) {
       this.updateStatusUI(false, 'Offline (Local)');
     }
@@ -557,8 +668,10 @@ const CloudSync = {
       });
       if (res.ok) {
         const updated = await res.json();
-        if (Array.isArray(updated) && updated.length === 0) {
-          await fetch(`${this.url}/rest/v1/products`, {
+        if (Array.isArray(updated) && updated.length > 0) {
+          p.supabaseId = updated[0].id;
+        } else if (Array.isArray(updated) && updated.length === 0) {
+          const postRes = await fetch(`${this.url}/rest/v1/products`, {
             method: 'POST',
             headers: this.headers(),
             body: JSON.stringify({
@@ -576,12 +689,48 @@ const CloudSync = {
               selling_price_tzs: p.price
             })
           });
+          if (postRes.ok) {
+            const created = await postRes.json();
+            if (Array.isArray(created) && created[0]) p.supabaseId = created[0].id;
+          }
         }
         this.updateStatusUI(true, '⚡ Saved to Cloud');
       }
     } catch (e) {
       this.updateStatusUI(false, 'Saved Locally');
     }
+  },
+
+  async pushMovement(mov, p) {
+    if (!navigator.onLine || !mov || !p) return;
+    try {
+      if (!p.supabaseId) {
+        await this.pushProductStock(p);
+      }
+      if (!p.supabaseId) return;
+      const res = await fetch(`${this.url}/rest/v1/stock_movements`, {
+        method: 'POST',
+        headers: this.headers(),
+        body: JSON.stringify({
+          business_id: '00000000-0000-0000-0000-000000000001',
+          product_id: p.supabaseId,
+          type: mov.type === 'restock' ? 'purchase' : 'sale',
+          quantity: Math.abs(mov.qty || mov.change),
+          unit_cost: Math.round(mov.unitCost || p.cost || 0),
+          unit_price: Math.round(mov.unitPrice || p.price || 0),
+          note: mov.note || '',
+          created_by: mov.by || 'Store Staff',
+          occurred_at: new Date().toISOString()
+        })
+      });
+      if (res.ok) {
+        const created = await res.json();
+        if (Array.isArray(created) && created[0]) {
+          mov.supabaseMovId = created[0].id;
+          saveState();
+        }
+      }
+    } catch (e) {}
   },
 
   async deleteRemoteProduct(p) {
@@ -661,7 +810,7 @@ function logout() {
 const isAdmin = () => session && session.user.role === 'admin';
 
 /* ============================================================
-   NAVIGATION
+   NAVIGATION (Both Admin & Staff have Stock Movements / History!)
    ============================================================ */
 const NAV = {
   admin: [
@@ -673,14 +822,19 @@ const NAV = {
     ['team',      'Team & Passwords','Team',      '👥']
   ],
   staff: [
-    ['overview',  'Overview',        'Overview',  '📊'],
-    ['stock',     'Stock',           'Stock',     '📦'],
-    ['alerts',    'Low Stock Alerts','Alerts',    '🔔']
+    ['overview',  'Overview',             'Overview', '📊'],
+    ['stock',     'Stock',                'Stock',    '📦'],
+    ['movements', 'History & Movements',  'History',  '🕒'],
+    ['alerts',    'Low Stock Alerts',     'Alerts',   '🔔']
   ]
 };
 
 let currentView = 'overview';
 let stockSearchQuery = '';
+let movTypeFilter = 'all';     // 'all' | 'sale' | 'restock'
+let movDateFilter = '';        // '' (all dates) or 'YYYY-MM-DD'
+let movSearchQuery = '';
+let reportDateFilter = '';     // '' (all dates) or 'YYYY-MM-DD'
 
 function buildNav() {
   const nav = document.getElementById('nav');
@@ -699,12 +853,12 @@ function go(view) {
   document.querySelectorAll('.nav-link').forEach(a =>
     a.classList.toggle('active', a.dataset.view === view));
   const titles = {
-    overview:'Overview',
-    stock:'Stock',
+    overview: 'Overview',
+    stock: 'Stock',
     alerts: isAdmin() ? 'Restock Alerts' : 'Low Stock Alerts',
-    movements:'Stock Movements',
-    reports:'Reports',
-    team:'Team & Passwords'
+    movements: isAdmin() ? 'Stock Movements' : 'History & Stock Movements',
+    reports: 'Sales & Inventory Reports',
+    team: 'Team & Passwords'
   };
   document.getElementById('viewTitle').textContent = titles[view] || view;
   document.getElementById('scanBox').classList.remove('hidden');
@@ -753,8 +907,16 @@ function renderView(view) {
   }
 }
 
+/* ============================================================
+   VIEW: OVERVIEW
+   ============================================================ */
 function viewOverview() {
   const list = getStoreProducts();
+  const movs = getStoreMovements();
+  const today = todayISO();
+  const todaySales = movs.filter(m => m.type === 'sale' && m.date === today);
+  const todayRevenue = todaySales.reduce((s, m) => s + (m.totalAmount || 0), 0);
+
   const totalUnits = list.reduce((s,p) => s + avail(p), 0);
   const low  = list.filter(p => p.onHand > 0 && avail(p) <= p.reorder).length;
   const out  = list.filter(p => p.onHand <= 0).length;
@@ -762,13 +924,16 @@ function viewOverview() {
 
   return `
     <div class="cards">
-      <div class="card"><div class="label">Products</div><div class="value">${list.length}</div></div>
-      <div class="card good"><div class="label">Units Available</div><div class="value">${totalUnits.toLocaleString()}</div></div>
-      <div class="card warn"><div class="label">Low Stock</div><div class="value">${low}</div></div>
-      <div class="card warn"><div class="label">Out of Stock</div><div class="value">${out}</div></div>
+      <div class="card"><div class="label">Products</div><div class="value">${list.length}</div><div class="sub-val">${totalUnits.toLocaleString()} units available</div></div>
+      <div class="card good"><div class="label">Today's Sales</div><div class="value">${formatTZS(todayRevenue)}</div><div class="sub-val">${todaySales.length} sale(s) today</div></div>
+      <div class="card warn"><div class="label">Low Stock</div><div class="value">${low}</div><div class="sub-val">At or below reorder</div></div>
+      <div class="card warn"><div class="label">Out of Stock</div><div class="value">${out}</div><div class="sub-val">Needs immediate restock</div></div>
     </div>
     <div class="panel">
-      <div class="panel-header"><h2>Needs Attention</h2></div>
+      <div class="panel-header">
+        <h2>Needs Attention</h2>
+        <button class="btn-neutral btn-sm" onclick="go('movements')">View Stock Movements &rarr;</button>
+      </div>
       <table class="resp-table"><thead><tr><th>Product</th><th>Unit / Category</th><th>On Hand</th><th>Available</th><th>Reorder At</th><th>Status</th></tr></thead>
       <tbody>${att.length ? att.map(p => {
         const s = statusOf(p);
@@ -784,6 +949,9 @@ function viewOverview() {
     </div>`;
 }
 
+/* ============================================================
+   VIEW: STOCK
+   ============================================================ */
 function viewStock() {
   const q = stockSearchQuery.toLowerCase().trim();
   const list = getStoreProducts().filter(p =>
@@ -821,6 +989,9 @@ function viewStock() {
     </div>`;
 }
 
+/* ============================================================
+   VIEW: ALERTS
+   ============================================================ */
 function viewAlerts() {
   const low = getStoreProducts().filter(p => avail(p) <= p.reorder);
   return `
@@ -842,30 +1013,163 @@ function viewAlerts() {
     </div>`;
 }
 
+/* ============================================================
+   VIEW: STOCK MOVEMENTS & HISTORY (Admin & Staff)
+   ============================================================ */
+function setMovTypeFilter(type) {
+  movTypeFilter = type;
+  renderView('movements');
+}
+function setMovDateFilter(val) {
+  movDateFilter = val;
+  renderView('movements');
+}
+function setMovSearch(val) {
+  movSearchQuery = val;
+  renderView('movements');
+}
+
 function viewMovements() {
-  const list = getStoreMovements();
+  const allMovs = getStoreMovements();
+  const q = movSearchQuery.toLowerCase().trim();
+
+  const filtered = allMovs.filter(m => {
+    if (movTypeFilter !== 'all' && m.type !== movTypeFilter) return false;
+    if (movDateFilter && m.date !== movDateFilter) return false;
+    if (q) {
+      const hay = `${m.productName} ${m.by} ${m.note} ${m.type} ${m.date}`.toLowerCase();
+      if (!hay.includes(q)) return false;
+    }
+    return true;
+  });
+
+  const totalSalesMovs = filtered.filter(m => m.type === 'sale');
+  const totalRestockMovs = filtered.filter(m => m.type === 'restock');
+  const unitsSold = totalSalesMovs.reduce((s, m) => s + Math.abs(m.qty || m.change), 0);
+  const unitsRestocked = totalRestockMovs.reduce((s, m) => s + Math.abs(m.qty || m.change), 0);
+  const salesRevenue = totalSalesMovs.reduce((s, m) => s + (m.totalAmount || 0), 0);
+
   return `
+    <div class="cards">
+      <div class="card"><div class="label">Movements Shown</div><div class="value">${filtered.length}</div><div class="sub-val">${totalSalesMovs.length} sales · ${totalRestockMovs.length} restocks</div></div>
+      <div class="card good"><div class="label">Sales Value</div><div class="value">${formatTZS(salesRevenue)}</div><div class="sub-val">${unitsSold.toLocaleString()} units sold</div></div>
+      <div class="card blue"><div class="label">Units Restocked</div><div class="value">+${unitsRestocked.toLocaleString()}</div><div class="sub-val">${totalRestockMovs.length} restock entries</div></div>
+    </div>
+
     <div class="panel">
-      <div class="panel-header"><h2>Stock Movement Log</h2></div>
-      <table class="resp-table"><thead><tr><th>Time</th><th>Product</th><th>Type</th><th>Change</th><th>By</th><th>Note</th></tr></thead>
-      <tbody>${list.length ? list.map(m => {
-        const p = products.find(x => x.id === m.pid);
-        const cls = m.change >= 0 ? 'tag ok' : 'tag out';
-        return `<tr>
-          <td data-label="Time">${esc(m.time)}</td>
-          <td data-label="Product"><b>${esc(m.productName || (p ? p.name : '—'))}</b></td>
-          <td data-label="Type">${esc(m.type)}</td>
-          <td data-label="Change"><span class="${cls}">${m.change > 0 ? '+' : ''}${m.change}</span></td>
-          <td data-label="By">${esc(m.by || '—')}</td>
-          <td data-label="Note">${esc(m.note || '')}</td>
-        </tr>`;
-      }).join('') : '<tr><td colspan="6" class="empty">No stock movements recorded yet.</td></tr>'}</tbody></table>
+      <div class="panel-header">
+        <h2>${isAdmin() ? 'Stock Movement Log' : 'Sales & Stock Movement History'}</h2>
+        <div class="panel-tools">
+          <div class="pill-tabs">
+            <button class="pill-tab ${movTypeFilter === 'all' ? 'active' : ''}" onclick="setMovTypeFilter('all')">All (${allMovs.length})</button>
+            <button class="pill-tab ${movTypeFilter === 'sale' ? 'active' : ''}" onclick="setMovTypeFilter('sale')">Sales</button>
+            <button class="pill-tab ${movTypeFilter === 'restock' ? 'active' : ''}" onclick="setMovTypeFilter('restock')">Restocks</button>
+          </div>
+          <input type="date" value="${esc(movDateFilter)}" onchange="setMovDateFilter(this.value)" title="Filter by Date">
+          ${movDateFilter ? `<button class="btn-sm btn-neutral" onclick="setMovDateFilter('')">All Dates</button>` : ''}
+          <input type="text" placeholder="Search item, staff, note..." value="${esc(movSearchQuery)}" oninput="setMovSearch(this.value)">
+          <button class="btn-primary" onclick="openQuickMovementModal('sale')">+ Record Sale</button>
+          ${isAdmin() ? `<button class="btn-in" onclick="openQuickMovementModal('restock')">+ Restock</button>` : ''}
+        </div>
+      </div>
+
+      <table class="resp-table">
+        <thead>
+          <tr>
+            <th>Date & Time</th>
+            <th>Product</th>
+            <th>Type</th>
+            <th>Change</th>
+            <th>Sale / Value (TZS)</th>
+            <th>By</th>
+            <th>Note</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${filtered.length ? filtered.map(m => {
+            const isSale = m.type === 'sale';
+            const cls = isSale ? 'tag out' : 'tag ok';
+            const sign = m.change > 0 ? '+' : '';
+            return `<tr>
+              <td data-label="Date & Time"><span><b>${esc(m.date)}</b> <span class="muted">${esc(m.time)}</span></span></td>
+              <td data-label="Product"><b>${esc(m.productName)}</b></td>
+              <td data-label="Type"><span class="${cls}">${isSale ? 'Sale' : 'Restock'}</span></td>
+              <td data-label="Change"><b>${sign}${m.change} ${esc(m.unit || '')}</b></td>
+              <td data-label="Amount (TZS)"><b>${formatTZS(m.totalAmount)}</b> <span class="muted">(@ ${formatTZS(isSale ? m.unitPrice : m.unitCost)})</span></td>
+              <td data-label="By">${esc(m.by)}</td>
+              <td data-label="Note">${esc(m.note || '—')}</td>
+            </tr>`;
+          }).join('') : `<tr><td colspan="7" class="empty">No stock movements found. Use the "Sell" button or "+ Record Sale" above to log movements.</td></tr>`}
+        </tbody>
+        ${filtered.length ? `
+        <tfoot>
+          <tr style="font-weight:700;border-top:2px solid #e5e7eb;">
+            <td data-label="Total">Total (${filtered.length} records)</td>
+            <td data-label="Items">—</td>
+            <td data-label="Breakdown">${totalSalesMovs.length} sales / ${totalRestockMovs.length} restocks</td>
+            <td data-label="Net Units">Sold: -${unitsSold} / In: +${unitsRestocked}</td>
+            <td data-label="Total Sales (TZS)">${formatTZS(salesRevenue)}</td>
+            <td data-label="By">—</td>
+            <td data-label="Note">—</td>
+          </tr>
+        </tfoot>` : ''}
+      </table>
     </div>`;
+}
+
+/* ============================================================
+   VIEW: REPORTS (Sales Per Day, Grand Totals, Category Value & Slow Movers)
+   ============================================================ */
+function setReportDateFilter(dateStr) {
+  reportDateFilter = dateStr;
+  renderView('reports');
 }
 
 function viewReports() {
   const list = getStoreProducts();
   const movs = getStoreMovements();
+  const salesMovs = movs.filter(m => m.type === 'sale');
+  const today = todayISO();
+
+  // 1. Group Sales by Day (YYYY-MM-DD)
+  const dailyMap = {};
+  let grandSalesCount = 0;
+  let grandUnitsSold  = 0;
+  let grandSalesTotal = 0;
+  let grandCostTotal  = 0;
+
+  salesMovs.forEach(m => {
+    const d = m.date || today;
+    if (!dailyMap[d]) {
+      dailyMap[d] = { date: d, count: 0, units: 0, revenue: 0, cost: 0 };
+    }
+    const qty = Math.abs(m.qty || m.change);
+    const rev = m.totalAmount || (qty * m.unitPrice);
+    const cst = qty * (m.unitCost || 0);
+
+    dailyMap[d].count += 1;
+    dailyMap[d].units += qty;
+    dailyMap[d].revenue += rev;
+    dailyMap[d].cost += cst;
+
+    grandSalesCount += 1;
+    grandUnitsSold  += qty;
+    grandSalesTotal += rev;
+    grandCostTotal  += cst;
+  });
+
+  const dailyList = Object.values(dailyMap).sort((a, b) => b.date.localeCompare(a.date));
+  const todayStats = dailyMap[today] || { count: 0, units: 0, revenue: 0, cost: 0 };
+  const grandProfit = grandSalesTotal - grandCostTotal;
+
+  // 2. Filter Detailed Sales History by selected date (if any)
+  const filteredSales = reportDateFilter
+    ? salesMovs.filter(m => m.date === reportDateFilter)
+    : salesMovs;
+  const filteredUnits = filteredSales.reduce((s, m) => s + Math.abs(m.qty || m.change), 0);
+  const filteredRevenue = filteredSales.reduce((s, m) => s + (m.totalAmount || 0), 0);
+
+  // 3. Category Inventory Valuation
   const cats = {};
   list.forEach(p => {
     const c = p.cat || 'General';
@@ -875,9 +1179,9 @@ function viewReports() {
     cats[c].cost += p.onHand * (Number(p.cost) || 0);
     cats[c].retail += p.onHand * (Number(p.price) || 0);
   });
-  let rows = '', tC = 0, tU = 0, tCost = 0, tRetail = 0;
+  let catRows = '', tC = 0, tU = 0, tCost = 0, tRetail = 0;
   for (const [c, d] of Object.entries(cats)) {
-    rows += `<tr>
+    catRows += `<tr>
       <td data-label="Category"><b>${esc(c)}</b></td>
       <td data-label="Products">${d.count}</td>
       <td data-label="Units">${d.units.toLocaleString()}</td>
@@ -887,14 +1191,139 @@ function viewReports() {
     </tr>`;
     tC += d.count; tU += d.units; tCost += d.cost; tRetail += d.retail;
   }
-  const soldIds = new Set(movs.filter(m => m.type === 'sale').map(m => m.pid));
+
+  const soldIds = new Set(salesMovs.map(m => m.pid));
   const slow = list.filter(p => !soldIds.has(p.id) && p.onHand > 0);
 
   return `
+    <!-- TOP KPI SUMMARY -->
+    <div class="cards">
+      <div class="card good">
+        <div class="label">Today's Sales (${today})</div>
+        <div class="value">${formatTZS(todayStats.revenue)}</div>
+        <div class="sub-val">${todayStats.count} sale(s) · ${todayStats.units} units</div>
+      </div>
+      <div class="card good">
+        <div class="label">Total Sales (All Days)</div>
+        <div class="value">${formatTZS(grandSalesTotal)}</div>
+        <div class="sub-val">${grandSalesCount} sale(s) · ${grandUnitsSold} units</div>
+      </div>
+      <div class="card blue">
+        <div class="label">Total Sales Profit</div>
+        <div class="value">${formatTZS(grandProfit)}</div>
+        <div class="sub-val">Revenue minus COGS</div>
+      </div>
+      <div class="card">
+        <div class="label">Remaining Stock Value</div>
+        <div class="value">${formatTZS(tRetail)}</div>
+        <div class="sub-val">Cost: ${formatTZS(tCost)}</div>
+      </div>
+    </div>
+
+    <!-- SALES PER DAY TABLE -->
     <div class="panel">
-      <div class="panel-header"><h2>Inventory Value by Category</h2></div>
+      <div class="panel-header">
+        <h2>📅 History of Sales Per Day</h2>
+        <div class="panel-tools">
+          ${reportDateFilter ? `<button class="btn-sm btn-neutral" onclick="setReportDateFilter('')">Show All Days</button>` : ''}
+        </div>
+      </div>
+      <table class="resp-table">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Transactions</th>
+            <th>Units Sold</th>
+            <th>Daily Sales Total (TZS)</th>
+            <th>Cost of Goods (TZS)</th>
+            <th>Daily Profit (TZS)</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${dailyList.length ? dailyList.map(d => `
+            <tr>
+              <td data-label="Date"><b>${esc(formatDateLabel(d.date))}</b></td>
+              <td data-label="Transactions">${d.count}</td>
+              <td data-label="Units Sold">${d.units.toLocaleString()}</td>
+              <td data-label="Daily Sales Total"><b>${formatTZS(d.revenue)}</b></td>
+              <td data-label="Cost of Goods">${formatTZS(d.cost)}</td>
+              <td data-label="Daily Profit"><span class="tag ok">${formatTZS(d.revenue - d.cost)}</span></td>
+              <td data-label="Action" class="actions-cell">
+                <button class="btn-sm btn-neutral" onclick="setReportDateFilter('${d.date}')">
+                  ${reportDateFilter === d.date ? '✓ Filtering Below' : 'View Day Sales'}
+                </button>
+              </td>
+            </tr>
+          `).join('') : `<tr><td colspan="7" class="empty">No sales recorded yet. Make a sale in Stock to see daily sales history.</td></tr>`}
+        </tbody>
+        <tfoot>
+          <tr style="font-weight:700;border-top:2px solid #e5e7eb;">
+            <td data-label="Summary">GRAND TOTAL (${dailyList.length} day${dailyList.length === 1 ? '' : 's'})</td>
+            <td data-label="Transactions">${grandSalesCount}</td>
+            <td data-label="Units Sold">${grandUnitsSold.toLocaleString()}</td>
+            <td data-label="Grand Total Sales">${formatTZS(grandSalesTotal)}</td>
+            <td data-label="Total Cost">${formatTZS(grandCostTotal)}</td>
+            <td data-label="Total Profit">${formatTZS(grandProfit)}</td>
+            <td data-label="Action">—</td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+
+    <!-- INDIVIDUAL SALES TRANSACTIONS LOG -->
+    <div class="panel">
+      <div class="panel-header">
+        <h2>🧾 Detailed Sales Log ${reportDateFilter ? `— ${formatDateLabel(reportDateFilter)}` : '(All Days)'}</h2>
+        <div class="panel-tools">
+          <input type="date" value="${esc(reportDateFilter)}" onchange="setReportDateFilter(this.value)">
+          ${reportDateFilter ? `<button class="btn-sm btn-neutral" onclick="setReportDateFilter('')">Clear Date Filter</button>` : ''}
+        </div>
+      </div>
+      <table class="resp-table">
+        <thead>
+          <tr>
+            <th>Date & Time</th>
+            <th>Product</th>
+            <th>Qty Sold</th>
+            <th>Unit Price</th>
+            <th>Sale Total (TZS)</th>
+            <th>Sold By</th>
+            <th>Note</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${filteredSales.length ? filteredSales.map(m => `
+            <tr>
+              <td data-label="Date & Time"><span><b>${esc(m.date)}</b> <span class="muted">${esc(m.time)}</span></span></td>
+              <td data-label="Product"><b>${esc(m.productName)}</b></td>
+              <td data-label="Qty Sold">${Math.abs(m.qty || m.change)} ${esc(m.unit || '')}</td>
+              <td data-label="Unit Price">${formatTZS(m.unitPrice)}</td>
+              <td data-label="Sale Total"><b>${formatTZS(m.totalAmount)}</b></td>
+              <td data-label="Sold By">${esc(m.by)}</td>
+              <td data-label="Note">${esc(m.note || '—')}</td>
+            </tr>
+          `).join('') : `<tr><td colspan="7" class="empty">No sales logged for this period.</td></tr>`}
+        </tbody>
+        <tfoot>
+          <tr style="font-weight:700;border-top:2px solid #e5e7eb;">
+            <td data-label="Total">TOTAL (${filteredSales.length} sale${filteredSales.length === 1 ? '' : 's'})</td>
+            <td data-label="Product">—</td>
+            <td data-label="Total Units Sold">${filteredUnits.toLocaleString()}</td>
+            <td data-label="Unit Price">—</td>
+            <td data-label="Total Sales (TZS)">${formatTZS(filteredRevenue)}</td>
+            <td data-label="Sold By">—</td>
+            <td data-label="Note">—</td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+
+    <!-- INVENTORY VALUE BY CATEGORY -->
+    <div class="panel">
+      <div class="panel-header"><h2>📦 Inventory Value by Category</h2></div>
       <table class="resp-table"><thead><tr><th>Category</th><th>Products</th><th>Units</th><th>Cost Value</th><th>Retail Value</th><th>Potential Margin</th></tr></thead>
-      <tbody>${rows || '<tr><td colspan="6" class="empty">No inventory data.</td></tr>'}</tbody>
+      <tbody>${catRows || '<tr><td colspan="6" class="empty">No inventory data.</td></tr>'}</tbody>
       <tfoot><tr style="font-weight:700;border-top:2px solid #e5e7eb;">
         <td data-label="Summary">Total</td>
         <td data-label="Products">${tC}</td>
@@ -904,8 +1333,10 @@ function viewReports() {
         <td data-label="Potential Margin">${formatTZS(tRetail - tCost)}</td>
       </tr></tfoot></table>
     </div>
+
+    <!-- SLOW-MOVING ITEMS -->
     <div class="panel">
-      <div class="panel-header"><h2>Slow-Moving Items (no sales logged)</h2></div>
+      <div class="panel-header"><h2>🐢 Slow-Moving Items (no sales logged)</h2></div>
       <table class="resp-table"><thead><tr><th>Product</th><th>SKU</th><th>On Hand</th><th>Tied-up Cost</th></tr></thead>
       <tbody>${slow.length ? slow.map(p => `<tr>
         <td data-label="Product"><b>${esc(p.name)}</b></td>
@@ -916,6 +1347,9 @@ function viewReports() {
     </div>`;
 }
 
+/* ============================================================
+   VIEW: TEAM & PASSWORDS
+   ============================================================ */
 function viewTeam() {
   const store = getCurrentStore();
   const team = users.filter(u => u.storeId === store.id);
@@ -942,7 +1376,7 @@ function viewTeam() {
 }
 
 /* ============================================================
-   MODALS: SELL, RESTOCK, ADD/EDIT/DELETE PRODUCT
+   MODALS: SELL, RESTOCK, QUICK MOVEMENT, ADD/EDIT/DELETE PRODUCT
    ============================================================ */
 let modalAction = null;
 
@@ -961,6 +1395,36 @@ function modalSave() {
   if (modalAction) modalAction();
 }
 
+function recordStockMovement(p, type, qty, noteText) {
+  const isSale = type === 'sale';
+  const signedChange = isSale ? -qty : +qty;
+  p.onHand += signedChange;
+
+  const mov = normalizeMovement({
+    id: 'mov_' + Date.now() + '_' + Math.random().toString(36).slice(2,6),
+    storeId: getCurrentStore().id,
+    date: todayISO(),
+    time: nowTime(),
+    pid: p.id,
+    productName: p.name,
+    unit: p.loc,
+    by: session.user.name,
+    type: isSale ? 'sale' : 'restock',
+    qty: qty,
+    change: signedChange,
+    unitPrice: p.price,
+    unitCost: p.cost,
+    totalAmount: qty * (isSale ? p.price : p.cost),
+    note: noteText || (isSale ? `Counter sale (${formatTZS(qty * p.price)})` : 'Supplier delivery')
+  });
+
+  movements.unshift(mov);
+  saveState();
+  CloudSync.pushProductStock(p);
+  CloudSync.pushMovement(mov, p);
+  return mov;
+}
+
 function openSell(pid) {
   const p = products.find(x => x.id === pid);
   if (!p) return;
@@ -973,20 +1437,8 @@ function openSell(pid) {
       const qty = Math.abs(parseInt(document.getElementById('fQty').value, 10)) || 0;
       if (qty < 1) { alert('Enter a valid quantity.'); return; }
       if (qty > p.onHand) { alert(`Not enough stock on hand (${p.onHand} ${p.loc}).`); return; }
-      p.onHand -= qty;
-      movements.unshift({
-        id: 'mov_' + Date.now(),
-        storeId: getCurrentStore().id,
-        time: nowTime(),
-        pid: p.id,
-        productName: p.name,
-        by: session.user.name,
-        type: 'sale',
-        change: -qty,
-        note: document.getElementById('fNote').value.trim() || `Counter sale (${formatTZS(qty * p.price)})`
-      });
-      saveState();
-      CloudSync.pushProductStock(p);
+      const note = document.getElementById('fNote').value.trim();
+      recordStockMovement(p, 'sale', qty, note);
       closeModal();
       renderView(currentView);
       showToast(`Sold ${qty} ${p.loc} of ${p.name} (${formatTZS(qty * p.price)})`);
@@ -1006,23 +1458,39 @@ function openRestock(pid) {
     () => {
       const qty = Math.abs(parseInt(document.getElementById('fQty').value, 10)) || 0;
       if (qty < 1) { alert('Enter a valid quantity.'); return; }
-      p.onHand += qty;
-      movements.unshift({
-        id: 'mov_' + Date.now(),
-        storeId: getCurrentStore().id,
-        time: nowTime(),
-        pid: p.id,
-        productName: p.name,
-        by: session.user.name,
-        type: 'restock',
-        change: +qty,
-        note: document.getElementById('fNote').value.trim() || 'Supplier delivery'
-      });
-      saveState();
-      CloudSync.pushProductStock(p);
+      const note = document.getElementById('fNote').value.trim();
+      recordStockMovement(p, 'restock', qty, note);
       closeModal();
       renderView(currentView);
       showToast(`Restocked +${qty} ${p.loc} of ${p.name}`);
+    }
+  );
+}
+
+function openQuickMovementModal(type) {
+  if (type === 'restock' && !isAdmin()) return;
+  const list = getStoreProducts();
+  if (!list.length) { alert('No products in inventory.'); return; }
+  const opts = list.map(p => `<option value="${p.id}">${esc(p.name)} (${p.onHand} ${esc(p.loc)} avail · ${formatTZS(p.price)})</option>`).join('');
+  const isSale = type === 'sale';
+  openModal(
+    isSale ? 'Record Sale' : 'Record Restock',
+    isSale ? 'Select a product and quantity sold.' : 'Select a product and quantity received.',
+    `<label>Product</label><select id="fPid">${opts}</select>
+     <label>Quantity</label><input type="number" id="fQty" min="1" value="1">
+     <label>Note (optional)</label><input type="text" id="fNote" placeholder="${isSale ? 'e.g. Counter sale' : 'e.g. Supplier delivery'}">`,
+    () => {
+      const pid = Number(document.getElementById('fPid').value);
+      const p = products.find(x => x.id === pid);
+      if (!p) return;
+      const qty = Math.abs(parseInt(document.getElementById('fQty').value, 10)) || 0;
+      if (qty < 1) { alert('Enter a valid quantity.'); return; }
+      if (isSale && qty > p.onHand) { alert(`Not enough stock on hand (${p.onHand} ${p.loc}).`); return; }
+      const note = document.getElementById('fNote').value.trim();
+      recordStockMovement(p, isSale ? 'sale' : 'restock', qty, note);
+      closeModal();
+      renderView(currentView);
+      showToast(isSale ? `Sold ${qty} ${p.loc} of ${p.name}` : `Restocked +${qty} ${p.loc} of ${p.name}`);
     }
   );
 }
@@ -1065,24 +1533,15 @@ function openAddProduct() {
       const newProd = {
         id: nextId,
         storeId: getCurrentStore().id,
-        sku, name, cat, loc, onHand, reserved: 0, reorder, cost, price, supplier
+        sku, name, cat, loc, onHand: 0, reserved: 0, reorder, cost, price, supplier
       };
       products.push(newProd);
       if (onHand > 0) {
-        movements.unshift({
-          id: 'mov_' + Date.now(),
-          storeId: getCurrentStore().id,
-          time: nowTime(),
-          pid: newProd.id,
-          productName: newProd.name,
-          by: session.user.name,
-          type: 'restock',
-          change: +onHand,
-          note: 'Initial stock'
-        });
+        recordStockMovement(newProd, 'restock', onHand, 'Initial stock');
+      } else {
+        saveState();
+        CloudSync.pushProductStock(newProd);
       }
-      saveState();
-      CloudSync.pushProductStock(newProd);
       closeModal();
       renderView(currentView);
       showToast(`Added product "${name}"`);
@@ -1245,13 +1704,8 @@ document.getElementById('loginPass').addEventListener('keydown', e => {
 });
 
 /* ============================================================
-   UTIL & BOOTSTRAP
+   BOOTSTRAP
    ============================================================ */
-function nowTime() {
-  const d = new Date();
-  return d.toTimeString().slice(0,5);
-}
-
 window.addEventListener('storage', () => {
   loadState();
   if (session) renderView(currentView);
