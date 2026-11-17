@@ -1,686 +1,524 @@
 <!DOCTYPE html>
-<html lang="en" class="dark">
+<html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>TzionStockly - Super Admin Fleet Portal</title>
-  
-  <!-- Tailwind CSS CDN -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Chart.js CDN -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <!-- Google Fonts: Inter & JetBrains Mono -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TzionStockly — Super Admin Platform</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:-apple-system,Segoe UI,Roboto,sans-serif; background:#f4f6f9; color:#1f2937; min-height:100vh; }
+  .hidden { display:none !important; }
 
-  <script>
-    tailwind.config = {
-      darkMode: 'class',
-      theme: {
-        extend: {
-          fontFamily: {
-            sans: ['"DM Sans"', 'system-ui', '-apple-system', 'sans-serif'],
-            mono: ['JetBrains Mono', 'monospace'],
-          },
-          colors: {
-            purple: {
-              50: '#f0f5fa',
-              100: '#e1edf7',
-              200: '#c3dbef',
-              300: '#94c0e3',
-              400: '#5e9fd3',
-              500: '#3880c2',
-              600: '#2665a5',
-              700: '#1e5085',
-              800: '#1b436e',
-              900: '#0e2240',
-              950: '#07101f',
-            },
-            tzion: {
-              navy: {
-                50: '#f0f5fa',
-                100: '#e1edf7',
-                200: '#c3dbef',
-                300: '#94c0e3',
-                400: '#5e9fd3',
-                500: '#3880c2',
-                600: '#2665a5',
-                700: '#1e5085',
-                800: '#1b436e',
-                900: '#0e2240', // Deep Navy Surface
-                950: '#07101f', // Deepest Navy Background
-                deep: '#040a14'
-              },
-              purple: {
-                // Mapped to Deep Navy for 100% theme consistency
-                50: '#f0f5fa',
-                100: '#e1edf7',
-                200: '#c3dbef',
-                300: '#94c0e3',
-                400: '#5e9fd3',
-                500: '#3880c2',
-                600: '#2665a5',
-                700: '#1e5085',
-                800: '#1b436e',
-                900: '#0e2240',
-                950: '#07101f',
-                deep: '#040a14'
-              },
-              orange: {
-                50: '#fff7ed',
-                100: '#ffedd5',
-                200: '#fed7aa',
-                300: '#fdba74',
-                400: '#fb923c',
-                500: '#f97316', // Vibrant African Orange
-                600: '#ea580c',
-                700: '#c2410c',
-                800: '#9a3412',
-                900: '#7c2d12',
-                950: '#431407'
-              }
-            }
-          }
-        }
-      }
-    }
-  </script>
+  .login-wrap { min-height:100vh; display:flex; align-items:center; justify-content:center; background:#111827; padding:16px; }
+  .login-card { background:#fff; border-radius:14px; padding:32px; width:380px; max-width:94vw; box-shadow:0 10px 40px rgba(0,0,0,.35); }
+  .login-card h1 { font-size:22px; margin-bottom:6px; color:#111827; }
+  .login-card p { font-size:13px; color:#6b7280; margin-bottom:22px; }
+  .login-card label { display:block; font-size:12px; color:#6b7280; margin:12px 0 4px; font-weight:500; }
+  .login-card input { width:100%; padding:10px 12px; border:1px solid #d1d5db; border-radius:8px; font-size:14px; outline:none; }
+  .login-card input:focus { border-color:#6366f1; }
+  .login-card button { width:100%; margin-top:18px; padding:11px; background:#6366f1; color:#fff; border:none; border-radius:8px; font-size:15px; font-weight:600; cursor:pointer; }
+  .login-card button:hover { background:#4f46e5; }
+  .login-err { background:#fee2e2; color:#b91c1c; font-size:13px; padding:9px 12px; border-radius:8px; margin-top:14px; }
+  .login-hint { font-size:11.5px; color:#64748b; margin-top:18px; line-height:1.6; border-top:1px solid #f1f5f9; padding-top:12px; }
+  .login-hint a { color:#6366f1; text-decoration:none; font-weight:600; }
+  .login-hint a:hover { text-decoration:underline; }
 
-  <style>
-    ::-webkit-scrollbar { width: 6px; height: 6px; }
-    ::-webkit-scrollbar-track { background: transparent; }
-    .dark ::-webkit-scrollbar-thumb { background: #1b436e; border-radius: 9999px; }
-    ::-webkit-scrollbar-thumb { background: #c4b5fd; border-radius: 9999px; }
-    ::-webkit-scrollbar-thumb:hover { background: #f97316; }
-  </style>
+  .app { display:flex; min-height:100vh; }
+  .sidebar { width:220px; background:#111827; color:#e5e7eb; padding:20px 0; flex-shrink:0; display:flex; flex-direction:column; }
+  .sidebar h2 { font-size:15px; padding:0 18px 16px; color:#fff; border-bottom:1px solid #1f2937; }
+  .sidebar nav { flex:1; padding-top:6px; }
+  .sidebar nav a { display:block; padding:12px 18px; color:#9ca3af; text-decoration:none; font-size:14px; cursor:pointer; border-left:3px solid transparent; }
+  .sidebar nav a:hover, .sidebar nav a.active { background:#1f2937; color:#fff; border-left-color:#6366f1; }
+  .sidebar .who { padding:14px 18px; border-top:1px solid #1f2937; font-size:12px; color:#9ca3af; }
+  .sidebar .who b { color:#fff; display:block; font-size:13px; margin-bottom:2px; }
+  .sidebar .who button { margin-top:8px; width:100%; padding:7px; background:#1f2937; color:#e5e7eb; border:none; border-radius:6px; cursor:pointer; font-size:12px; }
+  .sidebar .who button:hover { background:#374151; }
+
+  .main { flex:1; padding:22px; overflow-y:auto; }
+  .topbar { display:flex; justify-content:space-between; align-items:center; margin-bottom:18px; flex-wrap:wrap; gap:10px; }
+  .topbar h1 { font-size:21px; }
+  .topbar a.portal-link { font-size:13px; color:#6366f1; text-decoration:none; font-weight:600; background:#eef2ff; padding:7px 12px; border-radius:6px; }
+  .topbar a.portal-link:hover { background:#e0e7ff; }
+
+  .cards { display:grid; grid-template-columns:repeat(auto-fit,minmax(170px,1fr)); gap:14px; margin-bottom:22px; }
+  .card { background:#fff; border-radius:10px; padding:16px; box-shadow:0 1px 3px rgba(0,0,0,.07); }
+  .card .label { font-size:11px; color:#6b7280; text-transform:uppercase; letter-spacing:.5px; }
+  .card .value { font-size:24px; font-weight:700; margin-top:4px; }
+  .card.good .value { color:#16a34a; }
+  .card.warn .value { color:#dc2626; }
+
+  .panel { background:#fff; border-radius:10px; box-shadow:0 1px 3px rgba(0,0,0,.07); padding:16px; margin-bottom:22px; overflow-x:auto; }
+  .panel-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; flex-wrap:wrap; gap:10px; }
+  .panel-header h2 { font-size:15px; }
+
+  input[type=text], input[type=password], select { padding:8px 11px; border:1px solid #d1d5db; border-radius:6px; font-size:14px; outline:none; }
+  input:focus, select:focus { border-color:#6366f1; }
+  button { padding:8px 13px; border:none; border-radius:6px; font-size:13px; cursor:pointer; font-weight:500; }
+  .btn-primary { background:#6366f1; color:#fff; }
+  .btn-primary:hover { background:#4f46e5; }
+  .btn-sm { padding:4px 9px; font-size:12px; margin-right:3px; }
+  .btn-danger { background:#fee2e2; color:#b91c1c; }
+  .btn-danger:hover { background:#fecaca; }
+  .btn-neutral { background:#f1f5f9; color:#334155; }
+  .btn-neutral:hover { background:#e2e8f0; }
+  .btn-success { background:#dcfce7; color:#15803d; }
+  .btn-success:hover { background:#bbf7d0; }
+
+  table { width:100%; border-collapse:collapse; font-size:13.5px; }
+  th { text-align:left; padding:9px 7px; color:#6b7280; font-size:11px; text-transform:uppercase; border-bottom:2px solid #e5e7eb; white-space:nowrap; }
+  td { padding:9px 7px; border-bottom:1px solid #f1f5f9; vertical-align:middle; }
+  tr:hover td { background:#f8fafc; }
+  .tag { padding:2px 8px; border-radius:11px; font-size:10.5px; font-weight:600; white-space:nowrap; display:inline-block; }
+  .tag.ok { background:#dcfce7; color:#15803d; }
+  .tag.off { background:#fee2e2; color:#b91c1c; }
+  .muted { color:#94a3b8; font-size:12px; }
+  .empty { text-align:center; color:#94a3b8; padding:26px; font-size:14px; }
+
+  .modal-bg { display:none; position:fixed; inset:0; background:rgba(0,0,0,.45); align-items:center; justify-content:center; z-index:100; padding:16px; }
+  .modal-bg.show { display:flex; }
+  .modal { background:#fff; border-radius:12px; padding:22px; width:390px; max-width:94vw; }
+  .modal h3 { margin-bottom:4px; font-size:17px; }
+  .modal .sub { font-size:12px; color:#6b7280; margin-bottom:14px; }
+  .modal label { display:block; font-size:12px; color:#6b7280; margin:10px 0 4px; font-weight:500; }
+  .modal input, .modal select { width:100%; }
+  .modal-actions { display:flex; justify-content:flex-end; gap:8px; margin-top:18px; }
+  .btn-cancel { background:#f1f5f9; color:#334155; }
+
+  .toast { position:fixed; bottom:18px; right:18px; background:#111827; color:#fff; padding:10px 16px; border-radius:8px; font-size:13px; box-shadow:0 6px 20px rgba(0,0,0,.25); z-index:200; opacity:0; transform:translateY(10px); transition:all .25s ease; pointer-events:none; }
+  .toast.show { opacity:1; transform:translateY(0); }
+
+  @media (max-width: 720px) {
+    .app { flex-direction:column; }
+    .sidebar { width:100%; padding:14px 0 0; }
+    .sidebar nav { display:flex; overflow-x:auto; padding:0 10px; border-top:1px solid #1f2937; }
+    .sidebar nav a { white-space:nowrap; border-left:none; border-bottom:3px solid transparent; padding:10px 12px; font-size:13px; }
+    .sidebar nav a:hover, .sidebar nav a.active { border-left:none; border-bottom-color:#6366f1; }
+    .sidebar .who { display:flex; align-items:center; justify-content:space-between; gap:10px; padding:10px 18px; }
+    .sidebar .who button { width:auto; margin-top:0; padding:6px 12px; }
+  }
+</style>
 </head>
-<body class="bg-slate-50 dark:bg-[#07101f] text-slate-900 dark:text-purple-100 font-sans min-h-screen selection:bg-tzion-orange-500 selection:text-white flex flex-col antialiased transition-colors duration-200">
+<body>
 
-  <!-- ========================================================================= -->
-  <!-- TOP SUPER ADMIN APP BAR (Visible when Authenticated)                      -->
-  <!-- ========================================================================= -->
-  <header id="superAdminHeader" class="hidden bg-white/95 dark:bg-[#0e2240]/95 border-b border-amber-500/30 sticky top-0 z-40 px-4 py-2.5 backdrop-blur-md transition-colors shadow-sm">
-    <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-3">
-      
-      <!-- Logo & SaaS Badge -->
-      <div class="flex items-center space-x-3 cursor-pointer" onclick="goToHome()">
-        <div class="w-10 h-10 shrink-0 relative flex items-center justify-center">
-          <svg viewBox="0 0 100 100" class="w-10 h-10 drop-shadow-md">
-            <circle cx="50" cy="50" r="44" fill="none" stroke="url(#purpleGradSA)" stroke-width="7" />
-            <path d="M 12 55 Q 50 68 88 32 Q 65 60 20 62 Z" fill="url(#orangeGradSA)" />
-            <polygon points="46,24 58,18 70,24 58,30" fill="#f59e0b" />
-            <polygon points="46,24 58,30 58,42 46,36" fill="#d97706" />
-            <polygon points="58,30 70,24 70,36 58,42" fill="#b45309" />
-            <polygon points="34,32 46,26 58,32 46,38" fill="#fbbf24" />
-            <polygon points="34,32 46,38 46,48 34,42" fill="#f59e0b" />
-            <polygon points="46,38 58,32 58,42 46,48" fill="#d97706" />
-            <path d="M 28 32 L 34 32 L 44 54 L 68 54 L 75 38 L 36 38" fill="none" stroke="#ea580c" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
-            <circle cx="45" cy="59" r="3.5" fill="#1b436e" stroke="#f97316" stroke-width="1.5" />
-            <circle cx="66" cy="59" r="3.5" fill="#1b436e" stroke="#f97316" stroke-width="1.5" />
-            <defs>
-              <linearGradient id="purpleGradSA" x1="0" y1="0" x2="1" y2="1">
-                <stop offset="0%" stop-color="#9333ea" />
-                <stop offset="100%" stop-color="#040a14" />
-              </linearGradient>
-              <linearGradient id="orangeGradSA" x1="0" y1="0" x2="1" y2="0">
-                <stop offset="0%" stop-color="#ea580c" />
-                <stop offset="100%" stop-color="#f97316" />
-              </linearGradient>
-            </defs>
-          </svg>
-        </div>
-        <div>
-          <div class="flex items-center space-x-2">
-            <span class="font-black tracking-tight text-lg text-tzion-purple-700 dark:text-tzion-purple-300">Tzion<span class="text-tzion-orange-500">Stockly</span></span>
-            <span class="text-[10px] uppercase font-mono px-2 py-0.5 rounded-full font-black bg-amber-500/20 text-amber-600 dark:text-amber-400 border border-amber-500/40">
-              👑 Super Admin Root
-            </span>
-          </div>
-          <p class="text-[10px] text-slate-500 dark:text-purple-300/60 font-mono">Multi-Store SaaS Fleet Controller • TZS Billing Hub</p>
-        </div>
-      </div>
-
-      <!-- Controls Right: Switch to Client Store App, Theme, Logout -->
-      <div class="flex items-center gap-2">
-        <!-- Switch to Client App Link -->
-        <a href="index.html" class="px-3 py-1.5 rounded-xl border border-purple-200 dark:border-purple-800 bg-purple-50 dark:bg-tzion-purple-950/80 hover:bg-purple-100 dark:hover:bg-tzion-purple-900 text-xs font-semibold text-tzion-purple-700 dark:text-purple-300 flex items-center gap-1.5 transition-all shadow-sm">
-          <span>🏪</span>
-          <span class="hidden sm:inline">Open Store App (Client)</span>
-        </a>
-
-        <!-- Theme Toggle -->
-        <button onclick="toggleTheme()" title="Toggle Theme" class="p-2 rounded-xl border border-purple-200 dark:border-purple-900/60 bg-white dark:bg-tzion-purple-950 hover:bg-purple-100 text-slate-700 dark:text-tzion-orange-400 text-xs font-semibold transition-all shadow-sm">
-          <svg id="themeIconSun" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
-          <svg id="themeIconMoon" class="w-4 h-4 hidden text-tzion-purple-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>
-        </button>
-
-        <!-- Logout -->
-        <button onclick="superAdminLogout()" title="Exit Super Admin Portal" class="px-2.5 py-1.5 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 border border-rose-500/30 text-xs font-bold transition-all flex items-center gap-1">
-          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
-          <span class="hidden md:inline">Exit Root</span>
-        </button>
-      </div>
-
+<!-- LOGIN -->
+<div id="loginScreen" class="login-wrap">
+  <div class="login-card">
+    <h1>🔐 Super Admin</h1>
+    <p>Platform multi-store control panel.</p>
+    <label>Email</label>
+    <input type="text" id="loginEmail" placeholder="super@platform.com" autocomplete="off">
+    <label>Password</label>
+    <input type="password" id="loginPass" placeholder="••••••••">
+    <button onclick="doLogin()">Sign In</button>
+    <div id="loginErr" class="login-err hidden"></div>
+    <div class="login-hint">
+      Super Admin: <b>super@platform.com</b> / <b>super123</b><br>
+      <span style="display:inline-block;margin-top:6px;"><a href="index.html">&larr; Back to Store Portal</a></span>
     </div>
-  </header>
+  </div>
+</div>
 
-  <!-- TOAST NOTIFICATIONS CONTAINER -->
-  <div id="toastContainer" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
-
-  <!-- ========================================================================= -->
-  <!-- 1. SUPER ADMIN MASTER AUTHENTICATION GATEWAY                              -->
-  <!-- ========================================================================= -->
-  <section id="superAdminLoginScreen" class="flex-1 flex items-center justify-center p-4">
-    <div class="w-full max-w-md bg-white dark:bg-[#0e2240] border border-amber-500/40 rounded-3xl p-6 sm:p-8 shadow-2xl relative overflow-hidden transition-colors">
-      
-      <!-- Ambient Glow Accents -->
-      <div class="absolute -top-24 -right-24 w-48 h-48 bg-amber-500/20 rounded-full blur-3xl pointer-events-none"></div>
-      <div class="absolute -bottom-24 -left-24 w-48 h-48 bg-tzion-purple-700/30 rounded-full blur-3xl pointer-events-none"></div>
-
-      <!-- Icon & Title -->
-      <div class="flex flex-col items-center text-center mb-6">
-        <div class="w-16 h-16 rounded-2xl bg-gradient-to-tr from-amber-500 to-amber-400 text-white flex items-center justify-center text-3xl shadow-lg shadow-amber-500/30 mb-3">
-          👑
-        </div>
-        <h1 class="text-2xl font-black text-slate-900 dark:text-white">Super Admin Control Hub</h1>
-        <p class="text-xs text-amber-600 dark:text-amber-400 font-mono mt-1">Multi-Store SaaS Fleet Management</p>
+<!-- APP -->
+<div id="app" class="app hidden">
+  <div class="sidebar">
+    <h2>🛡️ Platform Admin</h2>
+    <nav>
+      <a class="nav-link active" data-view="stores" onclick="go('stores')">Stores</a>
+      <a class="nav-link" data-view="users" onclick="go('users')">Users</a>
+    </nav>
+    <div class="who">
+      <div>
+        <b id="whoName">—</b>
+        <span>Super Administrator</span>
       </div>
+      <button onclick="logout()">Sign out</button>
+    </div>
+  </div>
 
-      <div class="p-3 mb-4 rounded-xl bg-amber-500/10 border border-amber-500/20 text-[11px] text-amber-700 dark:text-amber-300">
-        <strong>Confidential Area:</strong> Only authorized platform administrators may access subscription controls, manual payment renewals, and store lockouts.
+  <div class="main">
+    <div class="topbar">
+      <h1 id="viewTitle">Stores</h1>
+      <a href="index.html" class="portal-link">🏪 Open Store Portal &rarr;</a>
+    </div>
+    <div id="views"></div>
+  </div>
+</div>
+
+<!-- MODAL -->
+<div class="modal-bg" id="modalBg" onclick="if(event.target===this)closeModal()">
+  <div class="modal">
+    <h3 id="mTitle">—</h3>
+    <div class="sub" id="mSub"></div>
+    <div id="mFields"></div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+      <button class="btn-primary" id="mSave" onclick="modalSave()">Save</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script>
+/* ============================================================
+   SHARED STORAGE WITH STORE PORTAL (index.html / storeadminstaff.html)
+   ============================================================ */
+const STORAGE_KEYS = {
+  VERSION:       'tzion_portal_v2_init',
+  STORES:        'tzion_portal_stores',
+  USERS:         'tzion_portal_users',
+  PRODUCTS:      'tzion_portal_products',
+  MOVEMENTS:     'tzion_portal_movements',
+  SUPER_SESSION: 'tzion_portal_super_session'
+};
+
+const SUPER = { email:'super@platform.com', altEmail:'superadmin@tzionstockly.com', pass:'super123', name:'Platform Owner' };
+
+const DEFAULT_STORES = [
+  { id:'store-jawiza-001', name:'Jawiza Store', owner:'Jawiza Admin', active:true }
+];
+
+const DEFAULT_USERS = [
+  { id:'u1', username:'admin', name:'Jawiza Admin', email:'admin@jawiza.com', pass:'Jawiza@Admin2026', role:'admin', storeId:'store-jawiza-001' },
+  { id:'u2', username:'maria', name:'Maria',        email:'maria@jawiza.com', pass:'Maria@Jawiza2026', role:'staff', storeId:'store-jawiza-001' },
+  { id:'u3', username:'demo_admin', name:'Alice Admin', email:'admin@store.com', pass:'admin123', role:'admin', storeId:'store-jawiza-001' },
+  { id:'u4', username:'demo_staff', name:'Sam Staff',   email:'staff@store.com', pass:'staff123', role:'staff', storeId:'store-jawiza-001' }
+];
+
+const DEFAULT_PRODUCTS = [
+  { id:1, storeId:'store-jawiza-001', sku:'APP-MBI-001', name:'mbilimbi',       cat:'appetizer', loc:'fungu',  onHand:50, reserved:0, reorder:10, cost:1000,  price:1500,  supplier:'Jawiza Suppliers' },
+  { id:2, storeId:'store-jawiza-001', sku:'PLT-KUK-001', name:'kuku',           cat:'poultry',   loc:'kuku',   onHand:30, reserved:0, reorder:5,  cost:12000, price:15000, supplier:'Jawiza Poultry' },
+  { id:3, storeId:'store-jawiza-001', sku:'UNG-UJI-001', name:'Uji Mtamu',      cat:'unga',      loc:'pakiti', onHand:40, reserved:0, reorder:10, cost:2500,  price:3500,  supplier:'Jawiza Mills' },
+  { id:4, storeId:'store-jawiza-001', sku:'PLT-MAY-001', name:'mayai',          cat:'poultry',   loc:'trei',   onHand:25, reserved:0, reorder:5,  cost:9000,  price:11000, supplier:'Jawiza Poultry' },
+  { id:5, storeId:'store-jawiza-001', sku:'UNG-MTM-001', name:'mtama mwekundu', cat:'unga',      loc:'kg',     onHand:50, reserved:0, reorder:10, cost:1800,  price:2500,  supplier:'Jawiza Mills' },
+  { id:6, storeId:'store-jawiza-001', sku:'UNG-MTW-002', name:'mtama mweupe',   cat:'unga',      loc:'kg',     onHand:50, reserved:0, reorder:10, cost:1800,  price:2500,  supplier:'Jawiza Mills' },
+  { id:7, storeId:'store-jawiza-001', sku:'UNG-NJM-003', name:'Njano mix',      cat:'unga',      loc:'pakiti', onHand:40, reserved:0, reorder:10, cost:2500,  price:3500,  supplier:'Jawiza Mills' }
+];
+
+let stores = [];
+let users = [];
+let session = null;
+
+function loadState() {
+  if (localStorage.getItem(STORAGE_KEYS.VERSION) !== 'v2.0') {
+    localStorage.setItem(STORAGE_KEYS.STORES, JSON.stringify(DEFAULT_STORES));
+    localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(DEFAULT_USERS));
+    localStorage.setItem(STORAGE_KEYS.PRODUCTS, JSON.stringify(DEFAULT_PRODUCTS));
+    localStorage.setItem(STORAGE_KEYS.MOVEMENTS, JSON.stringify([]));
+    localStorage.setItem(STORAGE_KEYS.VERSION, 'v2.0');
+  }
+  try { stores = JSON.parse(localStorage.getItem(STORAGE_KEYS.STORES)) || DEFAULT_STORES; } catch(e) { stores = DEFAULT_STORES; }
+  try { users = JSON.parse(localStorage.getItem(STORAGE_KEYS.USERS)) || DEFAULT_USERS; } catch(e) { users = DEFAULT_USERS; }
+}
+
+function saveState() {
+  localStorage.setItem(STORAGE_KEYS.STORES, JSON.stringify(stores));
+  localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(users));
+}
+
+function esc(str) {
+  return String(str ?? '').replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  if (!t) return;
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(window._toastTimer);
+  window._toastTimer = setTimeout(() => t.classList.remove('show'), 2600);
+}
+
+/* ============================================================
+   AUTH
+   ============================================================ */
+function doLogin() {
+  loadState();
+  const email = document.getElementById('loginEmail').value.trim().toLowerCase();
+  const pass  = document.getElementById('loginPass').value;
+  const err   = document.getElementById('loginErr');
+  const validUser = (email === SUPER.email || email === SUPER.altEmail || email === 'superadmin');
+  if (!validUser || pass !== SUPER.pass) {
+    err.textContent = 'Invalid Super Admin credentials.';
+    err.classList.remove('hidden');
+    return;
+  }
+  err.classList.add('hidden');
+  session = { name: SUPER.name };
+  localStorage.setItem(STORAGE_KEYS.SUPER_SESSION, JSON.stringify(session));
+  enterApp();
+}
+
+function enterApp() {
+  document.getElementById('loginScreen').classList.add('hidden');
+  document.getElementById('app').classList.remove('hidden');
+  document.getElementById('whoName').textContent = session.name;
+  go('stores');
+}
+
+function logout() {
+  session = null;
+  localStorage.removeItem(STORAGE_KEYS.SUPER_SESSION);
+  document.getElementById('app').classList.add('hidden');
+  document.getElementById('loginScreen').classList.remove('hidden');
+  document.getElementById('loginEmail').value = '';
+  document.getElementById('loginPass').value = '';
+}
+
+/* ============================================================
+   NAV
+   ============================================================ */
+let currentView = 'stores';
+function go(view) {
+  currentView = view;
+  document.querySelectorAll('.nav-link').forEach(a =>
+    a.classList.toggle('active', a.dataset.view === view));
+  document.getElementById('viewTitle').textContent = view === 'stores' ? 'Stores' : 'Users';
+  renderView(view);
+}
+
+function renderView(view) {
+  const box = document.getElementById('views');
+  if (view === 'stores') box.innerHTML = viewStores();
+  if (view === 'users')  box.innerHTML = viewUsers();
+}
+
+/* ============================================================
+   STORES VIEW
+   ============================================================ */
+function viewStores() {
+  const active = stores.filter(s => s.active).length;
+  return `
+    <div class="cards">
+      <div class="card"><div class="label">Total Stores</div><div class="value">${stores.length}</div></div>
+      <div class="card good"><div class="label">Active</div><div class="value">${active}</div></div>
+      <div class="card warn"><div class="label">Inactive</div><div class="value">${stores.length - active}</div></div>
+    </div>
+    <div class="panel">
+      <div class="panel-header">
+        <h2>All Stores</h2>
+        <button class="btn-primary" onclick="openCreateStore()">+ New Store</button>
       </div>
-
-      <!-- Super Admin Form -->
-      <form onsubmit="handleSuperAdminAuth(event)" class="space-y-4">
-        <div>
-          <label class="block text-xs font-semibold text-slate-700 dark:text-purple-200 mb-1">Master Email</label>
-          <input type="email" id="superAdminEmail" placeholder="superadmin@tzionstockly.com" required class="w-full bg-slate-50 dark:bg-tzion-purple-950 border border-purple-200 dark:border-purple-800 rounded-xl px-3.5 py-2.5 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-amber-500">
-        </div>
-        <div>
-          <label class="block text-xs font-semibold text-slate-700 dark:text-purple-200 mb-1">Master Security Key / Password</label>
-          <div class="relative">
-            <input type="password" id="superAdminPin" placeholder="Andika Master Security Key..." required class="w-full bg-slate-50 dark:bg-tzion-purple-950 border border-purple-200 dark:border-purple-800 rounded-xl pl-3.5 pr-10 py-2.5 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-amber-500 font-mono">
-            <button type="button" onclick="toggleSuperPasswordVisibility()" class="absolute right-3 top-2.5 text-slate-400 hover:text-slate-600 dark:hover:text-purple-200 text-xs" title="Onyesha / Ficha Password">
-              👁️
+      <table><thead><tr><th>Store</th><th>Owner</th><th>Users</th><th>Status</th><th>Actions</th></tr></thead>
+      <tbody>${stores.length ? stores.map(s => {
+        const userCount = users.filter(u => u.storeId === s.id).length;
+        return `
+        <tr>
+          <td><b>${esc(s.name)}</b> <span class="muted">(${esc(s.id)})</span></td>
+          <td>${esc(s.owner || '—')}</td>
+          <td>${userCount}</td>
+          <td><span class="tag ${s.active ? 'ok' : 'off'}">${s.active ? 'Active' : 'Inactive'}</span></td>
+          <td style="white-space:nowrap;">
+            <button class="btn-sm ${s.active ? 'btn-danger' : 'btn-success'}" onclick="toggleStore('${s.id}')">
+              ${s.active ? 'Deactivate' : 'Activate'}
             </button>
-          </div>
-        </div>
+            <button class="btn-sm btn-neutral" onclick="openCreateAdmin('${s.id}')">+ Admin</button>
+            <button class="btn-sm btn-neutral" onclick="openResetAdminPassword('${s.id}')">Reset Password</button>
+          </td>
+        </tr>`;
+      }).join('') : '<tr><td colspan="5" class="empty">No stores registered yet.</td></tr>'}</tbody></table>
+    </div>`;
+}
 
-        <button type="submit" class="w-full py-3 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-black text-xs uppercase tracking-wider shadow-lg shadow-amber-900/30 active:scale-98 transition-all">
-          Authorize Super Admin Access
-        </button>
-      </form>
+function toggleStore(sid) {
+  const s = stores.find(x => x.id === sid);
+  if (!s) return;
+  s.active = !s.active;
+  saveState();
+  renderView(currentView);
+  showToast(`${s.name} is now ${s.active ? 'Active' : 'Inactive'}`);
+}
 
-      <div class="mt-4 pt-3 border-t border-purple-100 dark:border-purple-900/40 text-center">
-        <a href="index.html" class="text-xs text-slate-500 dark:text-purple-400 hover:text-tzion-orange-500 underline">
-          ← Return to Store Client Login (index.html)
-        </a>
+/* ============================================================
+   USERS VIEW
+   ============================================================ */
+function viewUsers() {
+  return `
+    <div class="panel">
+      <div class="panel-header">
+        <h2>All Users</h2>
+        <button class="btn-primary" onclick="openCreateUser()">+ New User</button>
       </div>
-    </div>
-  </section>
+      <table><thead><tr><th>Name</th><th>Email / Username</th><th>Role</th><th>Store</th><th>Actions</th></tr></thead>
+      <tbody>${users.length ? users.map(u => {
+        const store = stores.find(s => s.id === u.storeId);
+        return `<tr>
+          <td><b>${esc(u.name)}</b></td>
+          <td>${esc(u.email)}${u.username ? ` <span class="muted">(${esc(u.username)})</span>` : ''}</td>
+          <td>${u.role === 'admin' ? 'Store Admin' : 'Store Staff'}</td>
+          <td>${store ? esc(store.name) : '—'}</td>
+          <td style="white-space:nowrap;">
+            <button class="btn-sm btn-neutral" onclick="openResetPassword('${u.id}')">Reset Password</button>
+            <button class="btn-sm btn-danger" onclick="deleteUser('${u.id}')">Delete</button>
+          </td>
+        </tr>`;
+      }).join('') : '<tr><td colspan="5" class="empty">No users found.</td></tr>'}</tbody></table>
+    </div>`;
+}
 
-  <!-- ========================================================================= -->
-  <!-- 2. MAIN SUPER ADMIN WORKSPACE (Hidden until authenticated)                -->
-  <!-- ========================================================================= -->
-  <main id="superAdminWorkspace" class="hidden flex-1 p-3 sm:p-5 md:p-6 overflow-x-hidden flex justify-center items-start">
-    <div id="workspaceContent" class="w-full max-w-7xl"></div>
-  </main>
+function deleteUser(uid) {
+  const u = users.find(x => x.id === uid);
+  if (!u) return;
+  if (!confirm(`Delete user "${u.name}" (${u.email})?`)) return;
+  users = users.filter(x => x.id !== uid);
+  saveState();
+  renderView(currentView);
+  showToast(`Deleted user ${u.name}`);
+}
 
-  <!-- ========================================================================= -->
-  <!-- MODAL: MANUALLY SET CUSTOM RENEWAL DATE                                   -->
-  <!-- ========================================================================= -->
-  <div id="changeDateModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden items-center justify-center p-4">
-    <div class="bg-white dark:bg-[#0e2240] border border-amber-500/50 rounded-3xl w-full max-w-md overflow-hidden shadow-2xl transition-colors">
-      <div class="p-4 border-b border-purple-100 dark:border-purple-900/60 flex items-center justify-between bg-amber-500/10">
-        <div class="flex items-center space-x-2">
-          <span class="text-amber-500 font-bold text-lg">📅</span>
-          <div>
-            <h3 class="font-bold text-slate-900 dark:text-white text-sm">Change Payment Renewal Date</h3>
-            <p id="changeDateStoreTitle" class="text-[10px] text-slate-500 dark:text-purple-300 font-mono">Store Name</p>
-          </div>
-        </div>
-        <button onclick="closeChangeDateModal()" class="text-slate-400 hover:text-slate-700 dark:hover:text-white p-1">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-        </button>
-      </div>
+/* ============================================================
+   MODAL HELPERS
+   ============================================================ */
+let modalAction = null;
+function openModal(title, sub, fieldsHtml, saveFn) {
+  document.getElementById('mTitle').textContent = title;
+  document.getElementById('mSub').textContent = sub;
+  document.getElementById('mFields').innerHTML = fieldsHtml;
+  document.getElementById('modalBg').classList.add('show');
+  modalAction = saveFn;
+}
+function closeModal() {
+  document.getElementById('modalBg').classList.remove('show');
+  modalAction = null;
+}
+function modalSave() { if (modalAction) modalAction(); }
 
-      <form onsubmit="handleSaveCustomRenewalDate(event)" class="p-5 space-y-4 text-xs">
-        <input type="hidden" id="changeDateStoreId">
+/* ============================================================
+   CREATE STORE
+   ============================================================ */
+function openCreateStore() {
+  openModal('New Store', 'Create a store on the platform.',
+    `<label>Store name</label><input type="text" id="fName" placeholder="e.g. Jawiza Branch 2">
+     <label>Owner name</label><input type="text" id="fOwner" placeholder="e.g. Jawiza Admin">`,
+    () => {
+      const name = document.getElementById('fName').value.trim();
+      const owner = document.getElementById('fOwner').value.trim();
+      if (!name) { alert('Store name is required.'); return; }
+      const id = 'store_' + Date.now().toString().slice(-5);
+      stores.push({ id, name, owner, active:true });
+      saveState();
+      closeModal();
+      renderView(currentView);
+      showToast(`Created store "${name}"`);
+    });
+}
 
-        <div class="p-3 rounded-2xl bg-purple-50 dark:bg-tzion-purple-950 border border-purple-200 dark:border-purple-800 flex justify-between items-center">
-          <div>
-            <span class="text-[10px] text-slate-400 block font-mono">Current Expiry:</span>
-            <span id="changeDateCurrentDisplay" class="font-bold font-mono text-slate-800 dark:text-purple-200 text-xs">-</span>
-          </div>
-          <div>
-            <span class="text-[10px] text-slate-400 block font-mono">Monthly Rate:</span>
-            <span id="changeDateFeeDisplay" class="font-bold font-mono text-tzion-orange-500 text-xs">TZS 50,000</span>
-          </div>
-        </div>
+/* ============================================================
+   CREATE ADMIN FOR A STORE
+   ============================================================ */
+function openCreateAdmin(sid) {
+  const store = stores.find(s => s.id === sid);
+  if (!store) return;
+  openModal(`New Store Admin — ${store.name}`, 'This user will manage the store.',
+    `<label>Name</label><input type="text" id="fName" placeholder="Full name">
+     <label>Email</label><input type="text" id="fEmail" placeholder="admin@jawiza.com">
+     <label>Username (optional)</label><input type="text" id="fUser" placeholder="e.g. admin2">
+     <label>Initial password</label><input type="password" id="fPass" placeholder="At least 4 characters">`,
+    () => {
+      const name = document.getElementById('fName').value.trim();
+      const email = document.getElementById('fEmail').value.trim().toLowerCase();
+      const username = document.getElementById('fUser').value.trim().toLowerCase() || email.split('@')[0];
+      const pass = document.getElementById('fPass').value;
+      if (!name || !email || pass.length < 4) { alert('Name, email, and a password of 4+ chars are required.'); return; }
+      if (users.some(u => u.email.toLowerCase() === email)) { alert('Email already exists.'); return; }
+      users.push({ id:'u_' + Date.now(), username, name, email, pass, role:'admin', storeId:sid });
+      saveState();
+      closeModal();
+      renderView(currentView);
+      showToast('Admin created for ' + store.name);
+    });
+}
 
-        <div>
-          <label class="block font-semibold text-slate-700 dark:text-purple-200 mb-1">
-            New Payment Renewal Date
-          </label>
-          <input 
-            type="date" 
-            id="customRenewalDateInput" 
-            required 
-            class="w-full bg-slate-50 dark:bg-tzion-purple-950 border border-purple-200 dark:border-purple-800 rounded-xl px-3.5 py-2.5 text-xs text-slate-900 dark:text-white font-mono focus:outline-none focus:border-amber-500"
-          >
-          <p class="text-[10px] text-slate-400 dark:text-purple-400 mt-1">
-            Setting a date in the future will automatically mark the tenant as <strong>ACTIVE</strong> and unlock the store.
-          </p>
-        </div>
+/* ============================================================
+   RESET ADMIN PASSWORD (from Stores view)
+   ============================================================ */
+function openResetAdminPassword(sid) {
+  const store = stores.find(s => s.id === sid);
+  const admins = users.filter(u => u.storeId === sid && u.role === 'admin');
+  if (!admins.length) { alert('No admin exists for ' + store.name + ' yet. Create one first.'); return; }
 
-        <div>
-          <label class="block font-semibold text-slate-700 dark:text-purple-200 mb-1">
-            Grace Period Leeway (Days)
-          </label>
-          <input 
-            type="number" 
-            id="customGracePeriodInput" 
-            min="0" 
-            max="30" 
-            value="3" 
-            class="w-full bg-slate-50 dark:bg-tzion-purple-950 border border-purple-200 dark:border-purple-800 rounded-xl px-3.5 py-2 text-xs text-slate-900 dark:text-white font-mono focus:outline-none focus:border-amber-500"
-          >
-        </div>
+  const opts = admins.map(u => `<option value="${u.id}">${esc(u.name)} (${esc(u.email)})</option>`).join('');
+  openModal(`Reset Password — ${store.name}`, 'Pick an admin and set a new password.',
+    `<label>Admin</label><select id="fUid">${opts}</select>
+     <label>New password</label><input type="password" id="fPass" placeholder="At least 4 characters">`,
+    () => {
+      const uid = document.getElementById('fUid').value;
+      const pass = document.getElementById('fPass').value;
+      if (pass.length < 4) { alert('Password must be at least 4 characters.'); return; }
+      const target = users.find(u => u.id === uid);
+      if (target) target.pass = pass;
+      saveState();
+      closeModal();
+      showToast('Password updated for ' + (target ? target.name : 'admin'));
+    });
+}
 
-        <div class="flex items-center space-x-2 pt-1">
-          <input type="checkbox" id="autoUnlockCheckbox" checked class="rounded text-amber-500 focus:ring-amber-500">
-          <label for="autoUnlockCheckbox" class="text-[11px] text-slate-600 dark:text-purple-300 cursor-pointer">
-            Automatically unlock store and clear lockout flags
-          </label>
-        </div>
+/* ============================================================
+   CREATE USER (from Users view)
+   ============================================================ */
+function openCreateUser() {
+  const storeOpts = stores.map(s => `<option value="${s.id}">${esc(s.name)}</option>`).join('');
+  openModal('New User', 'Create a user and assign them to a store.',
+    `<label>Name</label><input type="text" id="fName" placeholder="Full name">
+     <label>Email</label><input type="text" id="fEmail" placeholder="user@jawiza.com">
+     <label>Username (optional)</label><input type="text" id="fUser" placeholder="e.g. cashier1">
+     <label>Password</label><input type="password" id="fPass" placeholder="At least 4 characters">
+     <label>Role</label><select id="fRole"><option value="admin">Store Admin</option><option value="staff">Store Staff</option></select>
+     <label>Store</label><select id="fStore">${storeOpts}</select>`,
+    () => {
+      const name = document.getElementById('fName').value.trim();
+      const email = document.getElementById('fEmail').value.trim().toLowerCase();
+      const username = document.getElementById('fUser').value.trim().toLowerCase() || email.split('@')[0];
+      const pass = document.getElementById('fPass').value;
+      const role = document.getElementById('fRole').value;
+      const storeId = document.getElementById('fStore').value;
+      if (!name || !email || pass.length < 4) { alert('Name, email, and a password of 4+ chars are required.'); return; }
+      if (users.some(u => u.email.toLowerCase() === email)) { alert('Email already exists.'); return; }
+      users.push({ id:'u_' + Date.now(), username, name, email, pass, role, storeId });
+      saveState();
+      closeModal();
+      renderView(currentView);
+      showToast(`Created user "${name}"`);
+    });
+}
 
-        <div class="pt-2 flex justify-end space-x-2">
-          <button type="button" onclick="closeChangeDateModal()" class="px-4 py-2 rounded-xl bg-purple-100 dark:bg-tzion-purple-900/40 text-slate-700 dark:text-purple-300 font-semibold">
-            Cancel
-          </button>
-          <button type="submit" class="px-5 py-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-bold shadow">
-            Save Renewal Date
-          </button>
-        </div>
-      </form>
-    </div>
-  </div>
+/* ============================================================
+   RESET PASSWORD (from Users view)
+   ============================================================ */
+function openResetPassword(uid) {
+  const u = users.find(x => x.id === uid);
+  if (!u) return;
+  openModal(`Reset Password — ${u.name}`, u.email,
+    `<label>New password</label><input type="password" id="fPass" placeholder="At least 4 characters">`,
+    () => {
+      const pass = document.getElementById('fPass').value;
+      if (pass.length < 4) { alert('Password must be at least 4 characters.'); return; }
+      u.pass = pass;
+      saveState();
+      closeModal();
+      showToast('Password updated for ' + u.name);
+    });
+}
 
+document.getElementById('loginPass').addEventListener('keydown', e => {
+  if (e.key === 'Enter') doLogin();
+});
 
-  <!-- ========================================================================= -->
-  <!-- MODAL: EDIT STORE DETAILS & MONTHLY FEE                                   -->
-  <!-- ========================================================================= -->
-  <div id="editStoreModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden items-center justify-center p-4">
-    <div class="bg-white dark:bg-[#0e2240] border border-amber-500/50 rounded-3xl w-full max-w-lg overflow-hidden shadow-2xl transition-colors">
-      <div class="p-4 border-b border-purple-100 dark:border-purple-900/60 flex items-center justify-between bg-amber-500/10">
-        <div class="flex items-center space-x-2">
-          <span class="text-amber-500 font-bold text-lg">✏️</span>
-          <div>
-            <h3 class="font-bold text-slate-900 dark:text-white text-sm">Edit Tenant Store Configuration</h3>
-            <p id="editStoreHeaderSub" class="text-[10px] text-slate-500 dark:text-purple-300 font-mono">ID: store-tz-001</p>
-          </div>
-        </div>
-        <button onclick="closeEditStoreModal()" class="text-slate-400 hover:text-slate-700 dark:hover:text-white p-1">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-        </button>
-      </div>
+window.addEventListener('storage', () => {
+  loadState();
+  if (session) renderView(currentView);
+});
 
-      <form onsubmit="handleSaveStoreDetails(event)" class="p-5 space-y-3.5 text-xs">
-        <input type="hidden" id="editStoreId">
-
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <div>
-            <label class="block font-semibold text-slate-700 dark:text-purple-200 mb-1">Store / Business Name</label>
-            <input type="text" id="editStoreName" required class="w-full bg-slate-50 dark:bg-tzion-purple-950 border border-purple-200 dark:border-purple-800 rounded-xl px-3 py-2 text-slate-900 dark:text-white focus:outline-none focus:border-amber-500 font-semibold">
-          </div>
-          <div>
-            <label class="block font-semibold text-slate-700 dark:text-purple-200 mb-1">Monthly Fee (TZS)</label>
-            <input type="number" id="editStoreFee" min="0" step="1000" required class="w-full bg-slate-50 dark:bg-tzion-purple-950 border border-purple-200 dark:border-purple-800 rounded-xl px-3 py-2 text-tzion-orange-600 dark:text-tzion-orange-400 focus:outline-none focus:border-amber-500 font-bold font-mono">
-          </div>
-        </div>
-
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <div>
-            <label class="block font-semibold text-slate-700 dark:text-purple-200 mb-1">Owner Full Name</label>
-            <input type="text" id="editStoreOwner" required class="w-full bg-slate-50 dark:bg-tzion-purple-950 border border-purple-200 dark:border-purple-800 rounded-xl px-3 py-2 text-slate-900 dark:text-white focus:outline-none focus:border-amber-500">
-          </div>
-          <div>
-            <label class="block font-semibold text-slate-700 dark:text-purple-200 mb-1">Owner WhatsApp Phone</label>
-            <input type="text" id="editStorePhone" required class="w-full bg-slate-50 dark:bg-tzion-purple-950 border border-purple-200 dark:border-purple-800 rounded-xl px-3 py-2 text-slate-900 dark:text-white focus:outline-none focus:border-amber-500 font-mono">
-          </div>
-        </div>
-
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <div>
-            <label class="block font-semibold text-slate-700 dark:text-purple-200 mb-1">Subscription Status</label>
-            <select id="editStoreStatus" class="w-full bg-slate-50 dark:bg-tzion-purple-950 border border-purple-200 dark:border-purple-800 rounded-xl px-3 py-2 text-slate-900 dark:text-white focus:outline-none focus:border-amber-500 font-semibold">
-              <option value="active">Active (Good Standing)</option>
-              <option value="past_due">Past Due (Grace Period)</option>
-              <option value="suspended">Suspended (Locked Out)</option>
-              <option value="trial">Trial Period</option>
-            </select>
-          </div>
-          <div>
-            <label class="block font-semibold text-slate-700 dark:text-purple-200 mb-1">Grace Period (Days)</label>
-            <input type="number" id="editStoreGrace" min="0" max="30" required class="w-full bg-slate-50 dark:bg-tzion-purple-950 border border-purple-200 dark:border-purple-800 rounded-xl px-3 py-2 text-slate-900 dark:text-white focus:outline-none focus:border-amber-500 font-mono">
-          </div>
-        </div>
-
-        <div class="p-3 rounded-2xl bg-purple-50 dark:bg-tzion-purple-950 border border-purple-200 dark:border-purple-800 flex items-center justify-between">
-          <div>
-            <span class="font-bold text-slate-800 dark:text-white block text-xs">Lockout Access Control</span>
-            <span class="text-[10px] text-slate-500 dark:text-purple-400">Instantly blocks POS checkout & inventory mutations</span>
-          </div>
-          <label class="relative inline-flex items-center cursor-pointer">
-            <input type="checkbox" id="editStoreIsLocked" class="sr-only peer">
-            <div class="w-11 h-6 bg-slate-200 dark:bg-tzion-purple-900 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-rose-600"></div>
-          </label>
-        </div>
-
-        <div class="pt-3 border-t border-purple-100 dark:border-purple-900/60 flex justify-end space-x-2">
-          <button type="button" onclick="closeEditStoreModal()" class="px-4 py-2 rounded-xl bg-purple-100 dark:bg-tzion-purple-900/40 text-slate-700 dark:text-purple-300 font-semibold">
-            Cancel
-          </button>
-          <button type="submit" class="px-5 py-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-bold shadow">
-            Save Store Details
-          </button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <!-- ========================================================================= -->
-  <!-- MODAL: ONBOARD NEW TENANT STORE                                           -->
-  <!-- ========================================================================= -->
-  <div id="onboardStoreModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden items-center justify-center p-4">
-    <div class="bg-white dark:bg-[#0e2240] border border-purple-200 dark:border-purple-900/60 rounded-3xl w-full max-w-md overflow-hidden shadow-2xl transition-colors">
-      <div class="p-4 border-b border-purple-100 dark:border-purple-900/60 flex items-center justify-between bg-amber-500/10">
-        <div class="flex items-center space-x-2">
-          <span class="text-amber-500 font-bold text-base">🏪</span>
-          <h3 class="font-bold text-slate-900 dark:text-white text-sm">Register New Tenant Store</h3>
-        </div>
-        <button onclick="closeOnboardStoreModal()" class="text-slate-400 hover:text-slate-700 dark:hover:text-white p-1">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-        </button>
-      </div>
-
-      <form onsubmit="handleCreateStore(event)" class="p-5 space-y-3.5 text-xs">
-        <div>
-          <label class="block font-semibold text-slate-700 dark:text-purple-200 mb-1">Store / Business Name</label>
-          <input type="text" id="newStoreName" required placeholder="e.g. Zanzibar Spices Ltd" class="w-full bg-slate-50 dark:bg-tzion-purple-950 border border-purple-200 dark:border-purple-800 rounded-xl px-3 py-2 text-slate-900 dark:text-white focus:outline-none focus:border-amber-500">
-        </div>
-        <div>
-          <label class="block font-semibold text-slate-700 dark:text-purple-200 mb-1">Owner Full Name</label>
-          <input type="text" id="newStoreOwner" required placeholder="e.g. Farouk Said" class="w-full bg-slate-50 dark:bg-tzion-purple-950 border border-purple-200 dark:border-purple-800 rounded-xl px-3 py-2 text-slate-900 dark:text-white focus:outline-none focus:border-amber-500">
-        </div>
-        <div>
-          <label class="block font-semibold text-slate-700 dark:text-purple-200 mb-1">Owner WhatsApp Phone (+255...)</label>
-          <input type="text" id="newStorePhone" required placeholder="+255755123456" class="w-full bg-slate-50 dark:bg-tzion-purple-950 border border-purple-200 dark:border-purple-800 rounded-xl px-3 py-2 text-slate-900 dark:text-white focus:outline-none focus:border-amber-500 font-mono">
-        </div>
-        <div class="grid grid-cols-3 gap-2">
-          <div>
-            <label class="block font-semibold text-slate-700 dark:text-purple-200 mb-1">Monthly Fee (TZS)</label>
-            <input type="number" id="newStoreFee" required value="50000" class="w-full bg-slate-50 dark:bg-tzion-purple-950 border border-purple-200 dark:border-purple-800 rounded-xl px-3 py-2 text-slate-900 dark:text-white focus:outline-none focus:border-amber-500 font-mono">
-          </div>
-          <div>
-            <label class="block font-semibold text-slate-700 dark:text-purple-200 mb-1">Grace Period</label>
-            <input type="number" id="newStoreGrace" required value="3" class="w-full bg-slate-50 dark:bg-tzion-purple-950 border border-purple-200 dark:border-purple-800 rounded-xl px-3 py-2 text-slate-900 dark:text-white focus:outline-none focus:border-amber-500 font-mono">
-          </div>
-          <div>
-            <label class="block font-semibold text-slate-700 dark:text-purple-200 mb-1">Initial Owner PIN</label>
-            <input type="text" id="newStorePin" required placeholder="Andika Admin PIN ya duka..." class="w-full bg-slate-50 dark:bg-tzion-purple-950 border border-purple-200 dark:border-purple-800 rounded-xl px-3 py-2 text-slate-900 dark:text-white focus:outline-none focus:border-amber-500 font-mono font-bold">
-          </div>
-        </div>
-
-        <div class="pt-2 flex justify-end space-x-2">
-          <button type="button" onclick="closeOnboardStoreModal()" class="px-4 py-2 rounded-xl bg-purple-100 dark:bg-tzion-purple-900/40 text-slate-700 dark:text-purple-300 font-semibold">
-            Cancel
-          </button>
-          <button type="submit" class="px-5 py-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-bold shadow">
-            Create Tenant Store
-          </button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <!-- ========================================================================= -->
-  <!-- JAVASCRIPT LOGIC ENGINE                                                   -->
-  <!-- ========================================================================= -->
-  <script>
-    const SuperState = {
-      isDark: true,
-      isAuthenticated: false,
-      searchQuery: '',
-      statusFilter: 'All', // 'All' | 'active' | 'past_due' | 'suspended'
-      stores: [
-        {
-          id: "store-jawiza-001",
-          name: "Jawiza",
-          owner_name: "Jawiza Admin",
-          owner_phone: "+255755123456",
-          monthly_fee_tzs: 50000,
-          status: "active",
-          subscription_renews_at: new Date(Date.now() + 60 * 86400000).toISOString(),
-          grace_period_days: 14,
-          is_locked: false,
-          lock_reason: ""
-        }
-      ]
-    };
-
-    function formatTZS(amount) {
-      return `TZS ${Math.round(amount).toLocaleString('en-US')}`;
+window.addEventListener('DOMContentLoaded', () => {
+  loadState();
+  try {
+    const saved = JSON.parse(localStorage.getItem(STORAGE_KEYS.SUPER_SESSION));
+    if (saved && saved.name) {
+      session = saved;
+      enterApp();
     }
-
-    function toggleTheme() {
-      SuperState.isDark = !SuperState.isDark;
-      applyTheme();
-    }
-
-    function applyTheme() {
-      const html = document.documentElement;
-      const sun = document.getElementById('themeIconSun');
-      const moon = document.getElementById('themeIconMoon');
-      if (SuperState.isDark) {
-        html.classList.add('dark');
-        if (sun) sun.classList.remove('hidden');
-        if (moon) moon.classList.add('hidden');
-      } else {
-        html.classList.remove('dark');
-        if (sun) sun.classList.add('hidden');
-        if (moon) moon.classList.remove('hidden');
-      }
-    }
-
-    function showToast(msg, type = 'info') {
-      const container = document.getElementById('toastContainer');
-      const toast = document.createElement('div');
-      const colors = {
-        success: 'bg-emerald-600 text-white',
-        error: 'bg-rose-600 text-white',
-        warning: 'bg-tzion-orange-500 text-white',
-        info: 'bg-tzion-purple-700 text-white'
-      };
-      toast.className = `${colors[type] || colors.info} px-4 py-2.5 rounded-2xl shadow-xl text-xs font-semibold flex items-center space-x-2 pointer-events-auto transform transition-all duration-300`;
-      toast.innerHTML = `<span>${msg}</span>`;
-      container.appendChild(toast);
-      setTimeout(() => {
-        toast.style.opacity = '0';
-        setTimeout(() => toast.remove(), 300);
-      }, 3500);
-    }
-
-    function initStoresFromStorage() {
-      const CURRENT_APP_VERSION = 'jawiza-prod-v2';
-      if (localStorage.getItem('tzion_app_version') !== CURRENT_APP_VERSION) {
-        localStorage.removeItem('tzion_stores');
-        localStorage.setItem('tzion_app_version', CURRENT_APP_VERSION);
-      }
-      const saved = localStorage.getItem('tzion_stores');
-      if (saved) {
-        try { SuperState.stores = JSON.parse(saved); } catch(e){}
-      }
-      saveStoresLocally();
-    }
-
-    function saveStoresLocally() {
-      localStorage.setItem('tzion_stores', JSON.stringify(SuperState.stores));
-      // Update active store lease
-      const activeId = localStorage.getItem('tzion_active_store_id') || SuperState.stores[0].id;
-      const curStore = SuperState.stores.find(s => s.id === activeId);
-      if (curStore) {
-        const renew = new Date(curStore.subscription_renews_at);
-        const expiresAt = new Date(renew.getTime() + (curStore.grace_period_days * 86400000)).toISOString();
-        localStorage.setItem('tzion_license_expires_at', expiresAt);
-        localStorage.setItem('tzion_is_locked', curStore.is_locked ? 'true' : 'false');
-      }
-    }
-
-    // --- Authentication ---
-    function toggleSuperPasswordVisibility() {
-      const pinInput = document.getElementById('superAdminPin');
-      if (pinInput) {
-        pinInput.type = pinInput.type === 'password' ? 'text' : 'password';
-      }
-    }
-
-    function handleSuperAdminAuth(e) {
-      e.preventDefault();
-      const email = document.getElementById('superAdminEmail').value.trim().toLowerCase();
-      const pin = document.getElementById('superAdminPin').value.trim();
-
-      // Strong Super Admin Credentials
-      if ((email === 'superadmin@tzionstockly.com' || email === 'superadmin' || email === 'admin@jawiza.com') && 
-          (pin === 'Jawiza@SuperMaster2026' || pin === 'TzionSuper@Master2026')) {
-        SuperState.isAuthenticated = true;
-        sessionStorage.setItem('tzion_superadmin_auth', 'true');
-        
-        document.getElementById('superAdminLoginScreen').classList.add('hidden');
-        document.getElementById('superAdminHeader').classList.remove('hidden');
-        document.getElementById('superAdminFleetContent').classList.remove('hidden');
-        
-        showToast("Imethibitishwa: Karibu Super Admin Command Center", "success");
-        renderSuperAdminDashboard();
-      } else {
-        showToast("Ufikiaji Umekataliwa: Email au Security Key si sahihi!", "error");
-      }
-    }
-
-    function openChangeDateModal(storeId) {
-      const st = SuperState.stores.find(s => s.id === storeId);
-      if (!st) return;
-
-      document.getElementById('changeDateStoreId').value = st.id;
-      document.getElementById('changeDateStoreTitle').innerText = `${st.name} (ID: ${st.id})`;
-      document.getElementById('changeDateCurrentDisplay').innerText = new Date(st.subscription_renews_at).toLocaleDateString();
-      document.getElementById('changeDateFeeDisplay').innerText = formatTZS(st.monthly_fee_tzs || 50000);
-      document.getElementById('customGracePeriodInput').value = st.grace_period_days || 3;
-
-      // Format ISO string to yyyy-mm-dd for input[type="date"]
-      const curDate = new Date(st.subscription_renews_at);
-      const yyyy = curDate.getFullYear();
-      const mm = String(curDate.getMonth() + 1).padStart(2, '0');
-      const dd = String(curDate.getDate()).padStart(2, '0');
-      document.getElementById('customRenewalDateInput').value = `${yyyy}-${mm}-${dd}`;
-
-      const modal = document.getElementById('changeDateModal');
-      modal.classList.remove('hidden');
-      modal.classList.add('flex');
-    }
-
-    function closeChangeDateModal() {
-      const modal = document.getElementById('changeDateModal');
-      modal.classList.add('hidden');
-      modal.classList.remove('flex');
-    }
-
-    function handleSaveCustomRenewalDate(e) {
-      e.preventDefault();
-      const storeId = document.getElementById('changeDateStoreId').value;
-      const dateVal = document.getElementById('customRenewalDateInput').value;
-      const graceDays = parseInt(document.getElementById('customGracePeriodInput').value) || 3;
-      const autoUnlock = document.getElementById('autoUnlockCheckbox').checked;
-
-      const st = SuperState.stores.find(s => s.id === storeId);
-      if (!st) return;
-
-      // Set new renewal date at 23:59:59
-      const newRenewDate = new Date(`${dateVal}T23:59:59`);
-      st.subscription_renews_at = newRenewDate.toISOString();
-      st.grace_period_days = graceDays;
-
-      const isFuture = newRenewDate > new Date();
-
-      if (autoUnlock && isFuture) {
-        st.is_locked = false;
-        st.status = 'active';
-        st.lock_reason = '';
-      } else if (!isFuture) {
-        st.status = 'past_due';
-      }
-
-      saveStoresLocally();
-      closeChangeDateModal();
-      showToast(`Updated renewal date for ${st.name} to ${newRenewDate.toLocaleDateString()}`, "success");
-      renderSuperAdminDashboard();
-    }
-
-    // --- Modal: Onboard Store ---
-    function openOnboardStoreModal() {
-      const modal = document.getElementById('onboardStoreModal');
-      modal.classList.remove('hidden');
-      modal.classList.add('flex');
-    }
-
-    function closeOnboardStoreModal() {
-      const modal = document.getElementById('onboardStoreModal');
-      modal.classList.add('hidden');
-      modal.classList.remove('flex');
-    }
-
-    function handleCreateStore(e) {
-      e.preventDefault();
-      const name = document.getElementById('newStoreName').value.trim();
-      const owner = document.getElementById('newStoreOwner').value.trim();
-      const phone = document.getElementById('newStorePhone').value.trim();
-      const fee = parseFloat(document.getElementById('newStoreFee').value) || 50000;
-      const grace = parseInt(document.getElementById('newStoreGrace').value) || 3;
-
-      const newStore = {
-        id: `store-tz-${(SuperState.stores.length + 1).toString().padStart(3, '0')}`,
-        name: name,
-        owner_name: owner,
-        owner_phone: phone,
-        monthly_fee_tzs: fee,
-        status: 'active',
-        subscription_renews_at: new Date(Date.now() + 30 * 86400000).toISOString(),
-        grace_period_days: grace,
-        is_locked: false,
-        lock_reason: ''
-      };
-
-      SuperState.stores.unshift(newStore);
-      saveStoresLocally();
-      closeOnboardStoreModal();
-      showToast(`Successfully registered new tenant store: ${name}`, "success");
-      renderSuperAdminDashboard();
-    }
-
-    window.onload = function() {
-      applyTheme();
-      initStoresFromStorage();
-
-      if (sessionStorage.getItem('tzion_superadmin_auth') === 'true') {
-        SuperState.isAuthenticated = true;
-        document.getElementById('superAdminLoginScreen').classList.add('hidden');
-        document.getElementById('superAdminHeader').classList.remove('hidden');
-        document.getElementById('superAdminWorkspace').classList.remove('hidden');
-        renderSuperAdminDashboard();
-      }
-    };
-  </script>
+  } catch(e) {}
+});
+</script>
 </body>
 </html>
-

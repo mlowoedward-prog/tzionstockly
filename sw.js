@@ -1,14 +1,12 @@
-const CACHE_NAME = 'tzionstockly-pwa-v18';
+const CACHE_NAME = 'tzionstockly-pwa-v20';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
+  './storeadminstaff.html',
   './superadmin.html',
   './manifest.json',
   './icons/Icon-192.png',
-  './icons/Icon-512.png',
-  'https://cdn.tailwindcss.com',
-  'https://cdn.jsdelivr.net/npm/chart.js',
-  'https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js'
+  './icons/Icon-512.png'
 ];
 
 self.addEventListener('install', (event) => {

@@ -1,0 +1,1073 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0f172a">
+<title>TzionStockly — Store Portal</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:-apple-system,Segoe UI,Roboto,sans-serif; background:#f4f6f9; color:#1f2937; min-height:100vh; }
+  .hidden { display:none !important; }
+
+  /* Login */
+  .login-wrap { min-height:100vh; display:flex; align-items:center; justify-content:center; background:#0f172a; padding:16px; }
+  .login-card { background:#fff; border-radius:14px; padding:32px; width:380px; max-width:94vw; box-shadow:0 10px 40px rgba(0,0,0,.3); }
+  .login-card h1 { font-size:22px; margin-bottom:6px; color:#0f172a; }
+  .login-card p { font-size:13px; color:#6b7280; margin-bottom:22px; }
+  .login-card label { display:block; font-size:12px; color:#6b7280; margin:12px 0 4px; font-weight:500; }
+  .login-card input, .login-card select { width:100%; padding:10px 12px; border:1px solid #d1d5db; border-radius:8px; font-size:14px; outline:none; }
+  .login-card input:focus, .login-card select:focus { border-color:#22c55e; }
+  .login-card button { width:100%; margin-top:18px; padding:11px; background:#22c55e; color:#fff; border:none; border-radius:8px; font-size:15px; font-weight:600; cursor:pointer; }
+  .login-card button:hover { background:#16a34a; }
+  .login-err { background:#fee2e2; color:#b91c1c; font-size:13px; padding:9px 12px; border-radius:8px; margin-top:14px; }
+  .login-hint { font-size:11.5px; color:#64748b; margin-top:18px; line-height:1.6; border-top:1px solid #f1f5f9; padding-top:12px; }
+  .login-hint a { color:#22c55e; text-decoration:none; font-weight:600; }
+  .login-hint a:hover { text-decoration:underline; }
+
+  /* App layout */
+  .app { display:flex; min-height:100vh; }
+  .sidebar { width:220px; background:#0f172a; color:#e2e8f0; padding:20px 0; flex-shrink:0; display:flex; flex-direction:column; }
+  .sidebar h2 { font-size:15px; padding:0 18px 6px; color:#fff; }
+  .sidebar .store-name { font-size:12px; color:#94a3b8; padding:0 18px 6px; font-weight:500; }
+  .sidebar .sync-pill { font-size:11px; color:#4ade80; padding:0 18px 14px; border-bottom:1px solid #1e293b; display:flex; align-items:center; gap:6px; }
+  .sidebar .sync-dot { width:7px; height:7px; border-radius:50%; background:#22c55e; display:inline-block; }
+  .sidebar .sync-dot.offline { background:#f59e0b; }
+  .sidebar nav { flex:1; padding-top:6px; }
+  .sidebar nav a { display:block; padding:12px 18px; color:#94a3b8; text-decoration:none; font-size:14px; cursor:pointer; border-left:3px solid transparent; }
+  .sidebar nav a:hover, .sidebar nav a.active { background:#1e293b; color:#fff; border-left-color:#22c55e; }
+  .sidebar .who { padding:14px 18px; border-top:1px solid #1e293b; font-size:12px; color:#94a3b8; }
+  .sidebar .who b { color:#fff; display:block; font-size:13px; margin-bottom:2px; }
+  .sidebar .who button { margin-top:8px; width:100%; padding:7px; background:#1e293b; color:#e2e8f0; border:none; border-radius:6px; cursor:pointer; font-size:12px; }
+  .sidebar .who button:hover { background:#334155; }
+
+  .main { flex:1; padding:22px; overflow-y:auto; }
+  .topbar { display:flex; justify-content:space-between; align-items:center; margin-bottom:18px; flex-wrap:wrap; gap:10px; }
+  .topbar h1 { font-size:21px; }
+  .scan-box { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+  .scan-box input { width:240px; max-width:100%; }
+
+  .cards { display:grid; grid-template-columns:repeat(auto-fit,minmax(170px,1fr)); gap:14px; margin-bottom:22px; }
+  .card { background:#fff; border-radius:10px; padding:16px; box-shadow:0 1px 3px rgba(0,0,0,.07); }
+  .card .label { font-size:11px; color:#6b7280; text-transform:uppercase; letter-spacing:.5px; }
+  .card .value { font-size:22px; font-weight:700; margin-top:4px; }
+  .card.warn .value { color:#dc2626; }
+  .card.good .value { color:#16a34a; }
+
+  .panel { background:#fff; border-radius:10px; box-shadow:0 1px 3px rgba(0,0,0,.07); padding:16px; margin-bottom:22px; overflow-x:auto; }
+  .panel-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; flex-wrap:wrap; gap:10px; }
+  .panel-header h2 { font-size:15px; }
+  .panel-tools { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+
+  input[type=text], input[type=number], input[type=password], select { padding:8px 11px; border:1px solid #d1d5db; border-radius:6px; font-size:14px; outline:none; }
+  input:focus, select:focus { border-color:#22c55e; }
+  button { padding:8px 13px; border:none; border-radius:6px; font-size:13px; cursor:pointer; font-weight:500; }
+  .btn-primary { background:#22c55e; color:#fff; }
+  .btn-primary:hover { background:#16a34a; }
+  .btn-sm { padding:4px 9px; font-size:12px; margin-right:3px; }
+  .btn-in { background:#dcfce7; color:#15803d; }
+  .btn-in:hover { background:#bbf7d0; }
+  .btn-out { background:#fee2e2; color:#b91c1c; }
+  .btn-out:hover { background:#fecaca; }
+  .btn-neutral { background:#f1f5f9; color:#334155; }
+  .btn-neutral:hover { background:#e2e8f0; }
+
+  table { width:100%; border-collapse:collapse; font-size:13.5px; }
+  th { text-align:left; padding:9px 7px; color:#6b7280; font-size:11px; text-transform:uppercase; border-bottom:2px solid #e5e7eb; white-space:nowrap; }
+  td { padding:9px 7px; border-bottom:1px solid #f1f5f9; vertical-align:middle; }
+  tr:hover td { background:#f8fafc; }
+  .tag { padding:2px 8px; border-radius:11px; font-size:10.5px; font-weight:600; white-space:nowrap; display:inline-block; }
+  .tag.ok { background:#dcfce7; color:#15803d; }
+  .tag.low { background:#fef9c3; color:#a16207; }
+  .tag.out { background:#fee2e2; color:#b91c1c; }
+  .muted { color:#94a3b8; font-size:12px; }
+  .empty { text-align:center; color:#94a3b8; padding:26px; font-size:14px; }
+
+  /* Modal */
+  .modal-bg { display:none; position:fixed; inset:0; background:rgba(0,0,0,.45); align-items:center; justify-content:center; z-index:100; padding:16px; }
+  .modal-bg.show { display:flex; }
+  .modal { background:#fff; border-radius:12px; padding:22px; width:400px; max-width:95vw; max-height:90vh; overflow-y:auto; }
+  .modal h3 { margin-bottom:4px; font-size:17px; }
+  .modal .sub { font-size:12px; color:#6b7280; margin-bottom:14px; }
+  .modal label { display:block; font-size:12px; color:#6b7280; margin:10px 0 4px; font-weight:500; }
+  .modal input, .modal select { width:100%; }
+  .modal-row { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  .modal-actions { display:flex; justify-content:flex-end; gap:8px; margin-top:18px; }
+  .btn-cancel { background:#f1f5f9; color:#334155; }
+
+  /* Toast */
+  .toast { position:fixed; bottom:18px; right:18px; background:#0f172a; color:#fff; padding:10px 16px; border-radius:8px; font-size:13px; box-shadow:0 6px 20px rgba(0,0,0,.25); z-index:200; opacity:0; transform:translateY(10px); transition:all .25s ease; pointer-events:none; }
+  .toast.show { opacity:1; transform:translateY(0); }
+
+  @media (max-width: 720px) {
+    .app { flex-direction:column; }
+    .sidebar { width:100%; padding:14px 0 0; }
+    .sidebar nav { display:flex; overflow-x:auto; padding:0 10px; border-top:1px solid #1e293b; }
+    .sidebar nav a { white-space:nowrap; border-left:none; border-bottom:3px solid transparent; padding:10px 12px; font-size:13px; }
+    .sidebar nav a:hover, .sidebar nav a.active { border-left:none; border-bottom-color:#22c55e; }
+    .sidebar .who { display:flex; align-items:center; justify-content:space-between; gap:10px; padding:10px 18px; }
+    .sidebar .who button { width:auto; margin-top:0; padding:6px 12px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ========== LOGIN ========== -->
+<div id="loginScreen" class="login-wrap">
+  <div class="login-card">
+    <h1>🏪 Store Portal</h1>
+    <p>Sign in to manage your store inventory and sales.</p>
+    <label>Email or Username</label>
+    <input type="text" id="loginEmail" placeholder="admin@jawiza.com or maria" autocomplete="off">
+    <label>Password</label>
+    <input type="password" id="loginPass" placeholder="••••••••">
+    <label>Role</label>
+    <select id="loginRole">
+      <option value="admin">Store Admin</option>
+      <option value="staff">Store Staff</option>
+    </select>
+    <button onclick="doLogin()">Sign In</button>
+    <div id="loginErr" class="login-err hidden"></div>
+    <div class="login-hint">
+      <b>Jawiza Store Accounts:</b><br>
+      Admin — <b>admin@jawiza.com</b> (or <b>admin</b>) / <b>Jawiza@Admin2026</b><br>
+      Staff — <b>maria@jawiza.com</b> (or <b>maria</b>) / <b>Maria@Jawiza2026</b><br>
+      <span style="display:inline-block;margin-top:6px;">Platform Owner? <a href="superadmin.html">Open Super Admin Console &rarr;</a></span>
+    </div>
+  </div>
+</div>
+
+<!-- ========== APP ========== -->
+<div id="app" class="app hidden">
+  <div class="sidebar">
+    <h2>🏪 Store Portal</h2>
+    <div class="store-name" id="storeLabel">Jawiza Store</div>
+    <div class="sync-pill">
+      <span class="sync-dot" id="syncDot"></span>
+      <span id="syncText">Cloud Synced</span>
+    </div>
+    <nav id="nav"></nav>
+    <div class="who">
+      <div>
+        <b id="whoName">—</b>
+        <span id="whoRole">—</span>
+      </div>
+      <button onclick="logout()">Sign out</button>
+    </div>
+  </div>
+
+  <div class="main">
+    <div class="topbar">
+      <h1 id="viewTitle">Overview</h1>
+      <div class="scan-box" id="scanBox">
+        <input type="text" id="scanInput" placeholder="Scan barcode / SKU or item name to sell..." autofocus>
+        <button class="btn-primary" onclick="handleScan()">Sell</button>
+      </div>
+    </div>
+    <div id="views"></div>
+  </div>
+</div>
+
+<!-- ========== MODAL (shared) ========== -->
+<div class="modal-bg" id="modalBg" onclick="if(event.target===this)closeModal()">
+  <div class="modal">
+    <h3 id="mTitle">—</h3>
+    <div class="sub" id="mSub"></div>
+    <div id="mFields"></div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+      <button class="btn-primary" id="mSave" onclick="modalSave()">Save</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script>
+/* ============================================================
+   SHARED STORAGE & SUPABASE CLOUD SYNC
+   ============================================================ */
+const STORAGE_KEYS = {
+  VERSION:   'tzion_portal_v2_init',
+  STORES:    'tzion_portal_stores',
+  USERS:     'tzion_portal_users',
+  PRODUCTS:  'tzion_portal_products',
+  MOVEMENTS: 'tzion_portal_movements',
+  SESSION:   'tzion_portal_session'
+};
+
+const DEFAULT_STORES = [
+  { id:'store-jawiza-001', name:'Jawiza Store', owner:'Jawiza Admin', active:true }
+];
+
+const DEFAULT_USERS = [
+  { id:'u1', username:'admin', name:'Jawiza Admin', email:'admin@jawiza.com', pass:'Jawiza@Admin2026', role:'admin', storeId:'store-jawiza-001' },
+  { id:'u2', username:'maria', name:'Maria',        email:'maria@jawiza.com', pass:'Maria@Jawiza2026', role:'staff', storeId:'store-jawiza-001' },
+  { id:'u3', username:'demo_admin', name:'Alice Admin', email:'admin@store.com', pass:'admin123', role:'admin', storeId:'store-jawiza-001' },
+  { id:'u4', username:'demo_staff', name:'Sam Staff',   email:'staff@store.com', pass:'staff123', role:'staff', storeId:'store-jawiza-001' }
+];
+
+const DEFAULT_PRODUCTS = [
+  { id:1, storeId:'store-jawiza-001', sku:'APP-MBI-001', name:'mbilimbi',       cat:'appetizer', loc:'fungu',  onHand:50, reserved:0, reorder:10, cost:1000,  price:1500,  supplier:'Jawiza Suppliers' },
+  { id:2, storeId:'store-jawiza-001', sku:'PLT-KUK-001', name:'kuku',           cat:'poultry',   loc:'kuku',   onHand:30, reserved:0, reorder:5,  cost:12000, price:15000, supplier:'Jawiza Poultry' },
+  { id:3, storeId:'store-jawiza-001', sku:'UNG-UJI-001', name:'Uji Mtamu',      cat:'unga',      loc:'pakiti', onHand:40, reserved:0, reorder:10, cost:2500,  price:3500,  supplier:'Jawiza Mills' },
+  { id:4, storeId:'store-jawiza-001', sku:'PLT-MAY-001', name:'mayai',          cat:'poultry',   loc:'trei',   onHand:25, reserved:0, reorder:5,  cost:9000,  price:11000, supplier:'Jawiza Poultry' },
+  { id:5, storeId:'store-jawiza-001', sku:'UNG-MTM-001', name:'mtama mwekundu', cat:'unga',      loc:'kg',     onHand:50, reserved:0, reorder:10, cost:1800,  price:2500,  supplier:'Jawiza Mills' },
+  { id:6, storeId:'store-jawiza-001', sku:'UNG-MTW-002', name:'mtama mweupe',   cat:'unga',      loc:'kg',     onHand:50, reserved:0, reorder:10, cost:1800,  price:2500,  supplier:'Jawiza Mills' },
+  { id:7, storeId:'store-jawiza-001', sku:'UNG-NJM-003', name:'Njano mix',      cat:'unga',      loc:'pakiti', onHand:40, reserved:0, reorder:10, cost:2500,  price:3500,  supplier:'Jawiza Mills' }
+];
+
+let stores = [];
+let users = [];
+let products = [];
+let movements = [];
+let session = null;
+
+function loadState() {
+  if (localStorage.getItem(STORAGE_KEYS.VERSION) !== 'v2.0') {
+    localStorage.setItem(STORAGE_KEYS.STORES, JSON.stringify(DEFAULT_STORES));
+    localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(DEFAULT_USERS));
+    localStorage.setItem(STORAGE_KEYS.PRODUCTS, JSON.stringify(DEFAULT_PRODUCTS));
+    localStorage.setItem(STORAGE_KEYS.MOVEMENTS, JSON.stringify([]));
+    localStorage.setItem(STORAGE_KEYS.VERSION, 'v2.0');
+  }
+  try { stores = JSON.parse(localStorage.getItem(STORAGE_KEYS.STORES)) || DEFAULT_STORES; } catch(e) { stores = DEFAULT_STORES; }
+  try { users = JSON.parse(localStorage.getItem(STORAGE_KEYS.USERS)) || DEFAULT_USERS; } catch(e) { users = DEFAULT_USERS; }
+  try { products = JSON.parse(localStorage.getItem(STORAGE_KEYS.PRODUCTS)) || DEFAULT_PRODUCTS; } catch(e) { products = DEFAULT_PRODUCTS; }
+  try { movements = JSON.parse(localStorage.getItem(STORAGE_KEYS.MOVEMENTS)) || []; } catch(e) { movements = []; }
+}
+
+function saveState() {
+  localStorage.setItem(STORAGE_KEYS.STORES, JSON.stringify(stores));
+  localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(users));
+  localStorage.setItem(STORAGE_KEYS.PRODUCTS, JSON.stringify(products));
+  localStorage.setItem(STORAGE_KEYS.MOVEMENTS, JSON.stringify(movements));
+}
+
+function getCurrentStore() {
+  const sid = session?.user?.storeId || 'store-jawiza-001';
+  return stores.find(s => s.id === sid) || stores[0] || DEFAULT_STORES[0];
+}
+
+function getStoreProducts() {
+  const sid = getCurrentStore().id;
+  return products.filter(p => !p.storeId || p.storeId === sid);
+}
+
+function getStoreMovements() {
+  const sid = getCurrentStore().id;
+  return movements.filter(m => !m.storeId || m.storeId === sid);
+}
+
+function formatTZS(n) {
+  return 'TZS ' + Math.round(Number(n) || 0).toLocaleString('en-US');
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  if (!t) return;
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(window._toastTimer);
+  window._toastTimer = setTimeout(() => t.classList.remove('show'), 2600);
+}
+
+/* ============================================================
+   SUPABASE REAL-TIME SYNC ENGINE
+   ============================================================ */
+const CloudSync = {
+  url: 'https://afchobaedwzvcdvexhtq.supabase.co',
+  key: 'sb_publishable_3_m7mYbVuaVLhWcHXezcHQ_6Gvm1a2H',
+  isPulling: false,
+
+  headers() {
+    return {
+      'apikey': this.key,
+      'Authorization': `Bearer ${this.key}`,
+      'Content-Type': 'application/json',
+      'Prefer': 'return=representation'
+    };
+  },
+
+  updateStatusUI(online, label) {
+    const dot = document.getElementById('syncDot');
+    const txt = document.getElementById('syncText');
+    if (dot) dot.className = online ? 'sync-dot' : 'sync-dot offline';
+    if (txt) txt.textContent = label || (online ? 'Cloud Synced' : 'Offline Mode');
+  },
+
+  async pullProducts() {
+    if (!navigator.onLine || this.isPulling) {
+      if (!navigator.onLine) this.updateStatusUI(false, 'Offline (Local Saved)');
+      return;
+    }
+    this.isPulling = true;
+    try {
+      const res = await fetch(`${this.url}/rest/v1/products?select=*`, { headers: this.headers() });
+      if (!res.ok) { this.isPulling = false; return; }
+      const remoteProds = await res.json();
+      if (!Array.isArray(remoteProds)) { this.isPulling = false; return; }
+
+      let changed = false;
+      remoteProds.forEach(remote => {
+        if (remote.deleted_at) return;
+        const local = products.find(p =>
+          (remote.sku && p.sku === remote.sku) ||
+          p.name.toLowerCase().trim() === (remote.name || '').toLowerCase().trim()
+        );
+        if (local) {
+          const newQty = Number(remote.stock_quantity ?? local.onHand);
+          const newPrice = Number(remote.selling_price_tzs || remote.selling_price || local.price);
+          const newCost = Number(remote.cost_price_tzs || remote.cost_price || local.cost);
+          if (local.onHand !== newQty || local.price !== newPrice || local.cost !== newCost) {
+            local.onHand = newQty;
+            if (newPrice > 0) local.price = newPrice;
+            if (newCost > 0) local.cost = newCost;
+            changed = true;
+          }
+          local.supabaseId = remote.id;
+        }
+      });
+
+      this.updateStatusUI(true, changed ? '⚡ Synced with Cloud' : 'Cloud Synced');
+      if (changed) {
+        saveState();
+        if (session) renderView(currentView);
+      }
+    } catch (e) {
+      this.updateStatusUI(false, 'Offline (Local Saved)');
+    }
+    this.isPulling = false;
+  },
+
+  async pushProductStock(p) {
+    if (!navigator.onLine || !p) return;
+    try {
+      const filter = p.sku ? `sku=eq.${encodeURIComponent(p.sku)}` : `name=eq.${encodeURIComponent(p.name)}`;
+      const res = await fetch(`${this.url}/rest/v1/products?${filter}`, {
+        method: 'PATCH',
+        headers: this.headers(),
+        body: JSON.stringify({
+          name: p.name,
+          sku: p.sku,
+          category: p.cat,
+          unit: p.loc,
+          stock_quantity: p.onHand,
+          reorder_level: p.reorder,
+          cost_price: Math.round(p.cost),
+          selling_price: Math.round(p.price),
+          cost_price_tzs: p.cost,
+          selling_price_tzs: p.price,
+          updated_at: new Date().toISOString()
+        })
+      });
+      if (res.ok) {
+        const updated = await res.json();
+        if (Array.isArray(updated) && updated.length === 0) {
+          await fetch(`${this.url}/rest/v1/products`, {
+            method: 'POST',
+            headers: this.headers(),
+            body: JSON.stringify({
+              business_id: '00000000-0000-0000-0000-000000000001',
+              name: p.name,
+              sku: p.sku,
+              category: p.cat || 'General',
+              unit: p.loc || 'pcs',
+              stock_quantity: p.onHand,
+              reorder_level: p.reorder || 5,
+              min_threshold: Math.max(1, p.reorder || 5),
+              cost_price: Math.round(p.cost),
+              selling_price: Math.round(p.price),
+              cost_price_tzs: p.cost,
+              selling_price_tzs: p.price
+            })
+          });
+        }
+        this.updateStatusUI(true, '⚡ Saved to Cloud');
+      }
+    } catch (e) {
+      this.updateStatusUI(false, 'Saved Locally (Offline)');
+    }
+  },
+
+  async deleteRemoteProduct(p) {
+    if (!navigator.onLine || !p) return;
+    try {
+      const filter = p.sku ? `sku=eq.${encodeURIComponent(p.sku)}` : `name=eq.${encodeURIComponent(p.name)}`;
+      await fetch(`${this.url}/rest/v1/products?${filter}`, {
+        method: 'DELETE',
+        headers: this.headers()
+      });
+    } catch (e) {}
+  }
+};
+
+/* ============================================================
+   AUTH
+   ============================================================ */
+function doLogin() {
+  loadState();
+  const ident = document.getElementById('loginEmail').value.trim().toLowerCase();
+  const pass  = document.getElementById('loginPass').value;
+  const role  = document.getElementById('loginRole').value;
+  const err   = document.getElementById('loginErr');
+
+  if (!ident || !pass) {
+    err.textContent = 'Please enter your email/username and password.';
+    err.classList.remove('hidden');
+    return;
+  }
+
+  const u = users.find(x =>
+    (x.email.toLowerCase() === ident || (x.username && x.username.toLowerCase() === ident) || x.name.toLowerCase() === ident) &&
+    x.pass === pass
+  );
+
+  if (!u) {
+    err.textContent = 'Invalid email/username or password.';
+    err.classList.remove('hidden');
+    return;
+  }
+
+  const userStore = stores.find(s => s.id === u.storeId) || stores[0];
+  if (userStore && !userStore.active) {
+    err.textContent = `Store "${userStore.name}" is currently deactivated by the Platform Super Admin.`;
+    err.classList.remove('hidden');
+    return;
+  }
+
+  err.classList.add('hidden');
+  session = { user: u };
+  localStorage.setItem(STORAGE_KEYS.SESSION, JSON.stringify(session));
+  enterApp();
+}
+
+function enterApp() {
+  const u = session.user;
+  const store = getCurrentStore();
+  document.getElementById('loginScreen').classList.add('hidden');
+  document.getElementById('app').classList.remove('hidden');
+  document.getElementById('storeLabel').textContent = store.name;
+  document.getElementById('whoName').textContent = u.name;
+  document.getElementById('whoRole').textContent = u.role === 'admin' ? 'Store Admin' : 'Store Staff';
+  buildNav();
+  go('overview');
+  CloudSync.pullProducts();
+}
+
+function logout() {
+  session = null;
+  localStorage.removeItem(STORAGE_KEYS.SESSION);
+  document.getElementById('app').classList.add('hidden');
+  document.getElementById('loginScreen').classList.remove('hidden');
+  document.getElementById('loginEmail').value = '';
+  document.getElementById('loginPass').value = '';
+}
+
+const isAdmin = () => session && session.user.role === 'admin';
+
+/* ============================================================
+   NAVIGATION
+   ============================================================ */
+const NAV = {
+  admin: [
+    ['overview','Overview'], ['stock','Stock'], ['alerts','Restock Alerts'],
+    ['movements','Stock Movements'], ['reports','Reports'], ['team','Team & Passwords']
+  ],
+  staff: [
+    ['overview','Overview'], ['stock','Stock'], ['alerts','Low Stock Alerts']
+  ]
+};
+
+let currentView = 'overview';
+let stockSearchQuery = '';
+
+function buildNav() {
+  const nav = document.getElementById('nav');
+  const roleKey = isAdmin() ? 'admin' : 'staff';
+  nav.innerHTML = NAV[roleKey].map(([v,label]) =>
+    `<a class="nav-link" data-view="${v}" onclick="go('${v}')">${label}</a>`
+  ).join('');
+}
+
+function go(view) {
+  currentView = view;
+  document.querySelectorAll('.nav-link').forEach(a =>
+    a.classList.toggle('active', a.dataset.view === view));
+  const titles = {
+    overview:'Overview',
+    stock:'Stock',
+    alerts: isAdmin() ? 'Restock Alerts' : 'Low Stock Alerts',
+    movements:'Stock Movements',
+    reports:'Reports',
+    team:'Team & Passwords'
+  };
+  document.getElementById('viewTitle').textContent = titles[view] || view;
+  document.getElementById('scanBox').classList.remove('hidden');
+  renderView(view);
+}
+
+/* ============================================================
+   RENDER HELPERS
+   ============================================================ */
+const avail = p => Math.max(0, (Number(p.onHand) || 0) - (Number(p.reserved) || 0));
+const statusOf = p => p.onHand <= 0
+  ? { cls:'out', text:'Out of Stock' }
+  : (avail(p) <= p.reorder ? { cls:'low', text:'Low Stock' } : { cls:'ok', text:'In Stock' });
+
+function esc(str) {
+  return String(str ?? '').replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+}
+
+function renderView(view) {
+  const store = getCurrentStore();
+  if (store && !store.active) {
+    alert(`Store "${store.name}" has been deactivated.`);
+    logout();
+    return;
+  }
+  const box = document.getElementById('views');
+  if (view === 'overview')  box.innerHTML = viewOverview();
+  if (view === 'stock')     box.innerHTML = viewStock();
+  if (view === 'alerts')    box.innerHTML = viewAlerts();
+  if (view === 'movements') box.innerHTML = viewMovements();
+  if (view === 'reports')   box.innerHTML = viewReports();
+  if (view === 'team')      box.innerHTML = viewTeam();
+
+  if (view === 'stock') {
+    const inp = document.getElementById('searchInput');
+    if (inp) {
+      inp.focus();
+      inp.setSelectionRange(inp.value.length, inp.value.length);
+      inp.addEventListener('input', e => {
+        stockSearchQuery = e.target.value;
+        renderView('stock');
+      });
+    }
+  }
+}
+
+function viewOverview() {
+  const list = getStoreProducts();
+  const totalUnits = list.reduce((s,p) => s + avail(p), 0);
+  const low  = list.filter(p => p.onHand > 0 && avail(p) <= p.reorder).length;
+  const out  = list.filter(p => p.onHand <= 0).length;
+  const att  = list.filter(p => avail(p) <= p.reorder);
+
+  return `
+    <div class="cards">
+      <div class="card"><div class="label">Products</div><div class="value">${list.length}</div></div>
+      <div class="card good"><div class="label">Units Available</div><div class="value">${totalUnits.toLocaleString()}</div></div>
+      <div class="card warn"><div class="label">Low Stock</div><div class="value">${low}</div></div>
+      <div class="card warn"><div class="label">Out of Stock</div><div class="value">${out}</div></div>
+    </div>
+    <div class="panel">
+      <div class="panel-header"><h2>Needs Attention</h2></div>
+      <table><thead><tr><th>Product</th><th>Unit / Category</th><th>On Hand</th><th>Available</th><th>Reorder At</th><th>Status</th></tr></thead>
+      <tbody>${att.length ? att.map(p => {
+        const s = statusOf(p);
+        return `<tr>
+          <td><b>${esc(p.name)}</b> <span class="muted">(${esc(p.sku)})</span></td>
+          <td>${esc(p.loc)} · <span class="muted">${esc(p.cat)}</span></td>
+          <td>${p.onHand}</td>
+          <td>${avail(p)}</td>
+          <td>${p.reorder}</td>
+          <td><span class="tag ${s.cls}">${s.text}</span></td>
+        </tr>`;
+      }).join('') : '<tr><td colspan="6" class="empty">All items are above reorder level 👍</td></tr>'}</tbody></table>
+    </div>`;
+}
+
+function viewStock() {
+  const q = stockSearchQuery.toLowerCase().trim();
+  const list = getStoreProducts().filter(p =>
+    p.name.toLowerCase().includes(q) ||
+    p.sku.toLowerCase().includes(q) ||
+    (p.cat || '').toLowerCase().includes(q)
+  );
+
+  return `
+    <div class="panel">
+      <div class="panel-header">
+        <h2>Stock List</h2>
+        <div class="panel-tools">
+          <input type="text" id="searchInput" placeholder="Search product, SKU, or category..." value="${esc(stockSearchQuery)}">
+          ${isAdmin() ? `<button class="btn-primary" onclick="openAddProduct()">+ New Product</button>` : ''}
+        </div>
+      </div>
+      <table><thead><tr><th>SKU</th><th>Product</th><th>Category / Unit</th><th>On Hand</th><th>Available</th><th>Price (TZS)</th><th>Action</th></tr></thead>
+      <tbody>${list.length ? list.map(p => {
+        const s = statusOf(p);
+        const sellBtn = `<button class="btn-sm btn-out" onclick="openSell(${p.id})">Sell</button>`;
+        const restockBtn = isAdmin() ? `<button class="btn-sm btn-in" onclick="openRestock(${p.id})">Restock</button>` : '';
+        const editBtn = isAdmin() ? `<button class="btn-sm btn-neutral" onclick="openEditProduct(${p.id})">Edit</button>` : '';
+        const delBtn = isAdmin() ? `<button class="btn-sm btn-neutral" onclick="deleteProduct(${p.id})" title="Delete">✕</button>` : '';
+        return `<tr>
+          <td>${esc(p.sku)}</td>
+          <td><b>${esc(p.name)}</b></td>
+          <td>${esc(p.cat)} <span class="muted">(${esc(p.loc)})</span></td>
+          <td>${p.onHand}</td>
+          <td>${avail(p)} <span class="tag ${s.cls}">${s.text}</span></td>
+          <td><b>${formatTZS(p.price)}</b></td>
+          <td style="white-space:nowrap;">${sellBtn}${restockBtn}${editBtn}${delBtn}</td>
+        </tr>`;
+      }).join('') : '<tr><td colspan="7" class="empty">No products match your search.</td></tr>'}</tbody></table>
+    </div>`;
+}
+
+function viewAlerts() {
+  const low = getStoreProducts().filter(p => avail(p) <= p.reorder);
+  return `
+    <div class="panel">
+      <div class="panel-header"><h2>Items to Restock</h2></div>
+      <table><thead><tr><th>Product</th><th>Available</th><th>Reorder At</th><th>Suggested Order</th><th>Supplier</th>${isAdmin()?'<th>Action</th>':''}</tr></thead>
+      <tbody>${low.length ? low.map(p => {
+        const sug = Math.max(p.reorder * 2 - avail(p), 1);
+        const btn = isAdmin() ? `<td><button class="btn-sm btn-in" onclick="openRestock(${p.id})">Receive</button></td>` : '';
+        return `<tr>
+          <td><b>${esc(p.name)}</b> <span class="muted">(${esc(p.sku)})</span></td>
+          <td>${avail(p)} ${esc(p.loc)}</td>
+          <td>${p.reorder} ${esc(p.loc)}</td>
+          <td><b>${sug} ${esc(p.loc)}</b></td>
+          <td>${esc(p.supplier || '—')}</td>
+          ${btn}
+        </tr>`;
+      }).join('') : '<tr><td colspan="6" class="empty">No restock needed right now.</td></tr>'}</tbody></table>
+    </div>`;
+}
+
+function viewMovements() {
+  const list = getStoreMovements();
+  return `
+    <div class="panel">
+      <div class="panel-header"><h2>Stock Movement Log</h2></div>
+      <table><thead><tr><th>Time</th><th>Product</th><th>Type</th><th>Change</th><th>By</th><th>Note</th></tr></thead>
+      <tbody>${list.length ? list.map(m => {
+        const p = products.find(x => x.id === m.pid);
+        const cls = m.change >= 0 ? 'tag ok' : 'tag out';
+        return `<tr>
+          <td>${esc(m.time)}</td>
+          <td><b>${esc(m.productName || (p ? p.name : '—'))}</b></td>
+          <td>${esc(m.type)}</td>
+          <td><span class="${cls}">${m.change > 0 ? '+' : ''}${m.change}</span></td>
+          <td>${esc(m.by || '—')}</td>
+          <td>${esc(m.note || '')}</td>
+        </tr>`;
+      }).join('') : '<tr><td colspan="6" class="empty">No stock movements recorded yet.</td></tr>'}</tbody></table>
+    </div>`;
+}
+
+function viewReports() {
+  const list = getStoreProducts();
+  const movs = getStoreMovements();
+  const cats = {};
+  list.forEach(p => {
+    const c = p.cat || 'General';
+    if (!cats[c]) cats[c] = { count:0, units:0, cost:0, retail:0 };
+    cats[c].count++;
+    cats[c].units += p.onHand;
+    cats[c].cost += p.onHand * (Number(p.cost) || 0);
+    cats[c].retail += p.onHand * (Number(p.price) || 0);
+  });
+  let rows = '', tC = 0, tU = 0, tCost = 0, tRetail = 0;
+  for (const [c, d] of Object.entries(cats)) {
+    rows += `<tr>
+      <td><b>${esc(c)}</b></td>
+      <td>${d.count}</td>
+      <td>${d.units.toLocaleString()}</td>
+      <td>${formatTZS(d.cost)}</td>
+      <td>${formatTZS(d.retail)}</td>
+      <td><b>${formatTZS(d.retail - d.cost)}</b></td>
+    </tr>`;
+    tC += d.count; tU += d.units; tCost += d.cost; tRetail += d.retail;
+  }
+  const soldIds = new Set(movs.filter(m => m.type === 'sale').map(m => m.pid));
+  const slow = list.filter(p => !soldIds.has(p.id) && p.onHand > 0);
+
+  return `
+    <div class="panel">
+      <div class="panel-header"><h2>Inventory Value by Category</h2></div>
+      <table><thead><tr><th>Category</th><th>Products</th><th>Units</th><th>Cost Value</th><th>Retail Value</th><th>Potential Margin</th></tr></thead>
+      <tbody>${rows || '<tr><td colspan="6" class="empty">No inventory data.</td></tr>'}</tbody>
+      <tfoot><tr style="font-weight:700;border-top:2px solid #e5e7eb;">
+        <td>Total</td><td>${tC}</td><td>${tU.toLocaleString()}</td>
+        <td>${formatTZS(tCost)}</td><td>${formatTZS(tRetail)}</td><td>${formatTZS(tRetail - tCost)}</td>
+      </tr></tfoot></table>
+    </div>
+    <div class="panel">
+      <div class="panel-header"><h2>Slow-Moving Items (no sales logged)</h2></div>
+      <table><thead><tr><th>Product</th><th>SKU</th><th>On Hand</th><th>Tied-up Cost</th></tr></thead>
+      <tbody>${slow.length ? slow.map(p => `<tr>
+        <td><b>${esc(p.name)}</b></td>
+        <td>${esc(p.sku)}</td>
+        <td>${p.onHand} ${esc(p.loc)}</td>
+        <td>${formatTZS(p.onHand * p.cost)}</td>
+      </tr>`).join('') : '<tr><td colspan="4" class="empty">All stocked items had recent sales.</td></tr>'}</tbody></table>
+    </div>`;
+}
+
+function viewTeam() {
+  const store = getCurrentStore();
+  const team = users.filter(u => u.storeId === store.id);
+  return `
+    <div class="panel">
+      <div class="panel-header">
+        <h2>Team Members — ${esc(store.name)}</h2>
+        <button class="btn-primary" onclick="openAddTeamMember()">+ Add Team Member</button>
+      </div>
+      <table><thead><tr><th>Name</th><th>Email / Username</th><th>Role</th><th>Actions</th></tr></thead>
+      <tbody>${team.map(u => `
+        <tr>
+          <td><b>${esc(u.name)}</b>${u.id === session.user.id ? ' <span class="muted">(you)</span>' : ''}</td>
+          <td>${esc(u.email)}${u.username ? ` <span class="muted">(${esc(u.username)})</span>` : ''}</td>
+          <td>${u.role === 'admin' ? 'Store Admin' : 'Store Staff'}</td>
+          <td>
+            <button class="btn-sm btn-neutral" onclick="openSetPassword('${u.id}')">Set Password</button>
+            ${u.id !== session.user.id ? `<button class="btn-sm btn-out" onclick="deleteTeamMember('${u.id}')">Remove</button>` : ''}
+          </td>
+        </tr>`).join('')}</tbody></table>
+    </div>`;
+}
+
+/* ============================================================
+   MODALS: SELL, RESTOCK, ADD/EDIT/DELETE PRODUCT
+   ============================================================ */
+let modalAction = null;
+
+function openModal(title, sub, fieldsHtml, saveFn) {
+  document.getElementById('mTitle').textContent = title;
+  document.getElementById('mSub').textContent = sub;
+  document.getElementById('mFields').innerHTML = fieldsHtml;
+  document.getElementById('modalBg').classList.add('show');
+  modalAction = saveFn;
+}
+function closeModal() {
+  document.getElementById('modalBg').classList.remove('show');
+  modalAction = null;
+}
+function modalSave() {
+  if (modalAction) modalAction();
+}
+
+function openSell(pid) {
+  const p = products.find(x => x.id === pid);
+  if (!p) return;
+  openModal(
+    `Sell — ${p.name}`,
+    `SKU ${p.sku} · Available: ${avail(p)} ${p.loc} · Price: ${formatTZS(p.price)}`,
+    `<label>Quantity sold (${esc(p.loc)})</label><input type="number" id="fQty" min="1" max="${Math.max(1, avail(p))}" value="1">
+     <label>Note (optional)</label><input type="text" id="fNote" placeholder="e.g. Counter sale / Cash">`,
+    () => {
+      const qty = Math.abs(parseInt(document.getElementById('fQty').value, 10)) || 0;
+      if (qty < 1) { alert('Enter a valid quantity.'); return; }
+      if (qty > p.onHand) { alert(`Not enough stock on hand (${p.onHand} ${p.loc}).`); return; }
+      p.onHand -= qty;
+      movements.unshift({
+        id: 'mov_' + Date.now(),
+        storeId: getCurrentStore().id,
+        time: nowTime(),
+        pid: p.id,
+        productName: p.name,
+        by: session.user.name,
+        type: 'sale',
+        change: -qty,
+        note: document.getElementById('fNote').value.trim() || `Counter sale (${formatTZS(qty * p.price)})`
+      });
+      saveState();
+      CloudSync.pushProductStock(p);
+      closeModal();
+      renderView(currentView);
+      showToast(`Sold ${qty} ${p.loc} of ${p.name} (${formatTZS(qty * p.price)})`);
+    }
+  );
+}
+
+function openRestock(pid) {
+  if (!isAdmin()) return;
+  const p = products.find(x => x.id === pid);
+  if (!p) return;
+  openModal(
+    `Restock — ${p.name}`,
+    `SKU ${p.sku} · Current On Hand: ${p.onHand} ${p.loc}`,
+    `<label>Quantity received (${esc(p.loc)})</label><input type="number" id="fQty" min="1" value="10">
+     <label>Note (optional)</label><input type="text" id="fNote" placeholder="e.g. Supplier delivery">`,
+    () => {
+      const qty = Math.abs(parseInt(document.getElementById('fQty').value, 10)) || 0;
+      if (qty < 1) { alert('Enter a valid quantity.'); return; }
+      p.onHand += qty;
+      movements.unshift({
+        id: 'mov_' + Date.now(),
+        storeId: getCurrentStore().id,
+        time: nowTime(),
+        pid: p.id,
+        productName: p.name,
+        by: session.user.name,
+        type: 'restock',
+        change: +qty,
+        note: document.getElementById('fNote').value.trim() || 'Supplier delivery'
+      });
+      saveState();
+      CloudSync.pushProductStock(p);
+      closeModal();
+      renderView(currentView);
+      showToast(`Restocked +${qty} ${p.loc} of ${p.name}`);
+    }
+  );
+}
+
+function openAddProduct() {
+  if (!isAdmin()) return;
+  openModal(
+    'New Product',
+    'Add a product to your store inventory.',
+    `<div class="modal-row">
+       <div><label>Product Name</label><input type="text" id="fName" placeholder="e.g. Sukari"></div>
+       <div><label>SKU / Code</label><input type="text" id="fSku" placeholder="e.g. SUK-001"></div>
+     </div>
+     <div class="modal-row">
+       <div><label>Category</label><input type="text" id="fCat" placeholder="e.g. unga, poultry" value="unga"></div>
+       <div><label>Unit / Location</label><input type="text" id="fLoc" placeholder="e.g. kg, pakiti, trei" value="kg"></div>
+     </div>
+     <div class="modal-row">
+       <div><label>Initial Stock</label><input type="number" id="fStock" min="0" value="20"></div>
+       <div><label>Reorder Level</label><input type="number" id="fReorder" min="1" value="5"></div>
+     </div>
+     <div class="modal-row">
+       <div><label>Cost Price (TZS)</label><input type="number" id="fCost" min="0" value="2000"></div>
+       <div><label>Selling Price (TZS)</label><input type="number" id="fPrice" min="0" value="3000"></div>
+     </div>
+     <label>Supplier</label><input type="text" id="fSup" placeholder="e.g. Jawiza Suppliers" value="Jawiza Suppliers">`,
+    () => {
+      const name = document.getElementById('fName').value.trim();
+      const sku  = document.getElementById('fSku').value.trim() || ('SKU-' + Math.floor(100 + Math.random() * 900));
+      const cat  = document.getElementById('fCat').value.trim() || 'General';
+      const loc  = document.getElementById('fLoc').value.trim() || 'pcs';
+      const onHand  = Math.max(0, parseInt(document.getElementById('fStock').value, 10) || 0);
+      const reorder = Math.max(1, parseInt(document.getElementById('fReorder').value, 10) || 5);
+      const cost    = Math.max(0, parseFloat(document.getElementById('fCost').value) || 0);
+      const price   = Math.max(0, parseFloat(document.getElementById('fPrice').value) || 0);
+      const supplier = document.getElementById('fSup').value.trim() || 'General Supplier';
+
+      if (!name) { alert('Product name is required.'); return; }
+      const nextId = products.reduce((m, x) => Math.max(m, Number(x.id) || 0), 0) + 1;
+      const newProd = {
+        id: nextId,
+        storeId: getCurrentStore().id,
+        sku, name, cat, loc, onHand, reserved: 0, reorder, cost, price, supplier
+      };
+      products.push(newProd);
+      if (onHand > 0) {
+        movements.unshift({
+          id: 'mov_' + Date.now(),
+          storeId: getCurrentStore().id,
+          time: nowTime(),
+          pid: newProd.id,
+          productName: newProd.name,
+          by: session.user.name,
+          type: 'restock',
+          change: +onHand,
+          note: 'Initial stock'
+        });
+      }
+      saveState();
+      CloudSync.pushProductStock(newProd);
+      closeModal();
+      renderView(currentView);
+      showToast(`Added product "${name}"`);
+    }
+  );
+}
+
+function openEditProduct(pid) {
+  if (!isAdmin()) return;
+  const p = products.find(x => x.id === pid);
+  if (!p) return;
+  openModal(
+    `Edit — ${p.name}`,
+    `SKU ${p.sku}`,
+    `<div class="modal-row">
+       <div><label>Product Name</label><input type="text" id="fName" value="${esc(p.name)}"></div>
+       <div><label>SKU / Code</label><input type="text" id="fSku" value="${esc(p.sku)}"></div>
+     </div>
+     <div class="modal-row">
+       <div><label>Category</label><input type="text" id="fCat" value="${esc(p.cat)}"></div>
+       <div><label>Unit / Location</label><input type="text" id="fLoc" value="${esc(p.loc)}"></div>
+     </div>
+     <div class="modal-row">
+       <div><label>On Hand Stock</label><input type="number" id="fStock" min="0" value="${p.onHand}"></div>
+       <div><label>Reorder Level</label><input type="number" id="fReorder" min="1" value="${p.reorder}"></div>
+     </div>
+     <div class="modal-row">
+       <div><label>Cost Price (TZS)</label><input type="number" id="fCost" min="0" value="${p.cost}"></div>
+       <div><label>Selling Price (TZS)</label><input type="number" id="fPrice" min="0" value="${p.price}"></div>
+     </div>
+     <label>Supplier</label><input type="text" id="fSup" value="${esc(p.supplier || '')}">`,
+    () => {
+      const name = document.getElementById('fName').value.trim();
+      if (!name) { alert('Product name is required.'); return; }
+      p.name     = name;
+      p.sku      = document.getElementById('fSku').value.trim() || p.sku;
+      p.cat      = document.getElementById('fCat').value.trim() || 'General';
+      p.loc      = document.getElementById('fLoc').value.trim() || 'pcs';
+      p.onHand   = Math.max(0, parseInt(document.getElementById('fStock').value, 10) || 0);
+      p.reorder  = Math.max(1, parseInt(document.getElementById('fReorder').value, 10) || 1);
+      p.cost     = Math.max(0, parseFloat(document.getElementById('fCost').value) || 0);
+      p.price    = Math.max(0, parseFloat(document.getElementById('fPrice').value) || 0);
+      p.supplier = document.getElementById('fSup').value.trim();
+
+      saveState();
+      CloudSync.pushProductStock(p);
+      closeModal();
+      renderView(currentView);
+      showToast(`Updated "${p.name}"`);
+    }
+  );
+}
+
+function deleteProduct(pid) {
+  if (!isAdmin()) return;
+  const p = products.find(x => x.id === pid);
+  if (!p) return;
+  if (!confirm(`Delete product "${p.name}" (${p.sku})?`)) return;
+  products = products.filter(x => x.id !== pid);
+  saveState();
+  CloudSync.deleteRemoteProduct(p);
+  renderView(currentView);
+  showToast(`Deleted "${p.name}"`);
+}
+
+/* ============================================================
+   TEAM & PASSWORD MANAGEMENT (store admin only)
+   ============================================================ */
+function openAddTeamMember() {
+  if (!isAdmin()) return;
+  const store = getCurrentStore();
+  openModal(
+    `New Team Member — ${store.name}`,
+    'Add a staff cashier or co-admin for this store.',
+    `<label>Full Name</label><input type="text" id="fName" placeholder="e.g. John Cashier">
+     <label>Email</label><input type="text" id="fEmail" placeholder="e.g. john@jawiza.com">
+     <label>Username (optional)</label><input type="text" id="fUser" placeholder="e.g. john">
+     <label>Role</label><select id="fRole"><option value="staff">Store Staff</option><option value="admin">Store Admin</option></select>
+     <label>Initial Password</label><input type="password" id="fPass" placeholder="At least 4 characters">`,
+    () => {
+      const name = document.getElementById('fName').value.trim();
+      const email = document.getElementById('fEmail').value.trim().toLowerCase();
+      const username = document.getElementById('fUser').value.trim().toLowerCase() || email.split('@')[0];
+      const role = document.getElementById('fRole').value;
+      const pass = document.getElementById('fPass').value;
+      if (!name || !email || pass.length < 4) {
+        alert('Name, email, and a password of at least 4 characters are required.');
+        return;
+      }
+      if (users.some(u => u.email.toLowerCase() === email)) {
+        alert('A user with this email already exists.');
+        return;
+      }
+      users.push({
+        id: 'u_' + Date.now(),
+        username, name, email, pass, role, storeId: store.id
+      });
+      saveState();
+      closeModal();
+      renderView('team');
+      showToast(`Added ${name} (${role === 'admin' ? 'Store Admin' : 'Store Staff'})`);
+    }
+  );
+}
+
+function openSetPassword(uid) {
+  const u = users.find(x => x.id === uid);
+  if (!u) return;
+  openModal(
+    `Set Password — ${u.name}`,
+    u.id === session.user.id ? 'Change your own password' : 'Set a new password for this team member',
+    `<label>New password</label><input type="password" id="fPass" placeholder="At least 4 characters">
+     <label>Confirm password</label><input type="password" id="fPass2" placeholder="Repeat password">`,
+    () => {
+      const a = document.getElementById('fPass').value;
+      const b = document.getElementById('fPass2').value;
+      if (a.length < 4) { alert('Password must be at least 4 characters.'); return; }
+      if (a !== b) { alert('Passwords do not match.'); return; }
+      u.pass = a;
+      saveState();
+      closeModal();
+      showToast('Password updated for ' + u.name);
+    }
+  );
+}
+
+function deleteTeamMember(uid) {
+  if (!isAdmin()) return;
+  const u = users.find(x => x.id === uid);
+  if (!u || u.id === session.user.id) return;
+  if (!confirm(`Remove team member "${u.name}"?`)) return;
+  users = users.filter(x => x.id !== uid);
+  saveState();
+  renderView('team');
+  showToast(`Removed ${u.name}`);
+}
+
+/* ============================================================
+   SCAN / SELL
+   ============================================================ */
+function handleScan() {
+  const input = document.getElementById('scanInput');
+  const code = input.value.trim().toLowerCase();
+  if (!code) return;
+  const list = getStoreProducts();
+  const p = list.find(x =>
+    x.sku.toLowerCase() === code ||
+    x.name.toLowerCase() === code ||
+    x.name.toLowerCase().includes(code)
+  );
+  if (!p) { alert('No product found for: ' + code); return; }
+  input.value = '';
+  openSell(p.id);
+}
+document.getElementById('scanInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter') handleScan();
+});
+document.getElementById('loginPass').addEventListener('keydown', e => {
+  if (e.key === 'Enter') doLogin();
+});
+
+/* ============================================================
+   UTIL & BOOTSTRAP
+   ============================================================ */
+function nowTime() {
+  const d = new Date();
+  return d.toTimeString().slice(0,5);
+}
+
+window.addEventListener('storage', () => {
+  loadState();
+  if (session) renderView(currentView);
+});
+
+window.addEventListener('DOMContentLoaded', () => {
+  if (window.location.hash.includes('super-admin')) {
+    window.location.href = 'superadmin.html';
+    return;
+  }
+  loadState();
+  try {
+    const saved = JSON.parse(localStorage.getItem(STORAGE_KEYS.SESSION));
+    if (saved && saved.user) {
+      const freshUser = users.find(u => u.id === saved.user.id || u.email === saved.user.email);
+      const store = stores.find(s => s.id === (freshUser || saved.user).storeId) || stores[0];
+      if (freshUser && (!store || store.active)) {
+        session = { user: freshUser };
+        enterApp();
+      }
+    }
+  } catch (e) {}
+
+  setInterval(() => CloudSync.pullProducts(), 3500);
+  window.addEventListener('online', () => CloudSync.pullProducts());
+  window.addEventListener('focus', () => CloudSync.pullProducts());
+});
+</script>
+</body>
+</html>
