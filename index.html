@@ -2,12 +2,14 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#0f172a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>TzionStockly — Store Portal</title>
 <style>
-  * { margin:0; padding:0; box-sizing:border-box; }
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
   body { font-family:-apple-system,Segoe UI,Roboto,sans-serif; background:#f4f6f9; color:#1f2937; min-height:100vh; }
   .hidden { display:none !important; }
 
@@ -17,36 +19,39 @@
   .login-card h1 { font-size:22px; margin-bottom:6px; color:#0f172a; }
   .login-card p { font-size:13px; color:#6b7280; margin-bottom:22px; }
   .login-card label { display:block; font-size:12px; color:#6b7280; margin:12px 0 4px; font-weight:500; }
-  .login-card input, .login-card select { width:100%; padding:10px 12px; border:1px solid #d1d5db; border-radius:8px; font-size:14px; outline:none; }
+  .login-card input, .login-card select { width:100%; padding:11px 12px; border:1px solid #d1d5db; border-radius:8px; font-size:16px; outline:none; }
   .login-card input:focus, .login-card select:focus { border-color:#22c55e; }
-  .login-card button { width:100%; margin-top:18px; padding:11px; background:#22c55e; color:#fff; border:none; border-radius:8px; font-size:15px; font-weight:600; cursor:pointer; }
+  .login-card button { width:100%; margin-top:18px; padding:12px; background:#22c55e; color:#fff; border:none; border-radius:8px; font-size:15px; font-weight:600; cursor:pointer; }
   .login-card button:hover { background:#16a34a; }
   .login-err { background:#fee2e2; color:#b91c1c; font-size:13px; padding:9px 12px; border-radius:8px; margin-top:14px; }
   .login-hint { font-size:11.5px; color:#64748b; margin-top:18px; line-height:1.6; border-top:1px solid #f1f5f9; padding-top:12px; }
   .login-hint a { color:#22c55e; text-decoration:none; font-weight:600; }
   .login-hint a:hover { text-decoration:underline; }
 
-  /* App layout */
+  /* App layout (Desktop Default) */
   .app { display:flex; min-height:100vh; }
   .sidebar { width:220px; background:#0f172a; color:#e2e8f0; padding:20px 0; flex-shrink:0; display:flex; flex-direction:column; }
-  .sidebar h2 { font-size:15px; padding:0 18px 6px; color:#fff; }
-  .sidebar .store-name { font-size:12px; color:#94a3b8; padding:0 18px 6px; font-weight:500; }
-  .sidebar .sync-pill { font-size:11px; color:#4ade80; padding:0 18px 14px; border-bottom:1px solid #1e293b; display:flex; align-items:center; gap:6px; }
+  .sidebar-top { display:flex; align-items:center; justify-content:space-between; padding:0 18px 6px; }
+  .sidebar h2 { font-size:15px; color:#fff; }
+  .sidebar .store-meta { padding:0 18px 14px; border-bottom:1px solid #1e293b; }
+  .sidebar .store-name { font-size:12px; color:#94a3b8; margin-bottom:5px; font-weight:500; }
+  .sidebar .sync-pill { font-size:11px; color:#4ade80; display:flex; align-items:center; gap:6px; }
   .sidebar .sync-dot { width:7px; height:7px; border-radius:50%; background:#22c55e; display:inline-block; }
   .sidebar .sync-dot.offline { background:#f59e0b; }
   .sidebar nav { flex:1; padding-top:6px; }
-  .sidebar nav a { display:block; padding:12px 18px; color:#94a3b8; text-decoration:none; font-size:14px; cursor:pointer; border-left:3px solid transparent; }
+  .sidebar nav a { display:flex; align-items:center; gap:8px; padding:12px 18px; color:#94a3b8; text-decoration:none; font-size:14px; cursor:pointer; border-left:3px solid transparent; }
+  .sidebar nav a .nav-ic { font-size:15px; width:20px; text-align:center; }
   .sidebar nav a:hover, .sidebar nav a.active { background:#1e293b; color:#fff; border-left-color:#22c55e; }
   .sidebar .who { padding:14px 18px; border-top:1px solid #1e293b; font-size:12px; color:#94a3b8; }
   .sidebar .who b { color:#fff; display:block; font-size:13px; margin-bottom:2px; }
-  .sidebar .who button { margin-top:8px; width:100%; padding:7px; background:#1e293b; color:#e2e8f0; border:none; border-radius:6px; cursor:pointer; font-size:12px; }
+  .sidebar .who button { margin-top:8px; width:100%; padding:8px; background:#1e293b; color:#e2e8f0; border:none; border-radius:6px; cursor:pointer; font-size:12px; font-weight:600; }
   .sidebar .who button:hover { background:#334155; }
 
-  .main { flex:1; padding:22px; overflow-y:auto; }
+  .main { flex:1; padding:22px; overflow-y:auto; max-width:100%; }
   .topbar { display:flex; justify-content:space-between; align-items:center; margin-bottom:18px; flex-wrap:wrap; gap:10px; }
   .topbar h1 { font-size:21px; }
   .scan-box { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
-  .scan-box input { width:240px; max-width:100%; }
+  .scan-box input { width:250px; max-width:100%; }
 
   .cards { display:grid; grid-template-columns:repeat(auto-fit,minmax(170px,1fr)); gap:14px; margin-bottom:22px; }
   .card { background:#fff; border-radius:10px; padding:16px; box-shadow:0 1px 3px rgba(0,0,0,.07); }
@@ -65,7 +70,7 @@
   button { padding:8px 13px; border:none; border-radius:6px; font-size:13px; cursor:pointer; font-weight:500; }
   .btn-primary { background:#22c55e; color:#fff; }
   .btn-primary:hover { background:#16a34a; }
-  .btn-sm { padding:4px 9px; font-size:12px; margin-right:3px; }
+  .btn-sm { padding:5px 10px; font-size:12px; margin-right:3px; }
   .btn-in { background:#dcfce7; color:#15803d; }
   .btn-in:hover { background:#bbf7d0; }
   .btn-out { background:#fee2e2; color:#b91c1c; }
@@ -100,15 +105,176 @@
   .toast { position:fixed; bottom:18px; right:18px; background:#0f172a; color:#fff; padding:10px 16px; border-radius:8px; font-size:13px; box-shadow:0 6px 20px rgba(0,0,0,.25); z-index:200; opacity:0; transform:translateY(10px); transition:all .25s ease; pointer-events:none; }
   .toast.show { opacity:1; transform:translateY(0); }
 
-  @media (max-width: 720px) {
-    .app { flex-direction:column; }
-    .sidebar { width:100%; padding:14px 0 0; }
-    .sidebar nav { display:flex; overflow-x:auto; padding:0 10px; border-top:1px solid #1e293b; }
-    .sidebar nav a { white-space:nowrap; border-left:none; border-bottom:3px solid transparent; padding:10px 12px; font-size:13px; }
-    .sidebar nav a:hover, .sidebar nav a.active { border-left:none; border-bottom-color:#22c55e; }
-    .sidebar .who { display:flex; align-items:center; justify-content:space-between; gap:10px; padding:10px 18px; }
-    .sidebar .who button { width:auto; margin-top:0; padding:6px 12px; }
+  /* ============================================================
+     ADAPTIVE MOBILE UI (Triggered by JS class .is-mobile or <=768px)
+     ============================================================ */
+  body.is-mobile .app { flex-direction:column; padding-bottom:70px; }
+  body.is-mobile .sidebar {
+    width:100%;
+    padding:10px 14px;
+    position:sticky;
+    top:0;
+    z-index:80;
+    flex-direction:row;
+    align-items:center;
+    justify-content:space-between;
+    flex-wrap:wrap;
+    gap:8px;
+    box-shadow:0 2px 10px rgba(0,0,0,.18);
   }
+  body.is-mobile .sidebar-top { padding:0; }
+  body.is-mobile .sidebar h2 { font-size:15px; }
+  body.is-mobile .sidebar .store-meta {
+    padding:0;
+    border-bottom:none;
+    display:flex;
+    align-items:center;
+    gap:10px;
+  }
+  body.is-mobile .sidebar .store-name { margin-bottom:0; font-size:11.5px; }
+  body.is-mobile .sidebar .who {
+    padding:0;
+    border-top:none;
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+  body.is-mobile .sidebar .who b { font-size:12px; display:inline; margin:0; }
+  body.is-mobile .sidebar .who span { display:none; }
+  body.is-mobile .sidebar .who button { margin-top:0; width:auto; padding:6px 10px; font-size:11.5px; }
+
+  /* Mobile Fixed Bottom Tab Bar */
+  body.is-mobile .sidebar nav {
+    position:fixed;
+    bottom:0;
+    left:0;
+    right:0;
+    height:62px;
+    background:#0f172a;
+    border-top:1px solid #1e293b;
+    display:flex;
+    justify-content:space-around;
+    align-items:stretch;
+    padding:0 4px;
+    z-index:95;
+    box-shadow:0 -4px 16px rgba(0,0,0,.2);
+  }
+  body.is-mobile .sidebar nav a {
+    flex:1;
+    flex-direction:column;
+    justify-content:center;
+    align-items:center;
+    gap:2px;
+    padding:6px 2px;
+    font-size:10.5px;
+    border-left:none;
+    border-top:3px solid transparent;
+    text-align:center;
+    white-space:nowrap;
+  }
+  body.is-mobile .sidebar nav a .nav-ic { font-size:16px; width:auto; }
+  body.is-mobile .sidebar nav a:hover,
+  body.is-mobile .sidebar nav a.active {
+    background:#1e293b;
+    color:#22c55e;
+    border-left-color:transparent;
+    border-top-color:#22c55e;
+  }
+
+  body.is-mobile .main { padding:14px 12px 24px; }
+  body.is-mobile .topbar { flex-direction:column; align-items:stretch; gap:10px; margin-bottom:14px; }
+  body.is-mobile .topbar h1 { font-size:19px; }
+  body.is-mobile .scan-box { width:100%; display:flex; gap:6px; }
+  body.is-mobile .scan-box input { flex:1; width:auto; font-size:16px; padding:10px 12px; }
+  body.is-mobile .scan-box button { padding:10px 16px; font-size:14px; }
+
+  body.is-mobile .cards { grid-template-columns:repeat(2, 1fr); gap:10px; margin-bottom:16px; }
+  body.is-mobile .card { padding:12px 14px; }
+  body.is-mobile .card .value { font-size:20px; }
+
+  body.is-mobile .panel { padding:12px; margin-bottom:16px; }
+  body.is-mobile .panel-header { flex-direction:column; align-items:stretch; gap:8px; }
+  body.is-mobile .panel-tools { width:100%; flex-direction:column; align-items:stretch; }
+  body.is-mobile .panel-tools input,
+  body.is-mobile .panel-tools button { width:100%; font-size:15px; padding:10px 12px; }
+
+  /* Transform Tables into Touch Cards on Mobile */
+  body.is-mobile table.resp-table thead { display:none; }
+  body.is-mobile table.resp-table,
+  body.is-mobile table.resp-table tbody,
+  body.is-mobile table.resp-table tr,
+  body.is-mobile table.resp-table td { display:block; width:100%; }
+  body.is-mobile table.resp-table tr {
+    background:#fff;
+    border:1px solid #e2e8f0;
+    border-radius:10px;
+    padding:10px 12px;
+    margin-bottom:10px;
+    box-shadow:0 1px 2px rgba(0,0,0,.03);
+  }
+  body.is-mobile table.resp-table td {
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:6px 0;
+    border-bottom:1px solid #f1f5f9;
+    font-size:13.5px;
+    text-align:right;
+    gap:10px;
+  }
+  body.is-mobile table.resp-table td:last-child { border-bottom:none; padding-top:8px; }
+  body.is-mobile table.resp-table td::before {
+    content:attr(data-label);
+    font-size:11px;
+    font-weight:600;
+    text-transform:uppercase;
+    color:#64748b;
+    text-align:left;
+    flex-shrink:0;
+  }
+  body.is-mobile table.resp-table td.empty {
+    display:block;
+    text-align:center;
+    padding:20px 8px;
+  }
+  body.is-mobile table.resp-table td.empty::before { display:none; }
+  body.is-mobile table.resp-table td.actions-cell {
+    justify-content:flex-end;
+    flex-wrap:wrap;
+    gap:6px;
+  }
+  body.is-mobile table.resp-table td.actions-cell .btn-sm {
+    padding:8px 12px;
+    font-size:13px;
+    margin:0;
+    flex:1;
+    min-width:70px;
+    text-align:center;
+  }
+  body.is-mobile table.resp-table tfoot,
+  body.is-mobile table.resp-table tfoot tr,
+  body.is-mobile table.resp-table tfoot td { display:block; width:100%; }
+  body.is-mobile table.resp-table tfoot tr {
+    background:#f8fafc;
+    border:2px solid #cbd5e1;
+    border-radius:10px;
+    padding:10px 12px;
+  }
+
+  /* Bottom-Sheet Modal on Mobile */
+  body.is-mobile .modal-bg { align-items:flex-end; padding:0; }
+  body.is-mobile .modal {
+    width:100%;
+    max-width:100%;
+    border-radius:18px 18px 0 0;
+    padding:20px 16px 26px;
+    max-height:88vh;
+  }
+  body.is-mobile .modal input,
+  body.is-mobile .modal select { font-size:16px; padding:11px 12px; }
+  body.is-mobile .modal-row { grid-template-columns:1fr; gap:4px; }
+  body.is-mobile .modal-actions button { flex:1; padding:12px; font-size:15px; }
+  body.is-mobile .toast { bottom:74px; left:14px; right:14px; text-align:center; }
 </style>
 </head>
 <body>
@@ -141,11 +307,15 @@
 <!-- ========== APP ========== -->
 <div id="app" class="app hidden">
   <div class="sidebar">
-    <h2>🏪 Store Portal</h2>
-    <div class="store-name" id="storeLabel">Jawiza Store</div>
-    <div class="sync-pill">
-      <span class="sync-dot" id="syncDot"></span>
-      <span id="syncText">Cloud Synced</span>
+    <div class="sidebar-top">
+      <h2>🏪 Store Portal</h2>
+    </div>
+    <div class="store-meta">
+      <div class="store-name" id="storeLabel">Jawiza Store</div>
+      <div class="sync-pill">
+        <span class="sync-dot" id="syncDot"></span>
+        <span id="syncText">Cloud Synced</span>
+      </div>
     </div>
     <nav id="nav"></nav>
     <div class="who">
@@ -161,7 +331,7 @@
     <div class="topbar">
       <h1 id="viewTitle">Overview</h1>
       <div class="scan-box" id="scanBox">
-        <input type="text" id="scanInput" placeholder="Scan barcode / SKU or item name to sell..." autofocus>
+        <input type="text" id="scanInput" placeholder="Scan barcode / SKU or item name to sell...">
         <button class="btn-primary" onclick="handleScan()">Sell</button>
       </div>
     </div>
@@ -185,6 +355,29 @@
 <div id="toast" class="toast"></div>
 
 <script>
+/* ============================================================
+   MOBILE SCREEN DETECTION & ADAPTIVE UI CONTROLLER
+   ============================================================ */
+let isMobileScreen = false;
+
+function detectMobileScreen() {
+  const byWidth = window.innerWidth <= 768 || (window.matchMedia && window.matchMedia('(max-width: 768px)').matches);
+  const byUA = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Mobile/i.test(navigator.userAgent || '') && window.innerWidth <= 920;
+  const nextState = Boolean(byWidth || byUA);
+  const changed = nextState !== isMobileScreen;
+  isMobileScreen = nextState;
+  document.body.classList.toggle('is-mobile', isMobileScreen);
+  document.body.dataset.device = isMobileScreen ? 'mobile' : 'desktop';
+  if (changed && session) {
+    buildNav();
+    document.querySelectorAll('.nav-link').forEach(a =>
+      a.classList.toggle('active', a.dataset.view === currentView));
+  }
+}
+
+window.addEventListener('resize', detectMobileScreen);
+window.addEventListener('orientationchange', () => setTimeout(detectMobileScreen, 100));
+
 /* ============================================================
    SHARED STORAGE & SUPABASE CLOUD SYNC
    ============================================================ */
@@ -299,7 +492,7 @@ const CloudSync = {
 
   async pullProducts() {
     if (!navigator.onLine || this.isPulling) {
-      if (!navigator.onLine) this.updateStatusUI(false, 'Offline (Local Saved)');
+      if (!navigator.onLine) this.updateStatusUI(false, 'Offline (Local)');
       return;
     }
     this.isPulling = true;
@@ -330,13 +523,13 @@ const CloudSync = {
         }
       });
 
-      this.updateStatusUI(true, changed ? '⚡ Synced with Cloud' : 'Cloud Synced');
+      this.updateStatusUI(true, changed ? '⚡ Synced' : 'Cloud Synced');
       if (changed) {
         saveState();
         if (session) renderView(currentView);
       }
     } catch (e) {
-      this.updateStatusUI(false, 'Offline (Local Saved)');
+      this.updateStatusUI(false, 'Offline (Local)');
     }
     this.isPulling = false;
   },
@@ -387,7 +580,7 @@ const CloudSync = {
         this.updateStatusUI(true, '⚡ Saved to Cloud');
       }
     } catch (e) {
-      this.updateStatusUI(false, 'Saved Locally (Offline)');
+      this.updateStatusUI(false, 'Saved Locally');
     }
   },
 
@@ -410,7 +603,6 @@ function doLogin() {
   loadState();
   const ident = document.getElementById('loginEmail').value.trim().toLowerCase();
   const pass  = document.getElementById('loginPass').value;
-  const role  = document.getElementById('loginRole').value;
   const err   = document.getElementById('loginErr');
 
   if (!ident || !pass) {
@@ -444,6 +636,7 @@ function doLogin() {
 }
 
 function enterApp() {
+  detectMobileScreen();
   const u = session.user;
   const store = getCurrentStore();
   document.getElementById('loginScreen').classList.add('hidden');
@@ -472,11 +665,17 @@ const isAdmin = () => session && session.user.role === 'admin';
    ============================================================ */
 const NAV = {
   admin: [
-    ['overview','Overview'], ['stock','Stock'], ['alerts','Restock Alerts'],
-    ['movements','Stock Movements'], ['reports','Reports'], ['team','Team & Passwords']
+    ['overview',  'Overview',        'Overview',  '📊'],
+    ['stock',     'Stock',           'Stock',     '📦'],
+    ['alerts',    'Restock Alerts',  'Alerts',    '🔔'],
+    ['movements', 'Stock Movements', 'Moves',     '🔄'],
+    ['reports',   'Reports',         'Reports',   '📈'],
+    ['team',      'Team & Passwords','Team',      '👥']
   ],
   staff: [
-    ['overview','Overview'], ['stock','Stock'], ['alerts','Low Stock Alerts']
+    ['overview',  'Overview',        'Overview',  '📊'],
+    ['stock',     'Stock',           'Stock',     '📦'],
+    ['alerts',    'Low Stock Alerts','Alerts',    '🔔']
   ]
 };
 
@@ -485,9 +684,13 @@ let stockSearchQuery = '';
 
 function buildNav() {
   const nav = document.getElementById('nav');
+  if (!nav || !session) return;
   const roleKey = isAdmin() ? 'admin' : 'staff';
-  nav.innerHTML = NAV[roleKey].map(([v,label]) =>
-    `<a class="nav-link" data-view="${v}" onclick="go('${v}')">${label}</a>`
+  nav.innerHTML = NAV[roleKey].map(([v, fullLabel, mobileLabel, ic]) =>
+    `<a class="nav-link" data-view="${v}" onclick="go('${v}')">
+       <span class="nav-ic">${ic}</span>
+       <span>${isMobileScreen ? mobileLabel : fullLabel}</span>
+     </a>`
   ).join('');
 }
 
@@ -538,8 +741,10 @@ function renderView(view) {
   if (view === 'stock') {
     const inp = document.getElementById('searchInput');
     if (inp) {
-      inp.focus();
-      inp.setSelectionRange(inp.value.length, inp.value.length);
+      if (!isMobileScreen) {
+        inp.focus();
+        inp.setSelectionRange(inp.value.length, inp.value.length);
+      }
       inp.addEventListener('input', e => {
         stockSearchQuery = e.target.value;
         renderView('stock');
@@ -564,16 +769,16 @@ function viewOverview() {
     </div>
     <div class="panel">
       <div class="panel-header"><h2>Needs Attention</h2></div>
-      <table><thead><tr><th>Product</th><th>Unit / Category</th><th>On Hand</th><th>Available</th><th>Reorder At</th><th>Status</th></tr></thead>
+      <table class="resp-table"><thead><tr><th>Product</th><th>Unit / Category</th><th>On Hand</th><th>Available</th><th>Reorder At</th><th>Status</th></tr></thead>
       <tbody>${att.length ? att.map(p => {
         const s = statusOf(p);
         return `<tr>
-          <td><b>${esc(p.name)}</b> <span class="muted">(${esc(p.sku)})</span></td>
-          <td>${esc(p.loc)} · <span class="muted">${esc(p.cat)}</span></td>
-          <td>${p.onHand}</td>
-          <td>${avail(p)}</td>
-          <td>${p.reorder}</td>
-          <td><span class="tag ${s.cls}">${s.text}</span></td>
+          <td data-label="Product"><span><b>${esc(p.name)}</b> <span class="muted">(${esc(p.sku)})</span></span></td>
+          <td data-label="Unit / Category">${esc(p.loc)} · <span class="muted">${esc(p.cat)}</span></td>
+          <td data-label="On Hand">${p.onHand}</td>
+          <td data-label="Available">${avail(p)}</td>
+          <td data-label="Reorder At">${p.reorder}</td>
+          <td data-label="Status"><span class="tag ${s.cls}">${s.text}</span></td>
         </tr>`;
       }).join('') : '<tr><td colspan="6" class="empty">All items are above reorder level 👍</td></tr>'}</tbody></table>
     </div>`;
@@ -596,7 +801,7 @@ function viewStock() {
           ${isAdmin() ? `<button class="btn-primary" onclick="openAddProduct()">+ New Product</button>` : ''}
         </div>
       </div>
-      <table><thead><tr><th>SKU</th><th>Product</th><th>Category / Unit</th><th>On Hand</th><th>Available</th><th>Price (TZS)</th><th>Action</th></tr></thead>
+      <table class="resp-table"><thead><tr><th>SKU</th><th>Product</th><th>Category / Unit</th><th>On Hand</th><th>Available</th><th>Price (TZS)</th><th>Action</th></tr></thead>
       <tbody>${list.length ? list.map(p => {
         const s = statusOf(p);
         const sellBtn = `<button class="btn-sm btn-out" onclick="openSell(${p.id})">Sell</button>`;
@@ -604,13 +809,13 @@ function viewStock() {
         const editBtn = isAdmin() ? `<button class="btn-sm btn-neutral" onclick="openEditProduct(${p.id})">Edit</button>` : '';
         const delBtn = isAdmin() ? `<button class="btn-sm btn-neutral" onclick="deleteProduct(${p.id})" title="Delete">✕</button>` : '';
         return `<tr>
-          <td>${esc(p.sku)}</td>
-          <td><b>${esc(p.name)}</b></td>
-          <td>${esc(p.cat)} <span class="muted">(${esc(p.loc)})</span></td>
-          <td>${p.onHand}</td>
-          <td>${avail(p)} <span class="tag ${s.cls}">${s.text}</span></td>
-          <td><b>${formatTZS(p.price)}</b></td>
-          <td style="white-space:nowrap;">${sellBtn}${restockBtn}${editBtn}${delBtn}</td>
+          <td data-label="SKU">${esc(p.sku)}</td>
+          <td data-label="Product"><b>${esc(p.name)}</b></td>
+          <td data-label="Category">${esc(p.cat)} <span class="muted">(${esc(p.loc)})</span></td>
+          <td data-label="On Hand">${p.onHand}</td>
+          <td data-label="Available"><span>${avail(p)} <span class="tag ${s.cls}">${s.text}</span></span></td>
+          <td data-label="Price"><b>${formatTZS(p.price)}</b></td>
+          <td data-label="Actions" class="actions-cell" style="white-space:nowrap;">${sellBtn}${restockBtn}${editBtn}${delBtn}</td>
         </tr>`;
       }).join('') : '<tr><td colspan="7" class="empty">No products match your search.</td></tr>'}</tbody></table>
     </div>`;
@@ -621,16 +826,16 @@ function viewAlerts() {
   return `
     <div class="panel">
       <div class="panel-header"><h2>Items to Restock</h2></div>
-      <table><thead><tr><th>Product</th><th>Available</th><th>Reorder At</th><th>Suggested Order</th><th>Supplier</th>${isAdmin()?'<th>Action</th>':''}</tr></thead>
+      <table class="resp-table"><thead><tr><th>Product</th><th>Available</th><th>Reorder At</th><th>Suggested Order</th><th>Supplier</th>${isAdmin()?'<th>Action</th>':''}</tr></thead>
       <tbody>${low.length ? low.map(p => {
         const sug = Math.max(p.reorder * 2 - avail(p), 1);
-        const btn = isAdmin() ? `<td><button class="btn-sm btn-in" onclick="openRestock(${p.id})">Receive</button></td>` : '';
+        const btn = isAdmin() ? `<td data-label="Action" class="actions-cell"><button class="btn-sm btn-in" onclick="openRestock(${p.id})">Receive</button></td>` : '';
         return `<tr>
-          <td><b>${esc(p.name)}</b> <span class="muted">(${esc(p.sku)})</span></td>
-          <td>${avail(p)} ${esc(p.loc)}</td>
-          <td>${p.reorder} ${esc(p.loc)}</td>
-          <td><b>${sug} ${esc(p.loc)}</b></td>
-          <td>${esc(p.supplier || '—')}</td>
+          <td data-label="Product"><span><b>${esc(p.name)}</b> <span class="muted">(${esc(p.sku)})</span></span></td>
+          <td data-label="Available">${avail(p)} ${esc(p.loc)}</td>
+          <td data-label="Reorder At">${p.reorder} ${esc(p.loc)}</td>
+          <td data-label="Suggested Order"><b>${sug} ${esc(p.loc)}</b></td>
+          <td data-label="Supplier">${esc(p.supplier || '—')}</td>
           ${btn}
         </tr>`;
       }).join('') : '<tr><td colspan="6" class="empty">No restock needed right now.</td></tr>'}</tbody></table>
@@ -642,17 +847,17 @@ function viewMovements() {
   return `
     <div class="panel">
       <div class="panel-header"><h2>Stock Movement Log</h2></div>
-      <table><thead><tr><th>Time</th><th>Product</th><th>Type</th><th>Change</th><th>By</th><th>Note</th></tr></thead>
+      <table class="resp-table"><thead><tr><th>Time</th><th>Product</th><th>Type</th><th>Change</th><th>By</th><th>Note</th></tr></thead>
       <tbody>${list.length ? list.map(m => {
         const p = products.find(x => x.id === m.pid);
         const cls = m.change >= 0 ? 'tag ok' : 'tag out';
         return `<tr>
-          <td>${esc(m.time)}</td>
-          <td><b>${esc(m.productName || (p ? p.name : '—'))}</b></td>
-          <td>${esc(m.type)}</td>
-          <td><span class="${cls}">${m.change > 0 ? '+' : ''}${m.change}</span></td>
-          <td>${esc(m.by || '—')}</td>
-          <td>${esc(m.note || '')}</td>
+          <td data-label="Time">${esc(m.time)}</td>
+          <td data-label="Product"><b>${esc(m.productName || (p ? p.name : '—'))}</b></td>
+          <td data-label="Type">${esc(m.type)}</td>
+          <td data-label="Change"><span class="${cls}">${m.change > 0 ? '+' : ''}${m.change}</span></td>
+          <td data-label="By">${esc(m.by || '—')}</td>
+          <td data-label="Note">${esc(m.note || '')}</td>
         </tr>`;
       }).join('') : '<tr><td colspan="6" class="empty">No stock movements recorded yet.</td></tr>'}</tbody></table>
     </div>`;
@@ -673,12 +878,12 @@ function viewReports() {
   let rows = '', tC = 0, tU = 0, tCost = 0, tRetail = 0;
   for (const [c, d] of Object.entries(cats)) {
     rows += `<tr>
-      <td><b>${esc(c)}</b></td>
-      <td>${d.count}</td>
-      <td>${d.units.toLocaleString()}</td>
-      <td>${formatTZS(d.cost)}</td>
-      <td>${formatTZS(d.retail)}</td>
-      <td><b>${formatTZS(d.retail - d.cost)}</b></td>
+      <td data-label="Category"><b>${esc(c)}</b></td>
+      <td data-label="Products">${d.count}</td>
+      <td data-label="Units">${d.units.toLocaleString()}</td>
+      <td data-label="Cost Value">${formatTZS(d.cost)}</td>
+      <td data-label="Retail Value">${formatTZS(d.retail)}</td>
+      <td data-label="Potential Margin"><b>${formatTZS(d.retail - d.cost)}</b></td>
     </tr>`;
     tC += d.count; tU += d.units; tCost += d.cost; tRetail += d.retail;
   }
@@ -688,21 +893,25 @@ function viewReports() {
   return `
     <div class="panel">
       <div class="panel-header"><h2>Inventory Value by Category</h2></div>
-      <table><thead><tr><th>Category</th><th>Products</th><th>Units</th><th>Cost Value</th><th>Retail Value</th><th>Potential Margin</th></tr></thead>
+      <table class="resp-table"><thead><tr><th>Category</th><th>Products</th><th>Units</th><th>Cost Value</th><th>Retail Value</th><th>Potential Margin</th></tr></thead>
       <tbody>${rows || '<tr><td colspan="6" class="empty">No inventory data.</td></tr>'}</tbody>
       <tfoot><tr style="font-weight:700;border-top:2px solid #e5e7eb;">
-        <td>Total</td><td>${tC}</td><td>${tU.toLocaleString()}</td>
-        <td>${formatTZS(tCost)}</td><td>${formatTZS(tRetail)}</td><td>${formatTZS(tRetail - tCost)}</td>
+        <td data-label="Summary">Total</td>
+        <td data-label="Products">${tC}</td>
+        <td data-label="Units">${tU.toLocaleString()}</td>
+        <td data-label="Cost Value">${formatTZS(tCost)}</td>
+        <td data-label="Retail Value">${formatTZS(tRetail)}</td>
+        <td data-label="Potential Margin">${formatTZS(tRetail - tCost)}</td>
       </tr></tfoot></table>
     </div>
     <div class="panel">
       <div class="panel-header"><h2>Slow-Moving Items (no sales logged)</h2></div>
-      <table><thead><tr><th>Product</th><th>SKU</th><th>On Hand</th><th>Tied-up Cost</th></tr></thead>
+      <table class="resp-table"><thead><tr><th>Product</th><th>SKU</th><th>On Hand</th><th>Tied-up Cost</th></tr></thead>
       <tbody>${slow.length ? slow.map(p => `<tr>
-        <td><b>${esc(p.name)}</b></td>
-        <td>${esc(p.sku)}</td>
-        <td>${p.onHand} ${esc(p.loc)}</td>
-        <td>${formatTZS(p.onHand * p.cost)}</td>
+        <td data-label="Product"><b>${esc(p.name)}</b></td>
+        <td data-label="SKU">${esc(p.sku)}</td>
+        <td data-label="On Hand">${p.onHand} ${esc(p.loc)}</td>
+        <td data-label="Tied-up Cost">${formatTZS(p.onHand * p.cost)}</td>
       </tr>`).join('') : '<tr><td colspan="4" class="empty">All stocked items had recent sales.</td></tr>'}</tbody></table>
     </div>`;
 }
@@ -714,15 +923,17 @@ function viewTeam() {
     <div class="panel">
       <div class="panel-header">
         <h2>Team Members — ${esc(store.name)}</h2>
-        <button class="btn-primary" onclick="openAddTeamMember()">+ Add Team Member</button>
+        <div class="panel-tools">
+          <button class="btn-primary" onclick="openAddTeamMember()">+ Add Team Member</button>
+        </div>
       </div>
-      <table><thead><tr><th>Name</th><th>Email / Username</th><th>Role</th><th>Actions</th></tr></thead>
+      <table class="resp-table"><thead><tr><th>Name</th><th>Email / Username</th><th>Role</th><th>Actions</th></tr></thead>
       <tbody>${team.map(u => `
         <tr>
-          <td><b>${esc(u.name)}</b>${u.id === session.user.id ? ' <span class="muted">(you)</span>' : ''}</td>
-          <td>${esc(u.email)}${u.username ? ` <span class="muted">(${esc(u.username)})</span>` : ''}</td>
-          <td>${u.role === 'admin' ? 'Store Admin' : 'Store Staff'}</td>
-          <td>
+          <td data-label="Name"><span><b>${esc(u.name)}</b>${u.id === session.user.id ? ' <span class="muted">(you)</span>' : ''}</span></td>
+          <td data-label="Email / User"><span>${esc(u.email)}${u.username ? ` <span class="muted">(${esc(u.username)})</span>` : ''}</span></td>
+          <td data-label="Role">${u.role === 'admin' ? 'Store Admin' : 'Store Staff'}</td>
+          <td data-label="Actions" class="actions-cell">
             <button class="btn-sm btn-neutral" onclick="openSetPassword('${u.id}')">Set Password</button>
             ${u.id !== session.user.id ? `<button class="btn-sm btn-out" onclick="deleteTeamMember('${u.id}')">Remove</button>` : ''}
           </td>
@@ -1047,6 +1258,7 @@ window.addEventListener('storage', () => {
 });
 
 window.addEventListener('DOMContentLoaded', () => {
+  detectMobileScreen();
   if (window.location.hash.includes('super-admin')) {
     window.location.href = 'superadmin.html';
     return;

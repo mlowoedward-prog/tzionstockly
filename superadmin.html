@@ -2,10 +2,12 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#111827">
+<meta name="apple-mobile-web-app-capable" content="yes">
 <title>TzionStockly — Super Admin Platform</title>
 <style>
-  * { margin:0; padding:0; box-sizing:border-box; }
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
   body { font-family:-apple-system,Segoe UI,Roboto,sans-serif; background:#f4f6f9; color:#1f2937; min-height:100vh; }
   .hidden { display:none !important; }
 
@@ -14,9 +16,9 @@
   .login-card h1 { font-size:22px; margin-bottom:6px; color:#111827; }
   .login-card p { font-size:13px; color:#6b7280; margin-bottom:22px; }
   .login-card label { display:block; font-size:12px; color:#6b7280; margin:12px 0 4px; font-weight:500; }
-  .login-card input { width:100%; padding:10px 12px; border:1px solid #d1d5db; border-radius:8px; font-size:14px; outline:none; }
+  .login-card input { width:100%; padding:11px 12px; border:1px solid #d1d5db; border-radius:8px; font-size:16px; outline:none; }
   .login-card input:focus { border-color:#6366f1; }
-  .login-card button { width:100%; margin-top:18px; padding:11px; background:#6366f1; color:#fff; border:none; border-radius:8px; font-size:15px; font-weight:600; cursor:pointer; }
+  .login-card button { width:100%; margin-top:18px; padding:12px; background:#6366f1; color:#fff; border:none; border-radius:8px; font-size:15px; font-weight:600; cursor:pointer; }
   .login-card button:hover { background:#4f46e5; }
   .login-err { background:#fee2e2; color:#b91c1c; font-size:13px; padding:9px 12px; border-radius:8px; margin-top:14px; }
   .login-hint { font-size:11.5px; color:#64748b; margin-top:18px; line-height:1.6; border-top:1px solid #f1f5f9; padding-top:12px; }
@@ -27,14 +29,15 @@
   .sidebar { width:220px; background:#111827; color:#e5e7eb; padding:20px 0; flex-shrink:0; display:flex; flex-direction:column; }
   .sidebar h2 { font-size:15px; padding:0 18px 16px; color:#fff; border-bottom:1px solid #1f2937; }
   .sidebar nav { flex:1; padding-top:6px; }
-  .sidebar nav a { display:block; padding:12px 18px; color:#9ca3af; text-decoration:none; font-size:14px; cursor:pointer; border-left:3px solid transparent; }
+  .sidebar nav a { display:flex; align-items:center; gap:8px; padding:12px 18px; color:#9ca3af; text-decoration:none; font-size:14px; cursor:pointer; border-left:3px solid transparent; }
+  .sidebar nav a .nav-ic { font-size:15px; width:20px; text-align:center; }
   .sidebar nav a:hover, .sidebar nav a.active { background:#1f2937; color:#fff; border-left-color:#6366f1; }
   .sidebar .who { padding:14px 18px; border-top:1px solid #1f2937; font-size:12px; color:#9ca3af; }
   .sidebar .who b { color:#fff; display:block; font-size:13px; margin-bottom:2px; }
-  .sidebar .who button { margin-top:8px; width:100%; padding:7px; background:#1f2937; color:#e5e7eb; border:none; border-radius:6px; cursor:pointer; font-size:12px; }
+  .sidebar .who button { margin-top:8px; width:100%; padding:8px; background:#1f2937; color:#e5e7eb; border:none; border-radius:6px; cursor:pointer; font-size:12px; font-weight:600; }
   .sidebar .who button:hover { background:#374151; }
 
-  .main { flex:1; padding:22px; overflow-y:auto; }
+  .main { flex:1; padding:22px; overflow-y:auto; max-width:100%; }
   .topbar { display:flex; justify-content:space-between; align-items:center; margin-bottom:18px; flex-wrap:wrap; gap:10px; }
   .topbar h1 { font-size:21px; }
   .topbar a.portal-link { font-size:13px; color:#6366f1; text-decoration:none; font-weight:600; background:#eef2ff; padding:7px 12px; border-radius:6px; }
@@ -56,7 +59,7 @@
   button { padding:8px 13px; border:none; border-radius:6px; font-size:13px; cursor:pointer; font-weight:500; }
   .btn-primary { background:#6366f1; color:#fff; }
   .btn-primary:hover { background:#4f46e5; }
-  .btn-sm { padding:4px 9px; font-size:12px; margin-right:3px; }
+  .btn-sm { padding:5px 10px; font-size:12px; margin-right:3px; }
   .btn-danger { background:#fee2e2; color:#b91c1c; }
   .btn-danger:hover { background:#fecaca; }
   .btn-neutral { background:#f1f5f9; color:#334155; }
@@ -76,7 +79,7 @@
 
   .modal-bg { display:none; position:fixed; inset:0; background:rgba(0,0,0,.45); align-items:center; justify-content:center; z-index:100; padding:16px; }
   .modal-bg.show { display:flex; }
-  .modal { background:#fff; border-radius:12px; padding:22px; width:390px; max-width:94vw; }
+  .modal { background:#fff; border-radius:12px; padding:22px; width:390px; max-width:94vw; max-height:90vh; overflow-y:auto; }
   .modal h3 { margin-bottom:4px; font-size:17px; }
   .modal .sub { font-size:12px; color:#6b7280; margin-bottom:14px; }
   .modal label { display:block; font-size:12px; color:#6b7280; margin:10px 0 4px; font-weight:500; }
@@ -87,15 +90,141 @@
   .toast { position:fixed; bottom:18px; right:18px; background:#111827; color:#fff; padding:10px 16px; border-radius:8px; font-size:13px; box-shadow:0 6px 20px rgba(0,0,0,.25); z-index:200; opacity:0; transform:translateY(10px); transition:all .25s ease; pointer-events:none; }
   .toast.show { opacity:1; transform:translateY(0); }
 
-  @media (max-width: 720px) {
-    .app { flex-direction:column; }
-    .sidebar { width:100%; padding:14px 0 0; }
-    .sidebar nav { display:flex; overflow-x:auto; padding:0 10px; border-top:1px solid #1f2937; }
-    .sidebar nav a { white-space:nowrap; border-left:none; border-bottom:3px solid transparent; padding:10px 12px; font-size:13px; }
-    .sidebar nav a:hover, .sidebar nav a.active { border-left:none; border-bottom-color:#6366f1; }
-    .sidebar .who { display:flex; align-items:center; justify-content:space-between; gap:10px; padding:10px 18px; }
-    .sidebar .who button { width:auto; margin-top:0; padding:6px 12px; }
+  /* ============================================================
+     ADAPTIVE MOBILE UI (.is-mobile)
+     ============================================================ */
+  body.is-mobile .app { flex-direction:column; padding-bottom:70px; }
+  body.is-mobile .sidebar {
+    width:100%;
+    padding:10px 14px;
+    position:sticky;
+    top:0;
+    z-index:80;
+    flex-direction:row;
+    align-items:center;
+    justify-content:space-between;
+    box-shadow:0 2px 10px rgba(0,0,0,.18);
   }
+  body.is-mobile .sidebar h2 { padding:0; border-bottom:none; font-size:15px; }
+  body.is-mobile .sidebar .who {
+    padding:0;
+    border-top:none;
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+  body.is-mobile .sidebar .who b { font-size:12px; display:inline; margin:0; }
+  body.is-mobile .sidebar .who span { display:none; }
+  body.is-mobile .sidebar .who button { margin-top:0; width:auto; padding:6px 10px; font-size:11.5px; }
+
+  body.is-mobile .sidebar nav {
+    position:fixed;
+    bottom:0;
+    left:0;
+    right:0;
+    height:62px;
+    background:#111827;
+    border-top:1px solid #1f2937;
+    display:flex;
+    justify-content:space-around;
+    align-items:stretch;
+    padding:0 8px;
+    z-index:95;
+    box-shadow:0 -4px 16px rgba(0,0,0,.2);
+  }
+  body.is-mobile .sidebar nav a {
+    flex:1;
+    flex-direction:column;
+    justify-content:center;
+    align-items:center;
+    gap:2px;
+    padding:6px 4px;
+    font-size:11px;
+    border-left:none;
+    border-top:3px solid transparent;
+    text-align:center;
+  }
+  body.is-mobile .sidebar nav a .nav-ic { font-size:17px; width:auto; }
+  body.is-mobile .sidebar nav a:hover,
+  body.is-mobile .sidebar nav a.active {
+    background:#1f2937;
+    color:#818cf8;
+    border-left-color:transparent;
+    border-top-color:#6366f1;
+  }
+
+  body.is-mobile .main { padding:14px 12px 24px; }
+  body.is-mobile .topbar { margin-bottom:14px; }
+  body.is-mobile .topbar h1 { font-size:19px; }
+  body.is-mobile .cards { grid-template-columns:repeat(3, 1fr); gap:8px; margin-bottom:16px; }
+  body.is-mobile .card { padding:12px 10px; text-align:center; }
+  body.is-mobile .card .value { font-size:20px; }
+
+  body.is-mobile .panel { padding:12px; margin-bottom:16px; }
+  body.is-mobile .panel-header { flex-direction:column; align-items:stretch; gap:8px; }
+  body.is-mobile .panel-header button { width:100%; padding:10px 12px; font-size:14px; }
+
+  body.is-mobile table.resp-table thead { display:none; }
+  body.is-mobile table.resp-table,
+  body.is-mobile table.resp-table tbody,
+  body.is-mobile table.resp-table tr,
+  body.is-mobile table.resp-table td { display:block; width:100%; }
+  body.is-mobile table.resp-table tr {
+    background:#fff;
+    border:1px solid #e2e8f0;
+    border-radius:10px;
+    padding:10px 12px;
+    margin-bottom:10px;
+    box-shadow:0 1px 2px rgba(0,0,0,.03);
+  }
+  body.is-mobile table.resp-table td {
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:6px 0;
+    border-bottom:1px solid #f1f5f9;
+    font-size:13.5px;
+    text-align:right;
+    gap:10px;
+  }
+  body.is-mobile table.resp-table td:last-child { border-bottom:none; padding-top:8px; }
+  body.is-mobile table.resp-table td::before {
+    content:attr(data-label);
+    font-size:11px;
+    font-weight:600;
+    text-transform:uppercase;
+    color:#64748b;
+    text-align:left;
+    flex-shrink:0;
+  }
+  body.is-mobile table.resp-table td.empty { display:block; text-align:center; padding:20px 8px; }
+  body.is-mobile table.resp-table td.empty::before { display:none; }
+  body.is-mobile table.resp-table td.actions-cell {
+    justify-content:flex-end;
+    flex-wrap:wrap;
+    gap:6px;
+  }
+  body.is-mobile table.resp-table td.actions-cell .btn-sm {
+    padding:8px 10px;
+    font-size:12.5px;
+    margin:0;
+    flex:1;
+    min-width:85px;
+    text-align:center;
+  }
+
+  body.is-mobile .modal-bg { align-items:flex-end; padding:0; }
+  body.is-mobile .modal {
+    width:100%;
+    max-width:100%;
+    border-radius:18px 18px 0 0;
+    padding:20px 16px 26px;
+    max-height:88vh;
+  }
+  body.is-mobile .modal input,
+  body.is-mobile .modal select { font-size:16px; padding:11px 12px; }
+  body.is-mobile .modal-actions button { flex:1; padding:12px; font-size:15px; }
+  body.is-mobile .toast { bottom:74px; left:14px; right:14px; text-align:center; }
 </style>
 </head>
 <body>
@@ -123,8 +252,8 @@
   <div class="sidebar">
     <h2>🛡️ Platform Admin</h2>
     <nav>
-      <a class="nav-link active" data-view="stores" onclick="go('stores')">Stores</a>
-      <a class="nav-link" data-view="users" onclick="go('users')">Users</a>
+      <a class="nav-link active" data-view="stores" onclick="go('stores')"><span class="nav-ic">🏪</span><span>Stores</span></a>
+      <a class="nav-link" data-view="users" onclick="go('users')"><span class="nav-ic">👥</span><span>Users</span></a>
     </nav>
     <div class="who">
       <div>
@@ -138,7 +267,7 @@
   <div class="main">
     <div class="topbar">
       <h1 id="viewTitle">Stores</h1>
-      <a href="index.html" class="portal-link">🏪 Open Store Portal &rarr;</a>
+      <a href="index.html" class="portal-link">🏪 Store Portal &rarr;</a>
     </div>
     <div id="views"></div>
   </div>
@@ -160,6 +289,22 @@
 <div id="toast" class="toast"></div>
 
 <script>
+/* ============================================================
+   MOBILE SCREEN DETECTION & ADAPTIVE UI CONTROLLER
+   ============================================================ */
+let isMobileScreen = false;
+
+function detectMobileScreen() {
+  const byWidth = window.innerWidth <= 768 || (window.matchMedia && window.matchMedia('(max-width: 768px)').matches);
+  const byUA = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Mobile/i.test(navigator.userAgent || '') && window.innerWidth <= 920;
+  isMobileScreen = Boolean(byWidth || byUA);
+  document.body.classList.toggle('is-mobile', isMobileScreen);
+  document.body.dataset.device = isMobileScreen ? 'mobile' : 'desktop';
+}
+
+window.addEventListener('resize', detectMobileScreen);
+window.addEventListener('orientationchange', () => setTimeout(detectMobileScreen, 100));
+
 /* ============================================================
    SHARED STORAGE WITH STORE PORTAL (index.html / storeadminstaff.html)
    ============================================================ */
@@ -250,6 +395,7 @@ function doLogin() {
 }
 
 function enterApp() {
+  detectMobileScreen();
   document.getElementById('loginScreen').classList.add('hidden');
   document.getElementById('app').classList.remove('hidden');
   document.getElementById('whoName').textContent = session.name;
@@ -299,16 +445,16 @@ function viewStores() {
         <h2>All Stores</h2>
         <button class="btn-primary" onclick="openCreateStore()">+ New Store</button>
       </div>
-      <table><thead><tr><th>Store</th><th>Owner</th><th>Users</th><th>Status</th><th>Actions</th></tr></thead>
+      <table class="resp-table"><thead><tr><th>Store</th><th>Owner</th><th>Users</th><th>Status</th><th>Actions</th></tr></thead>
       <tbody>${stores.length ? stores.map(s => {
         const userCount = users.filter(u => u.storeId === s.id).length;
         return `
         <tr>
-          <td><b>${esc(s.name)}</b> <span class="muted">(${esc(s.id)})</span></td>
-          <td>${esc(s.owner || '—')}</td>
-          <td>${userCount}</td>
-          <td><span class="tag ${s.active ? 'ok' : 'off'}">${s.active ? 'Active' : 'Inactive'}</span></td>
-          <td style="white-space:nowrap;">
+          <td data-label="Store"><span><b>${esc(s.name)}</b> <span class="muted">(${esc(s.id)})</span></span></td>
+          <td data-label="Owner">${esc(s.owner || '—')}</td>
+          <td data-label="Users">${userCount}</td>
+          <td data-label="Status"><span class="tag ${s.active ? 'ok' : 'off'}">${s.active ? 'Active' : 'Inactive'}</span></td>
+          <td data-label="Actions" class="actions-cell" style="white-space:nowrap;">
             <button class="btn-sm ${s.active ? 'btn-danger' : 'btn-success'}" onclick="toggleStore('${s.id}')">
               ${s.active ? 'Deactivate' : 'Activate'}
             </button>
@@ -339,15 +485,15 @@ function viewUsers() {
         <h2>All Users</h2>
         <button class="btn-primary" onclick="openCreateUser()">+ New User</button>
       </div>
-      <table><thead><tr><th>Name</th><th>Email / Username</th><th>Role</th><th>Store</th><th>Actions</th></tr></thead>
+      <table class="resp-table"><thead><tr><th>Name</th><th>Email / Username</th><th>Role</th><th>Store</th><th>Actions</th></tr></thead>
       <tbody>${users.length ? users.map(u => {
         const store = stores.find(s => s.id === u.storeId);
         return `<tr>
-          <td><b>${esc(u.name)}</b></td>
-          <td>${esc(u.email)}${u.username ? ` <span class="muted">(${esc(u.username)})</span>` : ''}</td>
-          <td>${u.role === 'admin' ? 'Store Admin' : 'Store Staff'}</td>
-          <td>${store ? esc(store.name) : '—'}</td>
-          <td style="white-space:nowrap;">
+          <td data-label="Name"><b>${esc(u.name)}</b></td>
+          <td data-label="Email"><span>${esc(u.email)}${u.username ? ` <span class="muted">(${esc(u.username)})</span>` : ''}</span></td>
+          <td data-label="Role">${u.role === 'admin' ? 'Store Admin' : 'Store Staff'}</td>
+          <td data-label="Store">${store ? esc(store.name) : '—'}</td>
+          <td data-label="Actions" class="actions-cell" style="white-space:nowrap;">
             <button class="btn-sm btn-neutral" onclick="openResetPassword('${u.id}')">Reset Password</button>
             <button class="btn-sm btn-danger" onclick="deleteUser('${u.id}')">Delete</button>
           </td>
@@ -510,6 +656,7 @@ window.addEventListener('storage', () => {
 });
 
 window.addEventListener('DOMContentLoaded', () => {
+  detectMobileScreen();
   loadState();
   try {
     const saved = JSON.parse(localStorage.getItem(STORAGE_KEYS.SUPER_SESSION));
