@@ -27,7 +27,9 @@
 
   .app { display:flex; min-height:100vh; }
   .sidebar { width:220px; background:#111827; color:#e5e7eb; padding:20px 0; flex-shrink:0; display:flex; flex-direction:column; }
-  .sidebar h2 { font-size:15px; padding:0 18px 16px; color:#fff; border-bottom:1px solid #1f2937; }
+  .sidebar h2 { font-size:15px; padding:0 18px 8px; color:#fff; }
+  .sidebar .sync-pill { font-size:11px; color:#818cf8; padding:0 18px 14px; border-bottom:1px solid #1f2937; display:flex; align-items:center; gap:6px; cursor:pointer; }
+  .sidebar .sync-dot { width:7px; height:7px; border-radius:50%; background:#6366f1; display:inline-block; }
   .sidebar nav { flex:1; padding-top:6px; }
   .sidebar nav a { display:flex; align-items:center; gap:8px; padding:12px 18px; color:#9ca3af; text-decoration:none; font-size:14px; cursor:pointer; border-left:3px solid transparent; }
   .sidebar nav a .nav-ic { font-size:15px; width:20px; text-align:center; }
@@ -73,6 +75,7 @@
   tr:hover td { background:#f8fafc; }
   .tag { padding:2px 8px; border-radius:11px; font-size:10.5px; font-weight:600; white-space:nowrap; display:inline-block; }
   .tag.ok { background:#dcfce7; color:#15803d; }
+  .tag.low { background:#fef9c3; color:#a16207; }
   .tag.off { background:#fee2e2; color:#b91c1c; }
   .muted { color:#94a3b8; font-size:12px; }
   .empty { text-align:center; color:#94a3b8; padding:26px; font-size:14px; }
@@ -106,6 +109,7 @@
     box-shadow:0 2px 10px rgba(0,0,0,.18);
   }
   body.is-mobile .sidebar h2 { padding:0; border-bottom:none; font-size:15px; }
+  body.is-mobile .sidebar .sync-pill { padding:0; border-bottom:none; }
   body.is-mobile .sidebar .who {
     padding:0;
     border-top:none;
@@ -156,9 +160,9 @@
   body.is-mobile .main { padding:14px 12px 24px; }
   body.is-mobile .topbar { margin-bottom:14px; }
   body.is-mobile .topbar h1 { font-size:19px; }
-  body.is-mobile .cards { grid-template-columns:repeat(3, 1fr); gap:8px; margin-bottom:16px; }
-  body.is-mobile .card { padding:12px 10px; text-align:center; }
-  body.is-mobile .card .value { font-size:20px; }
+  body.is-mobile .cards { grid-template-columns:repeat(2, 1fr); gap:8px; margin-bottom:16px; }
+  body.is-mobile .card { padding:12px 10px; }
+  body.is-mobile .card .value { font-size:19px; }
 
   body.is-mobile .panel { padding:12px; margin-bottom:16px; }
   body.is-mobile .panel-header { flex-direction:column; align-items:stretch; gap:8px; }
@@ -251,8 +255,13 @@
 <div id="app" class="app hidden">
   <div class="sidebar">
     <h2>🛡️ Platform Admin</h2>
+    <div class="sync-pill" onclick="CloudSync.pullAll(true)" title="Click to sync with Cloud">
+      <span class="sync-dot"></span>
+      <span id="syncText">Cloud Synced</span>
+    </div>
     <nav>
       <a class="nav-link active" data-view="stores" onclick="go('stores')"><span class="nav-ic">🏪</span><span>Stores</span></a>
+      <a class="nav-link" data-view="stock" onclick="go('stock')"><span class="nav-ic">📦</span><span>Store Stock</span></a>
       <a class="nav-link" data-view="users" onclick="go('users')"><span class="nav-ic">👥</span><span>Users</span></a>
     </nav>
     <div class="who">
@@ -306,17 +315,19 @@ window.addEventListener('resize', detectMobileScreen);
 window.addEventListener('orientationchange', () => setTimeout(detectMobileScreen, 100));
 
 /* ============================================================
-   SHARED STORAGE WITH STORE PORTAL (index.html / storeadminstaff.html)
+   SHARED STORAGE & SUPABASE SYNC (100% Unified with Store Portal & Maria)
    ============================================================ */
 const STORAGE_KEYS = {
-  VERSION:       'tzion_portal_v2_init',
+  VERSION:       'tzion_portal_v3_init',
   STORES:        'tzion_portal_stores',
   USERS:         'tzion_portal_users',
   PRODUCTS:      'tzion_portal_products',
   MOVEMENTS:     'tzion_portal_movements',
+  DELETED:       'tzion_portal_deleted_skus',
   SUPER_SESSION: 'tzion_portal_super_session'
 };
 
+const CLOUD_ANCHOR_ID = '10000000-0000-0000-0000-000000000001';
 const SUPER = { email:'super@platform.com', altEmail:'superadmin@tzionstockly.com', pass:'super123', name:'Platform Owner' };
 
 const DEFAULT_STORES = [
@@ -331,34 +342,50 @@ const DEFAULT_USERS = [
 ];
 
 const DEFAULT_PRODUCTS = [
-  { id:1, storeId:'store-jawiza-001', sku:'APP-MBI-001', name:'mbilimbi',       cat:'appetizer', loc:'fungu',  onHand:50, reserved:0, reorder:10, cost:1000,  price:1500,  supplier:'Jawiza Suppliers' },
-  { id:2, storeId:'store-jawiza-001', sku:'PLT-KUK-001', name:'kuku',           cat:'poultry',   loc:'kuku',   onHand:30, reserved:0, reorder:5,  cost:12000, price:15000, supplier:'Jawiza Poultry' },
-  { id:3, storeId:'store-jawiza-001', sku:'UNG-UJI-001', name:'Uji Mtamu',      cat:'unga',      loc:'pakiti', onHand:40, reserved:0, reorder:10, cost:2500,  price:3500,  supplier:'Jawiza Mills' },
-  { id:4, storeId:'store-jawiza-001', sku:'PLT-MAY-001', name:'mayai',          cat:'poultry',   loc:'trei',   onHand:25, reserved:0, reorder:5,  cost:9000,  price:11000, supplier:'Jawiza Poultry' },
-  { id:5, storeId:'store-jawiza-001', sku:'UNG-MTM-001', name:'mtama mwekundu', cat:'unga',      loc:'kg',     onHand:50, reserved:0, reorder:10, cost:1800,  price:2500,  supplier:'Jawiza Mills' },
-  { id:6, storeId:'store-jawiza-001', sku:'UNG-MTW-002', name:'mtama mweupe',   cat:'unga',      loc:'kg',     onHand:50, reserved:0, reorder:10, cost:1800,  price:2500,  supplier:'Jawiza Mills' },
-  { id:7, storeId:'store-jawiza-001', sku:'UNG-NJM-003', name:'Njano mix',      cat:'unga',      loc:'pakiti', onHand:40, reserved:0, reorder:10, cost:2500,  price:3500,  supplier:'Jawiza Mills' }
+  { id:1, supabaseId:'10000000-0000-0000-0000-000000000001', storeId:'store-jawiza-001', sku:'APP-MBI-001', name:'mbilimbi ndogo', cat:'appetizer', loc:'Kopo',   onHand:9,  reserved:0, reorder:10, cost:1000,  price:10000, supplier:'Jawiza Suppliers' },
+  { id:2, supabaseId:'10000000-0000-0000-0000-000000000002', storeId:'store-jawiza-001', sku:'PLT-KUK-001', name:'kuku',           cat:'poultry',   loc:'kuku',   onHand:18, reserved:0, reorder:5,  cost:12000, price:15000, supplier:'Jawiza Poultry' },
+  { id:3, supabaseId:'10000000-0000-0000-0000-000000000003', storeId:'store-jawiza-001', sku:'UNG-UJI-001', name:'Uji Mtamu',      cat:'unga',      loc:'pakiti', onHand:29, reserved:0, reorder:10, cost:2500,  price:10000, supplier:'Jawiza Mills' },
+  { id:4, supabaseId:'10000000-0000-0000-0000-000000000004', storeId:'store-jawiza-001', sku:'PLT-MAY-001', name:'Mayai',          cat:'poultry',   loc:'kg',     onHand:1,  reserved:0, reorder:5,  cost:20000, price:24000, supplier:'Jawiza Poultry' },
+  { id:5, supabaseId:'10000000-0000-0000-0000-000000000005', storeId:'store-jawiza-001', sku:'UNG-MTM-001', name:'mtama mwekundu', cat:'unga',      loc:'kg',     onHand:10, reserved:0, reorder:5,  cost:1800,  price:12500, supplier:'Jawiza Mills' },
+  { id:6, supabaseId:'10000000-0000-0000-0000-000000000006', storeId:'store-jawiza-001', sku:'UNG-MTW-002', name:'mtama mweupe',   cat:'unga',      loc:'kg',     onHand:4,  reserved:0, reorder:5,  cost:1800,  price:12500, supplier:'Jawiza Mills' },
+  { id:7, supabaseId:'10000000-0000-0000-0000-000000000007', storeId:'store-jawiza-001', sku:'UNG-NJM-003', name:'Njano mix',      cat:'unga 10kg', loc:'mfuko',  onHand:3,  reserved:0, reorder:5,  cost:2500,  price:25000, supplier:'Jawiza Mills' }
 ];
 
 let stores = [];
 let users = [];
+let products = [];
+let movements = [];
+let deletedSkus = [];
 let session = null;
 
 function loadState() {
-  if (localStorage.getItem(STORAGE_KEYS.VERSION) !== 'v2.0') {
+  if (localStorage.getItem(STORAGE_KEYS.VERSION) !== 'v3.0') {
     localStorage.setItem(STORAGE_KEYS.STORES, JSON.stringify(DEFAULT_STORES));
     localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(DEFAULT_USERS));
     localStorage.setItem(STORAGE_KEYS.PRODUCTS, JSON.stringify(DEFAULT_PRODUCTS));
-    localStorage.setItem(STORAGE_KEYS.MOVEMENTS, JSON.stringify([]));
-    localStorage.setItem(STORAGE_KEYS.VERSION, 'v2.0');
+    if (!localStorage.getItem(STORAGE_KEYS.MOVEMENTS)) {
+      localStorage.setItem(STORAGE_KEYS.MOVEMENTS, JSON.stringify([]));
+    }
+    localStorage.setItem(STORAGE_KEYS.DELETED, JSON.stringify([]));
+    localStorage.setItem(STORAGE_KEYS.VERSION, 'v3.0');
   }
   try { stores = JSON.parse(localStorage.getItem(STORAGE_KEYS.STORES)) || DEFAULT_STORES; } catch(e) { stores = DEFAULT_STORES; }
   try { users = JSON.parse(localStorage.getItem(STORAGE_KEYS.USERS)) || DEFAULT_USERS; } catch(e) { users = DEFAULT_USERS; }
+  try { products = JSON.parse(localStorage.getItem(STORAGE_KEYS.PRODUCTS)) || DEFAULT_PRODUCTS; } catch(e) { products = DEFAULT_PRODUCTS; }
+  try { movements = JSON.parse(localStorage.getItem(STORAGE_KEYS.MOVEMENTS)) || []; } catch(e) { movements = []; }
+  try { deletedSkus = JSON.parse(localStorage.getItem(STORAGE_KEYS.DELETED)) || []; } catch(e) { deletedSkus = []; }
 }
 
 function saveState() {
   localStorage.setItem(STORAGE_KEYS.STORES, JSON.stringify(stores));
   localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(users));
+  localStorage.setItem(STORAGE_KEYS.PRODUCTS, JSON.stringify(products));
+  localStorage.setItem(STORAGE_KEYS.MOVEMENTS, JSON.stringify(movements));
+  localStorage.setItem(STORAGE_KEYS.DELETED, JSON.stringify(deletedSkus));
+}
+
+function formatTZS(n) {
+  return 'TZS ' + Math.round(Number(n) || 0).toLocaleString('en-US');
 }
 
 function esc(str) {
@@ -375,10 +402,151 @@ function showToast(msg) {
 }
 
 /* ============================================================
+   CLOUD SYNC
+   ============================================================ */
+const CloudSync = {
+  url: 'https://afchobaedwzvcdvexhtq.supabase.co',
+  key: 'sb_publishable_3_m7mYbVuaVLhWcHXezcHQ_6Gvm1a2H',
+  isPulling: false,
+
+  headers() {
+    return {
+      'apikey': this.key,
+      'Authorization': `Bearer ${this.key}`,
+      'Content-Type': 'application/json',
+      'Prefer': 'return=representation'
+    };
+  },
+
+  async pullAll(notify = false) {
+    if (!navigator.onLine || this.isPulling) return;
+    this.isPulling = true;
+    try {
+      const res = await fetch(`${this.url}/rest/v1/products?select=*&order=sku.asc`, { headers: this.headers() });
+      if (!res.ok) { this.isPulling = false; return; }
+      const remoteProds = await res.json();
+      if (!Array.isArray(remoteProds) || remoteProds.length === 0) { this.isPulling = false; return; }
+
+      let changed = false;
+      const anchorRow = remoteProds.find(r => r.id === CLOUD_ANCHOR_ID || r.sku === 'APP-MBI-001');
+      let cloudExtraProducts = [];
+
+      if (anchorRow && anchorRow.barcode && anchorRow.barcode.startsWith('{')) {
+        try {
+          const cloudEnv = JSON.parse(anchorRow.barcode);
+          if (cloudEnv && cloudEnv.__tzion_cloud_v3) {
+            if (Array.isArray(cloudEnv.deletedSkus)) {
+              cloudEnv.deletedSkus.forEach(s => {
+                if (!deletedSkus.includes(s)) { deletedSkus.push(s); changed = true; }
+              });
+            }
+            if (Array.isArray(cloudEnv.extraProducts)) cloudExtraProducts = cloudEnv.extraProducts;
+            if (Array.isArray(cloudEnv.movements)) {
+              cloudEnv.movements.forEach(cm => {
+                if (!movements.some(m => m.id === cm.id)) { movements.push(cm); changed = true; }
+              });
+            }
+            if (Array.isArray(cloudEnv.stores) && cloudEnv.stores.length > 0) {
+              if (JSON.stringify(stores) !== JSON.stringify(cloudEnv.stores)) {
+                stores = cloudEnv.stores;
+                changed = true;
+              }
+            }
+            if (Array.isArray(cloudEnv.users) && cloudEnv.users.length > 0) {
+              if (JSON.stringify(users) !== JSON.stringify(cloudEnv.users)) {
+                users = cloudEnv.users;
+                changed = true;
+              }
+            }
+          }
+        } catch (e) {}
+      }
+
+      remoteProds.forEach((remote, idx) => {
+        if (remote.deleted_at || deletedSkus.includes(remote.sku)) return;
+        let local = products.find(p =>
+          (remote.id && p.supabaseId === remote.id) ||
+          (remote.sku && p.sku === remote.sku)
+        );
+        const rName    = (remote.name || 'Item').trim();
+        const rSku     = (remote.sku || `SKU-${idx + 1}`).trim();
+        const rCat     = (remote.category || 'General').trim();
+        const rLoc     = (remote.unit || 'pcs').trim();
+        const rOnHand  = Number(remote.stock_quantity ?? 0);
+        const rReorder = Number(remote.reorder_level ?? remote.min_threshold ?? 5);
+        const rCost    = Number(remote.cost_price_tzs || remote.cost_price || 0);
+        const rPrice   = Number(remote.selling_price_tzs || remote.selling_price || 0);
+
+        if (local) {
+          if (
+            local.name !== rName || local.sku !== rSku || local.cat !== rCat ||
+            local.loc !== rLoc || local.onHand !== rOnHand || local.reorder !== rReorder ||
+            local.cost !== rCost || local.price !== rPrice || local.supabaseId !== remote.id
+          ) {
+            Object.assign(local, { name:rName, sku:rSku, cat:rCat, loc:rLoc, onHand:rOnHand, reorder:rReorder, cost:rCost, price:rPrice, supabaseId:remote.id });
+            changed = true;
+          }
+        } else {
+          const nextId = products.reduce((m, x) => Math.max(m, Number(x.id) || 0), 0) + 1;
+          products.push({
+            id: nextId, supabaseId: remote.id, storeId: 'store-jawiza-001',
+            sku: rSku, name: rName, cat: rCat, loc: rLoc, onHand: rOnHand,
+            reserved: 0, reorder: rReorder, cost: rCost, price: rPrice, supplier: 'Jawiza Suppliers'
+          });
+          changed = true;
+        }
+      });
+
+      cloudExtraProducts.forEach(ep => {
+        if (deletedSkus.includes(ep.sku)) return;
+        const local = products.find(p => p.sku === ep.sku);
+        if (local) { Object.assign(local, ep); }
+        else { products.push(ep); changed = true; }
+      });
+
+      products = products.filter(p => !deletedSkus.includes(p.sku));
+
+      if (changed) {
+        saveState();
+        if (session) renderView(currentView);
+      }
+      if (notify) showToast('Synced with Supabase Cloud!');
+    } catch (e) {}
+    this.isPulling = false;
+  },
+
+  async pushCloudEnvelope() {
+    if (!navigator.onLine) return;
+    try {
+      const baseSkus = new Set(DEFAULT_PRODUCTS.map(d => d.sku));
+      const extraProducts = products.filter(p => !p.supabaseId && !baseSkus.has(p.sku) && !deletedSkus.includes(p.sku));
+      const envelope = JSON.stringify({
+        __tzion_cloud_v3: true,
+        updatedAt: new Date().toISOString(),
+        deletedSkus,
+        extraProducts,
+        movements: movements.slice(0, 250),
+        stores,
+        users
+      });
+      await fetch(`${this.url}/rest/v1/products?id=eq.${CLOUD_ANCHOR_ID}`, {
+        method: 'PATCH',
+        headers: this.headers(),
+        body: JSON.stringify({
+          barcode: envelope,
+          updated_at: new Date().toISOString()
+        })
+      });
+    } catch (e) {}
+  }
+};
+
+/* ============================================================
    AUTH
    ============================================================ */
-function doLogin() {
+async function doLogin() {
   loadState();
+  await CloudSync.pullAll(false);
   const email = document.getElementById('loginEmail').value.trim().toLowerCase();
   const pass  = document.getElementById('loginPass').value;
   const err   = document.getElementById('loginErr');
@@ -400,6 +568,7 @@ function enterApp() {
   document.getElementById('app').classList.remove('hidden');
   document.getElementById('whoName').textContent = session.name;
   go('stores');
+  CloudSync.pullAll(false);
 }
 
 function logout() {
@@ -419,13 +588,15 @@ function go(view) {
   currentView = view;
   document.querySelectorAll('.nav-link').forEach(a =>
     a.classList.toggle('active', a.dataset.view === view));
-  document.getElementById('viewTitle').textContent = view === 'stores' ? 'Stores' : 'Users';
+  const titles = { stores: 'Stores', stock: 'Live Store Stock (Jawiza & Branches)', users: 'Users' };
+  document.getElementById('viewTitle').textContent = titles[view] || view;
   renderView(view);
 }
 
 function renderView(view) {
   const box = document.getElementById('views');
   if (view === 'stores') box.innerHTML = viewStores();
+  if (view === 'stock')  box.innerHTML = viewStock();
   if (view === 'users')  box.innerHTML = viewUsers();
 }
 
@@ -434,27 +605,34 @@ function renderView(view) {
    ============================================================ */
 function viewStores() {
   const active = stores.filter(s => s.active).length;
+  const activeProds = products.filter(p => !deletedSkus.includes(p.sku));
+  const totalUnits = activeProds.reduce((s, p) => s + (Number(p.onHand) || 0), 0);
   return `
     <div class="cards">
       <div class="card"><div class="label">Total Stores</div><div class="value">${stores.length}</div></div>
       <div class="card good"><div class="label">Active</div><div class="value">${active}</div></div>
       <div class="card warn"><div class="label">Inactive</div><div class="value">${stores.length - active}</div></div>
+      <div class="card"><div class="label">Total Stock Units</div><div class="value">${totalUnits.toLocaleString()}</div></div>
     </div>
     <div class="panel">
       <div class="panel-header">
         <h2>All Stores</h2>
         <button class="btn-primary" onclick="openCreateStore()">+ New Store</button>
       </div>
-      <table class="resp-table"><thead><tr><th>Store</th><th>Owner</th><th>Users</th><th>Status</th><th>Actions</th></tr></thead>
+      <table class="resp-table"><thead><tr><th>Store</th><th>Owner</th><th>Users</th><th>SKUs / Units</th><th>Status</th><th>Actions</th></tr></thead>
       <tbody>${stores.length ? stores.map(s => {
         const userCount = users.filter(u => u.storeId === s.id).length;
+        const sProds = activeProds.filter(p => !p.storeId || p.storeId === s.id);
+        const sUnits = sProds.reduce((acc, p) => acc + (Number(p.onHand) || 0), 0);
         return `
         <tr>
           <td data-label="Store"><span><b>${esc(s.name)}</b> <span class="muted">(${esc(s.id)})</span></span></td>
           <td data-label="Owner">${esc(s.owner || '—')}</td>
           <td data-label="Users">${userCount}</td>
+          <td data-label="SKUs / Units"><b>${sProds.length} SKUs</b> <span class="muted">(${sUnits} units)</span></td>
           <td data-label="Status"><span class="tag ${s.active ? 'ok' : 'off'}">${s.active ? 'Active' : 'Inactive'}</span></td>
           <td data-label="Actions" class="actions-cell" style="white-space:nowrap;">
+            <button class="btn-sm btn-neutral" onclick="go('stock')">View Stock</button>
             <button class="btn-sm ${s.active ? 'btn-danger' : 'btn-success'}" onclick="toggleStore('${s.id}')">
               ${s.active ? 'Deactivate' : 'Activate'}
             </button>
@@ -462,7 +640,7 @@ function viewStores() {
             <button class="btn-sm btn-neutral" onclick="openResetAdminPassword('${s.id}')">Reset Password</button>
           </td>
         </tr>`;
-      }).join('') : '<tr><td colspan="5" class="empty">No stores registered yet.</td></tr>'}</tbody></table>
+      }).join('') : '<tr><td colspan="6" class="empty">No stores registered yet.</td></tr>'}</tbody></table>
     </div>`;
 }
 
@@ -471,8 +649,64 @@ function toggleStore(sid) {
   if (!s) return;
   s.active = !s.active;
   saveState();
+  CloudSync.pushCloudEnvelope();
   renderView(currentView);
   showToast(`${s.name} is now ${s.active ? 'Active' : 'Inactive'}`);
+}
+
+/* ============================================================
+   LIVE STORE STOCK VIEW (100% Identical to Maria & Store Admin)
+   ============================================================ */
+function viewStock() {
+  const list = products.filter(p => !deletedSkus.includes(p.sku));
+  const totalUnits = list.reduce((s, p) => s + (Number(p.onHand) || 0), 0);
+  const totalCost  = list.reduce((s, p) => s + (Number(p.onHand) || 0) * (Number(p.cost) || 0), 0);
+  const totalRetail = list.reduce((s, p) => s + (Number(p.onHand) || 0) * (Number(p.price) || 0), 0);
+
+  return `
+    <div class="cards">
+      <div class="card"><div class="label">Products (SKUs)</div><div class="value">${list.length}</div></div>
+      <div class="card good"><div class="label">Total Units On Hand</div><div class="value">${totalUnits.toLocaleString()}</div></div>
+      <div class="card"><div class="label">Total Cost Value</div><div class="value">${formatTZS(totalCost)}</div></div>
+      <div class="card good"><div class="label">Total Retail Value</div><div class="value">${formatTZS(totalRetail)}</div></div>
+    </div>
+    <div class="panel">
+      <div class="panel-header">
+        <h2>Live Cloud Inventory (Synchronized with Store Admin & Maria)</h2>
+        <button class="btn-primary" onclick="CloudSync.pullAll(true)">🔄 Sync from Cloud Now</button>
+      </div>
+      <table class="resp-table">
+        <thead>
+          <tr>
+            <th>SKU</th>
+            <th>Product</th>
+            <th>Category / Unit</th>
+            <th>On Hand</th>
+            <th>Reorder At</th>
+            <th>Cost Price</th>
+            <th>Selling Price</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${list.length ? list.map(p => {
+            const st = p.onHand <= 0
+              ? { cls:'off', text:'Out of Stock' }
+              : (p.onHand <= p.reorder ? { cls:'low', text:'Low Stock' } : { cls:'ok', text:'In Stock' });
+            return `<tr>
+              <td data-label="SKU">${esc(p.sku)}</td>
+              <td data-label="Product"><b>${esc(p.name)}</b></td>
+              <td data-label="Category / Unit">${esc(p.cat)} <span class="muted">(${esc(p.loc)})</span></td>
+              <td data-label="On Hand"><b>${p.onHand} ${esc(p.loc)}</b></td>
+              <td data-label="Reorder At">${p.reorder}</td>
+              <td data-label="Cost Price">${formatTZS(p.cost)}</td>
+              <td data-label="Selling Price"><b>${formatTZS(p.price)}</b></td>
+              <td data-label="Status"><span class="tag ${st.cls}">${st.text}</span></td>
+            </tr>`;
+          }).join('') : '<tr><td colspan="8" class="empty">No products found.</td></tr>'}
+        </tbody>
+      </table>
+    </div>`;
 }
 
 /* ============================================================
@@ -508,6 +742,7 @@ function deleteUser(uid) {
   if (!confirm(`Delete user "${u.name}" (${u.email})?`)) return;
   users = users.filter(x => x.id !== uid);
   saveState();
+  CloudSync.pushCloudEnvelope();
   renderView(currentView);
   showToast(`Deleted user ${u.name}`);
 }
@@ -543,6 +778,7 @@ function openCreateStore() {
       const id = 'store_' + Date.now().toString().slice(-5);
       stores.push({ id, name, owner, active:true });
       saveState();
+      CloudSync.pushCloudEnvelope();
       closeModal();
       renderView(currentView);
       showToast(`Created store "${name}"`);
@@ -569,6 +805,7 @@ function openCreateAdmin(sid) {
       if (users.some(u => u.email.toLowerCase() === email)) { alert('Email already exists.'); return; }
       users.push({ id:'u_' + Date.now(), username, name, email, pass, role:'admin', storeId:sid });
       saveState();
+      CloudSync.pushCloudEnvelope();
       closeModal();
       renderView(currentView);
       showToast('Admin created for ' + store.name);
@@ -594,6 +831,7 @@ function openResetAdminPassword(sid) {
       const target = users.find(u => u.id === uid);
       if (target) target.pass = pass;
       saveState();
+      CloudSync.pushCloudEnvelope();
       closeModal();
       showToast('Password updated for ' + (target ? target.name : 'admin'));
     });
@@ -622,6 +860,7 @@ function openCreateUser() {
       if (users.some(u => u.email.toLowerCase() === email)) { alert('Email already exists.'); return; }
       users.push({ id:'u_' + Date.now(), username, name, email, pass, role, storeId });
       saveState();
+      CloudSync.pushCloudEnvelope();
       closeModal();
       renderView(currentView);
       showToast(`Created user "${name}"`);
@@ -641,6 +880,7 @@ function openResetPassword(uid) {
       if (pass.length < 4) { alert('Password must be at least 4 characters.'); return; }
       u.pass = pass;
       saveState();
+      CloudSync.pushCloudEnvelope();
       closeModal();
       showToast('Password updated for ' + u.name);
     });
@@ -655,9 +895,10 @@ window.addEventListener('storage', () => {
   if (session) renderView(currentView);
 });
 
-window.addEventListener('DOMContentLoaded', () => {
+window.addEventListener('DOMContentLoaded', async () => {
   detectMobileScreen();
   loadState();
+  await CloudSync.pullAll(false);
   try {
     const saved = JSON.parse(localStorage.getItem(STORAGE_KEYS.SUPER_SESSION));
     if (saved && saved.name) {
@@ -665,6 +906,9 @@ window.addEventListener('DOMContentLoaded', () => {
       enterApp();
     }
   } catch(e) {}
+  setInterval(() => CloudSync.pullAll(false), 3000);
+  window.addEventListener('online', () => CloudSync.pullAll(false));
+  window.addEventListener('focus', () => CloudSync.pullAll(false));
 });
 </script>
 </body>

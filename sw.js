@@ -1,4 +1,4 @@
-const CACHE_NAME = 'tzionstockly-pwa-v22';
+const CACHE_NAME = 'tzionstockly-pwa-v23';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
